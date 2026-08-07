@@ -40,8 +40,7 @@ body, html {
     height: 8px;                
     background-color: #111111;  
     position: absolute;
-    bottom: 0;                  
-    left: 0;
+    bottom: 0; left: 0;
     overflow: hidden;
     box-shadow: 0px -4px 15px rgba(0, 0, 0, 0.6);
 }
@@ -87,17 +86,15 @@ body, html {
     box-sizing: border-box;
 }
 
-/* NEW FOR v1.7.0: Dynamic System Build Info Tag Overlay (Bottom-Right Corner) */
 #desktop-build-tag {
     position: absolute;
-    bottom: 15px;
-    right: 20px;
+    bottom: 15px; right: 20px;
     font-family: monospace;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.55); /* Subtle look blends into wallpaper */
+    color: rgba(255, 255, 255, 0.55); 
     text-align: right;
     line-height: 1.4;
-    pointer-events: none; /* Mouse clicks pass right through */
+    pointer-events: none; 
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     z-index: 1;
 }
@@ -105,8 +102,7 @@ body, html {
 #window-workspace {
     position: absolute;
     top: 0; left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     pointer-events: none; 
     z-index: 10;
 }
@@ -120,8 +116,7 @@ body, html {
    ========================================================================== */
 #start-menu {
     position: absolute;
-    bottom: 0; 
-    left: 2px;
+    bottom: 0; left: 2px;
     width: 240px;
     background-color: #c0c0c0;
     border: 2px solid #ffffff;
@@ -189,13 +184,12 @@ body, html {
 }
 
 /* ==========================================================================
-   LAYER 2: WINDOWS-95 STYLE SYSTEM TASKBAR
+   LAYER 2: SYSTEM TASKBAR STYLING
    ========================================================================== */
 #system-taskbar {
     position: fixed;
     bottom: 0; left: 0;
-    width: 100vw;
-    height: 40px;
+    width: 100vw; height: 40px;
     background-color: #c0c0c0; 
     border-top: 2px solid #ffffff; 
     display: flex;
@@ -203,29 +197,6 @@ body, html {
     padding: 0 4px;
     box-sizing: border-box;
     z-index: 90000;
-}
-
-#start-button {
-    height: 28px;
-    background-color: #c0c0c0;
-    border: 2px solid #ffffff;
-    border-right-color: #000000;
-    border-bottom-color: #000000;
-    font-weight: bold;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0 8px;
-    cursor: pointer;
-    font-family: Arial, sans-serif;
-}
-
-#start-button:active {
-    border: 2px solid #000000;
-    border-right-color: #ffffff;
-    border-bottom-color: #ffffff;
-    padding: 1px 7px 0px 9px; 
 }
 
 #taskbar-tabs-zone {
@@ -238,24 +209,16 @@ body, html {
     overflow-x: auto;
 }
 
-/* Taskbar Program Navigation Toggle Tabs Buttons */
 .taskbar-tab {
-    height: 28px;
-    width: 120px;
+    height: 28px; width: 120px;
     background-color: #c0c0c0;
     border: 2px solid #ffffff;
     border-right-color: #000000;
     border-bottom-color: #000000;
-    font-size: 12px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 8px;
-    cursor: pointer;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
+    font-size: 12px; font-weight: bold;
+    display: flex; align-items: center;
+    gap: 6px; padding: 0 8px; cursor: pointer;
+    text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
 }
 
 .taskbar-tab.active-tab {
@@ -266,198 +229,87 @@ body, html {
 }
 
 #system-tray {
-    height: 28px;
-    background-color: #c0c0c0;
+    height: 28px; background-color: #c0c0c0;
     border: 2px solid #808080;
-    border-right-color: #ffffff;
-    border-bottom-color: #ffffff;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    box-sizing: border-box;
+    border-right-color: #ffffff; border-bottom-color: #ffffff;
+    display: flex; align-items: center; padding: 0 12px; box-sizing: border-box;
 }
 
 #live-clock {
-    font-family: monospace;
-    font-size: 13px;
-    font-weight: bold;
-    color: #000000;
+    font-family: monospace; font-size: 13px; font-weight: bold; color: #000000;
 }
 
 /* ==========================================================================
-   PHASE 2: RESIZABLE WINDOW MANAGER EXTENSIONS (v1.7.0 CORE FIX)
-   ========================================================================== */ 
-/* Find and update your window manager styles to match this exactly: */
-.window-frame { 
-    position: absolute; 
-    top: 60px; 
-    left: 60px; 
-    width: 440px; 
-    height: 320px; 
-    background-color: #c0c0c0; 
-    border: 2px solid #ffffff; 
-    border-right-color: #000000; 
-    border-bottom-color: #000000; 
-    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.35); 
-    
-    /* CRITICAL: Forces internal structural scaling flows */
-    display: flex; 
-    flex-direction: column; 
-    
-    min-width: 200px; 
-    min-height: 120px; 
-} 
-
-.window-body { 
-    flex-grow: 1; 
-    background-color: #ffffff; 
-    border: 2px solid #808080; 
-    border-right-color: #ffffff; 
-    border-bottom-color: #ffffff; 
-    margin: 4px; 
-    overflow: auto; 
-    position: relative; 
-    
-    /* NEW: Tells child applications (like the editor wrapper) to fill 100% space */
-    display: flex;
-    flex-direction: column;
-} 
-
-
-/* FIX: Changed from ID to Class selector so multiple active bars color blue correctly */
-.window-frame.active-window .window-header { 
-    background: #000080 !important; 
-    color: #ffffff !important; 
-} 
-
-/* FIX: Changed from #window-header to .window-header */
-.window-header { 
-    background: #808080; 
-    color: #c0c0c0; 
-    padding: 4px 6px; 
-    font-size: 13px; 
-    font-weight: bold; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    user-select: none; 
-} 
-
-/* FIX: Changed from #window-title to .window-title */
-.window-title { 
-    display: flex; 
-    align-items: center; 
-    gap: 6px; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-} 
-
-/* FIX: Changed from #window-controls to .window-controls */
-.window-controls { 
-    display: flex; 
-    gap: 2px; 
-} 
-
-.win-btn { 
-    width: 16px; 
-    height: 14px; 
-    background-color: #c0c0c0; 
-    border: 1px solid #ffffff; 
-    border-right-color: #000000; 
-    border-bottom-color: #000000; 
-    font-size: 10px; 
-    font-weight: bold; 
-    color: #000000; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    cursor: pointer; 
-} 
-
-.window-resize-handle { 
-    position: absolute; 
-    bottom: 0; 
-    right: 0; 
-    width: 14px; 
-    height: 14px; 
-    cursor: se-resize; 
-    background: linear-gradient(135deg, transparent 40%, #808080 40%, #808080 55%, transparent 55%, transparent 70%, #808080 70%); 
-    background-size: 4px 4px; 
-    z-index: 1000; 
-} 
-
-.window-maximized { 
-    top: 0 !important; 
-    left: 0 !important; 
-    width: 100vw !important; 
-    height: calc(100vh - 40px) !important; 
-}
-
-
-/* ==========================================================================
-   APP WINDOW SPECIFIC EXTENSIONS: ZEB EXPLORER FILE MANAGER UI
+   PHASE 2: RESIZABLE WINDOW GRAPHICS DESIGN
    ========================================================================== */
-.explorer-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background-color: #ffffff;
-}
-
-.explorer-toolbar {
+.window-frame {
+    position: absolute;
+    top: 60px; left: 60px;
+    width: 440px; height: 320px;
     background-color: #c0c0c0;
-    padding: 4px 8px;
-    border-bottom: 2px solid #808080;
-    display: flex;
-    gap: 6px;
+    border: 2px solid #ffffff;
+    border-right-color: #000000; border-bottom-color: #000000;
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.35);
+    display: flex; flex-direction: column;
+    min-width: 220px; min-height: 140px;
 }
 
-.explorer-btn {
-    padding: 2px 8px;
-    font-size: 12px;
-    font-weight: bold;
-    background-color: #c0c0c0;
-    border: 1px solid #ffffff;
-    border-right-color: #000000;
-    border-bottom-color: #000000;
-    cursor: pointer;
+.window-frame.active-window .window-header {
+    background: #000080 !important;
+    color: #ffffff !important;
 }
 
-.explorer-btn:disabled {
-    color: #808080;
-    cursor: default;
-    border-color: #eeeeee;
+.window-header {
+    background: #808080; color: #c0c0c0;
+    padding: 4px 6px; font-size: 13px; font-weight: bold;
+    display: flex; align-items: center; justify-content: space-between;
+    user-select: none;
 }
 
-.explorer-grid {
+.window-title {
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.window-controls {
+    display: flex; gap: 2px;
+}
+
+.window-body {
     flex-grow: 1;
-    padding: 15px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-content: flex-start;
-   .explorer-item {
-    width: 70px;
+    background-color: #ffffff;
+    border: 2px solid #808080;
+    border-right-color: #ffffff; border-bottom-color: #ffffff;
+    margin: 4px;
+    position: relative;
+    
+    /* FIX: Tells nested apps to take up 100% horizontal and vertical space */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    cursor: pointer;
+    overflow: hidden; 
 }
 
-.explorer-icon {
-    font-size: 32px;
-    margin-bottom: 4px;
+.window-resize-handle {
+    position: absolute; bottom: 0; right: 0;
+    width: 14px; height: 14px; cursor: se-resize;
+    background: linear-gradient(135deg, transparent 40%, #808080 40%, #808080 55%, transparent 55%, transparent 70%, #808080 70%);
+    background-size: 4px 4px; z-index: 1000;
 }
 
-.explorer-name {
-    font-size: 12px;
-    color: #000000;
-    word-break: break-all;
+.window-maximized {
+    top: 0 !important; left: 0 !important;
+    width: 100vw !important; height: calc(100vh - 40px) !important;
 }
 
-.explorer-item:hover .explorer-name {
-    background-color: #000080;
-    color: #ffffff;
-}
+/* ==========================================================================
+   APP EXENSIONS: ZEB EXPLORER FILE MANAGER UI
+   ========================================================================== */
+.explorer-container { display: flex; flex-direction: column; height: 100%; background-color: #ffffff; }
+.explorer-toolbar { background-color: #c0c0c0; padding: 4px 8px; border-bottom: 2px solid #808080; display: flex; gap: 6px; }
+.explorer-btn { padding: 2px 8px; font-size: 12px; font-weight: bold; background-color: #c0c0c0; border: 1px solid #ffffff; border-right-color: #000000; border-bottom-color: #000000; cursor: pointer; }
+.explorer-btn:disabled { color: #808080; cursor: default; border-color: #eeeeee; }
+.explorer-grid { flex-grow: 1; padding: 15px; display: flex; flex-wrap: wrap; gap: 20px; align-content: flex-start; overflow-y: auto; }
+.explorer-item { width: 70px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; }
+.explorer-icon { font-size: 32px; margin-bottom: 4px; }
+.explorer-name { font-size: 12px; color: #000000; word-break: break-all; }
+.explorer-item:hover .explorer-name { background-color: #000080; color: #ffffff; }
