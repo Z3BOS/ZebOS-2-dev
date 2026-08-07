@@ -21,47 +21,52 @@ export class TextEditor {
     }
 
     // Called right after your Window Manager spawns the window frame
-        // Replace the open function in programs/editor.js with this:
-    open(windowBodyElement) {
+           open(windowBodyElement) {
         this.bodyElement = windowBodyElement;
         
-        // Restores your exact HTML layout from the right screenshot image
+        // Forces the parent window container to act as a vertical flex column
+        this.bodyElement.style.display = "flex";
+        this.bodyElement.style.flexDirection = "column";
+        this.bodyElement.style.height = "100%";
+        this.bodyElement.style.margin = "0";
+        this.bodyElement.style.padding = "0";
+
+        // Inject the complete standalone editor interface inside this specific window container
         this.bodyElement.innerHTML = `
-            <div style="padding: 10px; font-family: Arial, sans-serif; font-size: 16px; color: #000000; display: flex; flex-direction: column; height: calc(100% - 20px); box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; width: 100%; height: 100%; background-color: #ffffff; box-sizing: border-box; font-family: Arial, sans-serif;">
                 
                 <!-- Menu / Filename Header Strip Line -->
-                <div style="margin-bottom: 8px; font-size: 18px;">
-                    <span class="app-menu-item" style="cursor: pointer; font-weight: normal; margin-right: 4px;">File</span>
-                    <div class="app-file-dropdown hidden-view" style="position: absolute; background: #c0c0c0; border: 1px solid black; padding: 4px; z-index: 1000; font-size: 14px; margin-top: 4px;">
-                        <div class="opt-save" style="padding: 4px 8px; cursor: pointer;">Save (F2)</div>
-                        <div class="opt-saveas" style="padding: 4px 8px; cursor: pointer;">Save As... (F3)</div>
-                        <div class="opt-exit" style="padding: 4px 8px; cursor: pointer;">Exit (Esc)</div>
+                <div style="background-color: #c0c0c0; color: #000000; padding: 4px 10px; font-size: 14px; border-bottom: 2px solid #808080; position: relative; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; flex-shrink: 0; height: 32px;">
+                    <span class="app-menu-item" style="cursor: pointer; font-weight: bold;">File</span>
+                    <div class="app-file-dropdown hidden-view" style="position: absolute; top: 28px; left: 10px; background-color: #c0c0c0; color: #000000; border: 2px solid #ffffff; border-right-color: #000000; border-bottom-color: #000000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); z-index: 1000; min-width: 120px;">
+                        <div class="opt-save" style="padding: 6px 12px; cursor: pointer;">Save (F2)</div>
+                        <div class="opt-saveas" style="padding: 6px 12px; cursor: pointer;">Save As... (F3)</div>
+                        <div class="opt-exit" style="padding: 6px 12px; cursor: pointer;">Exit (Esc)</div>
                     </div>
-                    <span class="app-editor-filename">${this.fileName}</span>
+                    <span class="app-editor-filename" style="font-size: 13px; font-weight: bold; color: #404040;">${this.fileName}</span>
                 </div>
 
-                <!-- Your Classic White Inset Text Box Element Frame -->
-                <textarea class="app-editor-textarea" spellcheck="false" style="width: 175px; height: 50px; padding: 5px; font-size: 16px; border: 1px solid black; font-family: Arial, sans-serif; resize: both; box-sizing: border-box; margin-bottom: 10px; display: block;"></textarea>
+                <!-- Standalone Text Area Content Block (Fills entire screen canvas) -->
+                <textarea class="app-editor-textarea" spellcheck="false" style="flex-grow: 1; width: 100%; border: none; outline: none; padding: 12px; font-family: monospace; font-size: 15px; resize: none; box-sizing: border-box; background-color: #ffffff; color: #000000; display: block; margin: 0;"></textarea>
                 
-                <!-- Hotkey Shortcut Legend Bar Line -->
-                <div class="app-editor-footer" style="font-size: 18px; margin-top: auto; padding-bottom: 5px;">
+                <!-- Full-Width Bottom Hotkey Shortcut Assist Strip -->
+                <div class="app-editor-footer" style="background-color: #c0c0c0; color: #000000; padding: 4px 10px; font-size: 13px; font-weight: bold; border-top: 2px solid #ffffff; flex-shrink: 0; box-sizing: border-box; height: 28px; display: flex; align-items: center;">
                     F2: Save | F3: Save As | Esc: Exit
                 </div>
-
             </div>
         `;
 
-        // Map component variable references back cleanly
+        // Query our newly generated local elements inside the container
         this.textarea = this.bodyElement.querySelector('.app-editor-textarea');
         this.menuFile = this.bodyElement.querySelector('.app-menu-item');
         this.fileDropdown = this.bodyElement.querySelector('.app-file-dropdown');
         this.footer = this.bodyElement.querySelector('.app-editor-footer');
 
-        // Feed original storage contents back onto the canvas array logic
+        // Populate initial content buffer payload
         this.textarea.value = this.content;
         this.textarea.focus();
 
-        // Bind application workspace action interceptors
+        // Connect Event Listeners
         window.addEventListener('keydown', this.keyHandler);
         document.addEventListener('click', this.documentClickHandler);
         this.menuFile.addEventListener('click', this.menuToggleHandler);
@@ -69,6 +74,7 @@ export class TextEditor {
         this.bodyElement.querySelector('.opt-saveas').addEventListener('click', this.saveAsClickHandler);
         this.bodyElement.querySelector('.opt-exit').addEventListener('click', this.exitClickHandler);
     }
+
 
 
     toggleDropdown(e) {
