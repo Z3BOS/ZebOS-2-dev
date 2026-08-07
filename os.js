@@ -1,6 +1,6 @@
 // State tracking & Advanced VFS Storage Device Module (ZebOS 2 Architecture)
 let systemState = { 
-    version: "1.6.6", 
+    version: "1.6.7", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -225,7 +225,7 @@ async function launchApplication(appId) {
                 if (placeholderBody) {
                     placeholderBody.innerHTML = `
                         <div style="padding:20px; font-size:14px; color:#000000; font-family:sans-serif;">
-                            <strong>${app.name}</strong> core architecture coming soon in Phase 4!
+                            <strong>${app.name}</strong> is coming soon in a future build!
                         </div>
                     `;
                 }
