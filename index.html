@@ -3,73 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZebOS v1.6.2 (Service Pack 1)</title>
+    <title>ZebOS 2 (Graphical Desktop Environment)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app-window">
-        <header>
-            <h1>ZebOS Version 1.6.2 SP1</h1>
-        </header>
-        
-        <!-- Standard Command Shell Log View Component -->
-        <div id="shell-log"></div>
-        
-        <!-- Fullscreen Blue MS-DOS Style Editor App Container Layer -->
-        <div id="editor-screen" class="hidden-view">
-            <div id="editor-menu">
-                <span class="menu-item" id="menu-file">File</span>
-                <div id="file-dropdown" class="hidden-view">
-                    <div class="dropdown-option" id="opt-save">Save (F2)</div>
-                    <div class="dropdown-option" id="opt-saveas">Save As... (F3)</div>
-                    <div class="dropdown-option" id="opt-exit">Exit (Esc)</div>
-                </div>
-            </div>
-            <div id="editor-titlebar">File: <span id="current-filename">untitled.txt</span></div>
-            <textarea id="editor-textarea" spellcheck="false" placeholder="Type text here..."></textarea>
-            <div id="editor-footer">F2: Save File | F3: Save As | Esc: Exit Editor View</div>
-        </div>
 
-        <!-- Fullscreen Red Retro Calculator App Container Layer -->
-        <div id="calc-screen" class="hidden-view">
-            <div id="calc-titlebar">Calc v1.0</div>
-            <div id="calc-display-box">0</div>
-            <div id="calc-grid-pad">
-                <button class="calc-btn mode-clear">C</button>
-                <button class="calc-btn mode-op">/</button>
-                <button class="calc-btn mode-op">*</button>
-                <button class="calc-btn mode-op">-</button>
-                <button class="calc-btn">7</button>
-                <button class="calc-btn">8</button>
-                <button class="calc-btn">9</button>
-                <button class="calc-btn mode-op" style="grid-row: span 2; height: 100%;">+</button>
-                <button class="calc-btn">4</button>
-                <button class="calc-btn">5</button>
-                <button class="calc-btn">6</button>
-                <button class="calc-btn">1</button>
-                <button class="calc-btn">2</button>
-                <button class="calc-btn">3</button>
-                <button class="calc-btn mode-equal" style="grid-row: span 2; height: 100%;">=</button>
-                <button class="calc-btn" style="grid-column: span 2;">0</button>
-                <button class="calc-btn">.</button>
-            </div>
-            <div id="calc-footer">NumPad/Keys: Type Math Live | Esc: Exit Calculator</div>
-        </div>
-
-        <!-- Fullscreen Green Retro Snake Game Canvas Container Layer -->
-        <div id="snake-screen" class="hidden-view">
-            <div id="snake-titlebar">ZebOS Arcade: Matrix Snake v1.1 (SP1 Patch)</div>
-            <canvas id="snake-canvas" width="400" height="400"></canvas>
-            <div id="snake-footer">Score: <span id="snake-score">0</span> | Arrow Keys: Turn | Esc: Exit Game</div>
-        </div>
-        
-        <div class="input-row">
-            <span id="prompt">user@zebos:~$</span>
-            <input type="text" id="shell-input" placeholder="type command, type help for help..." autofocus>
-            <button id="send-btn">Submit</button>
+    <!-- LAYER 3: Fullscreen Responsive Image Boot Screen Overlay -->
+    <div id="boot-screen">
+        <div id="boot-progress-track">
+            <div id="boot-progress-bar"></div>
         </div>
     </div>
-    
+
+    <!-- LAYER 1: Fullscreen Desktop Wallpaper Grid Canvas Canvas -->
+    <div id="desktop-canvas">
+        
+        <!-- App Shortcut Icons Grid Flexbox Container Alignment Panel -->
+        <div id="desktop-icons-zone">
+            <!-- Icon templates will go here dynamically in Phase 3 -->
+        </div>
+
+        <!-- Float Window Workspace Layer (Target for dynamic application spawning elements) -->
+        <div id="window-workspace"></div>
+
+    </div>
+
+    <!-- LAYER 2: Bottom Fixed Windows-95 Style Gray System Taskbar Strip Panel -->
+    <div id="system-taskbar">
+        <!-- The Left Active Start Navigation Control Button Trigger -->
+        <button id="start-button">
+            <span class="start-logo">⊞</span> Start
+        </button>
+
+        <!-- Active Open Program Window Shortcut Tab Group Container -->
+        <div id="taskbar-tabs-zone"></div>
+
+        <!-- Right Side Real-Time System Notification Tray Tray -->
+        <div id="system-tray">
+            <span id="live-clock">12:00 PM</span>
+        </div>
+    </div>
+
+    <!-- Operating System Core Kernel Script Handoff Module Link -->
     <script type="module" src="os.js"></script>
 </body>
 </html>
