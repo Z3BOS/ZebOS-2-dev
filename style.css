@@ -19,51 +19,61 @@ body, html {
 }
 
 /* ==========================================================================
-   LAYER 3: BOOT SCREEN LAYER
+   ZEBOS 2 IMMERSIVE SKY BOOT SCREEN CANVAS (BUGFIX RESOLUTION PATCH)
    ========================================================================== */
 #boot-screen {
     position: fixed;
     top: 0; left: 0; 
     width: 100vw; height: 100vh;
+    
+    /* Sunken cinema style prevents your artwork from cropping on any screen size */
+    background-color: #000000; 
     background-image: url('assets/system/splashboot.png'); 
-    background-size: cover;      
-    background-position: center;  
+    background-size: contain;     /* Fits the complete image safely on screen */
+    background-position: center;  /* Keeps your center logo perfectly balanced */
     background-repeat: no-repeat;
+    
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;   
-    padding-bottom: 12%;         
+    justify-content: flex-end;   /* Pushes layout elements to the absolute bottom area */
     z-index: 99999;              
     opacity: 1;
     transition: opacity 0.8s ease-in-out;
 }
 
+/* New: Fullscreen spanning bottom utility dashboard bar to clear visibility */
 #boot-progress-track {
-    width: 320px;
-    height: 14px;
-    border: 2px solid #ffffff;
-    border-right-color: #555555;
-    border-bottom-color: #555555;
-    background-color: rgba(0, 0, 0, 0.4); 
-    position: relative;
+    width: 100vw;               /* Forces track bar straight across the full screen width */
+    height: 8px;                /* Sleeker retro style loading rule thickness line */
+    background-color: #111111;  /* Dark background strip contrasts cleanly with clouds */
+    position: absolute;
+    bottom: 0;                  /* Locks it to the absolute bottom edge of the browser window */
+    left: 0;
     overflow: hidden;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px -4px 15px rgba(0, 0, 0, 0.6);
 }
 
+/* Fullscreen sweeping loader bar logic */
 #boot-progress-bar {
     height: 100%;
-    width: 50px;
-    background-color: #008080; /* Teal accent matching your gradient logo */
+    width: 25vw;                /* Makes the moving block look proportional to widescreen displays */
+    background-color: #008080;  /* Bright teal matching your core logo theme design accent */
     position: absolute;
-    animation: march 1.4s infinite cubic-bezier(0.4, 0, 0.2, 1); 
-    box-shadow: 0 0 8px #55ffaa; 
+    animation: marchWidescreen 1.8s infinite linear; 
+    box-shadow: 0 0 12px #55ffaa; /* Glowing matrix trailing light edge halo helper */
 }
 
-@keyframes march {
-    0% { left: -50px; }
-    100% { left: 320px; }
+/* Fluid marquee keyframe physics loop to cross full screen width seamlessly */
+@keyframes marchWidescreen {
+    0% { 
+        transform: translateX(-100%); 
+    }
+    100% { 
+        transform: translateX(400%); 
+    }
 }
+
 
 /* ==========================================================================
    LAYER 1: DESKTOP CANVAS WORKSPACE
