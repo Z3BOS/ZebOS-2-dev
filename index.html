@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZebOS 2 (Pre-Alpha v1.6.3)</title>
+    <title>ZebOS 2 (Pre-Alpha v1.6.4)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,7 +15,7 @@
         </div>
     </div>
 
-    <!-- LAYER 1: Fullscreen Desktop Wallpaper Grid Canvas Canvas -->
+    <!-- LAYER 1: Fullscreen Desktop Wallpaper Grid Canvas -->
     <div id="desktop-canvas">
         
         <!-- App Shortcut Icons Grid Flexbox Container Alignment Panel -->
@@ -30,15 +30,59 @@
 
     <!-- LAYER 2: Bottom Fixed Windows-95 Style Gray System Taskbar Strip Panel -->
     <div id="system-taskbar">
+        
+        <!-- Retro Windows-95 Style Gray Pop-Up Start Menu -->
+        <div id="start-menu" class="hidden-view">
+            <!-- Blue Side Branding Panel Accent Strip -->
+            <div id="start-menu-sidebar">
+                <span id="sidebar-brand-text">ZebOS 2</span>
+            </div>
+            
+            <!-- Your Customized Application Launcher Grid Links -->
+            <div id="start-menu-links"> 
+                <div class="start-menu-item" id="start-link-prompt"> 
+                    <span class="menu-icon">🐚</span> Zeb Terminal 
+                </div> 
+                <div class="start-menu-item" id="start-link-files"> 
+                    <span class="menu-icon">📁</span> Zeb Explorer 
+                </div> 
+                <div class="start-menu-item" id="start-link-text-editor"> 
+                    <span class="menu-icon">📝</span> Text Editor 
+                </div> 
+                <div class="start-menu-item" id="start-link-paint"> 
+                    <span class="menu-icon">🎨</span> Paint 
+                </div> 
+                <div class="start-menu-item" id="start-link-mines"> 
+                    <span class="menu-icon">💣</span> Minesweeper 
+                </div> 
+                <div class="start-menu-item" id="start-link-snake"> 
+                    <span class="menu-icon">🐍</span> Snake 
+                </div> 
+                <div class="start-menu-item" id="start-link-calc"> 
+                    <span class="menu-icon">🧮</span> Calc 
+                </div> 
+                <div class="start-menu-item" id="start-link-media"> 
+                    <span class="menu-icon">🎬</span> Media Player 
+                </div> 
+                <div class="start-menu-item" id="start-link-vm"> 
+                    <span class="menu-icon">🎛️</span> ZebVM Manager 
+                </div> 
+                <hr class="start-menu-divider"> 
+                <div class="start-menu-item" id="start-link-shutdown"> 
+                    <span class="menu-icon">⭕</span> Shut Down... 
+                </div> 
+            </div>
+        </div>
+
         <!-- The Left Active Start Navigation Control Button Trigger -->
         <button id="start-button">
-            <span class="start-logo">⊞</span> Start
+            <span class="start-logo">🔼</span> Start
         </button>
 
         <!-- Active Open Program Window Shortcut Tab Group Container -->
         <div id="taskbar-tabs-zone"></div>
 
-        <!-- Right Side Real-Time System Notification Tray Tray -->
+        <!-- Right Side Real-Time System Notification Tray -->
         <div id="system-tray">
             <span id="live-clock">12:00 PM</span>
         </div>
