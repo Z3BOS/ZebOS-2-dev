@@ -1,7 +1,3 @@
-/* ==========================================================================
-   ZEBOS 2 CORE DESKTOP LAYOUT (HYBRID MODERN/RETRO SYSTEM)
-   ========================================================================== */
-
 /* Universal CSS Reset */
 body, html {
     margin: 0;
@@ -11,7 +7,7 @@ body, html {
     overflow: hidden;
     font-family: Arial, Helvetica, sans-serif;
     background-color: #000000;
-    user-select: none; /* Prevents text highlights while dragging windows */
+    user-select: none;
 }
 
 .hidden-view {
@@ -19,50 +15,46 @@ body, html {
 }
 
 /* ==========================================================================
-   ZEBOS 2 IMMERSIVE SKY BOOT SCREEN CANVAS (BUGFIX RESOLUTION PATCH)
+   ZEBOS 2 IMMERSIVE SKY BOOT SCREEN CANVAS 
    ========================================================================== */
 #boot-screen {
     position: fixed;
     top: 0; left: 0; 
     width: 100vw; height: 100vh;
-    /* Sunken cinema style prevents your artwork from cropping on any screen size */
     background-color: #000000;
     background-image: url('assets/system/splashboot.png'); 
-    background-size: contain;     /* Fits the complete image safely on screen */
-    background-position: center;  /* Keeps your center logo perfectly balanced */
+    background-size: contain;     
+    background-position: center;  
     background-repeat: no-repeat;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;   /* Pushes layout elements to the absolute bottom area */
+    justify-content: flex-end;   
     z-index: 99999;              
     opacity: 1;
     transition: opacity 0.8s ease-in-out;
 }
 
-/* New: Fullscreen spanning bottom utility dashboard bar to clear visibility */
 #boot-progress-track {
-    width: 100vw;               /* Forces track bar straight across the full screen width */
-    height: 8px;                /* Sleeker retro style loading rule thickness line */
-    background-color: #111111;  /* Dark background strip contrasts cleanly with clouds */
+    width: 100vw;               
+    height: 8px;                
+    background-color: #111111;  
     position: absolute;
-    bottom: 0;                  /* Locks it to the absolute bottom edge of the browser window */
+    bottom: 0;                  
     left: 0;
     overflow: hidden;
     box-shadow: 0px -4px 15px rgba(0, 0, 0, 0.6);
 }
 
-/* Fullscreen sweeping loader bar logic */
 #boot-progress-bar {
     height: 100%;
-    width: 25vw;                /* Makes the moving block look proportional to widescreen displays */
-    background-color: #008080;  /* Bright teal matching your core logo theme design accent */
+    width: 25vw;                
+    background-color: #008080;  
     position: absolute;
     animation: marchWidescreen 1.8s infinite linear; 
-    box-shadow: 0 0 12px #55ffaa; /* Glowing matrix trailing light edge halo helper */
+    box-shadow: 0 0 12px #55ffaa; 
 }
 
-/* Fluid marquee keyframe physics loop to cross full screen width seamlessly */
 @keyframes marchWidescreen {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(400%); }
@@ -75,15 +67,13 @@ body, html {
     position: absolute;
     top: 0; left: 0;
     width: 100vw;
-    /* Leaves exactly 40px at the bottom so windows never slide under the taskbar */
     height: calc(100vh - 40px); 
-    background-color: #008080; /* Classic fallback desktop color */
+    background-color: #008080; 
     background-size: cover;
     background-position: center;
     overflow: hidden;
 }
 
-/* Layout Grid for Desktop Shortcuts */
 #desktop-icons-zone {
     position: absolute;
     top: 0; left: 0;
@@ -97,26 +87,40 @@ body, html {
     box-sizing: border-box;
 }
 
-/* Workspace wrapper for floating program windows */
+/* NEW FOR v1.7.0: Dynamic System Build Info Tag Overlay (Bottom-Right Corner) */
+#desktop-build-tag {
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    font-family: monospace;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.55); /* Subtle look blends into wallpaper */
+    text-align: right;
+    line-height: 1.4;
+    pointer-events: none; /* Mouse clicks pass right through */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 1;
+}
+
 #window-workspace {
     position: absolute;
     top: 0; left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Allows clicks to pass through to desktop if empty */
+    pointer-events: none; 
     z-index: 10;
 }
 
 #window-workspace * {
-    pointer-events: auto; /* Re-enables mouse clicks inside actual spawned window elements */
+    pointer-events: auto; 
 }
 
 /* ==========================================================================
-   START MENU EXTENSIONS (FIXED SIDEBAR & TEXT ROTATION)
+   START MENU EXTENSIONS 
    ========================================================================== */
 #start-menu {
     position: absolute;
-    bottom: 0; /* Rests right on the baseline edge of the desktop canvas */
+    bottom: 0; 
     left: 2px;
     width: 240px;
     background-color: #c0c0c0;
@@ -128,14 +132,13 @@ body, html {
     z-index: 95000;
 }
 
-/* Vertical Blue Title Strip Left Column */
 #start-menu-sidebar {
     width: 35px;
     background: linear-gradient(180deg, #000080 0%, #008080 100%);
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: 30px; /* Increased to allow proper spacing for the text rotation matrix */
+    padding-bottom: 30px; 
     box-sizing: border-box;
     flex-shrink: 0;
 }
@@ -144,14 +147,13 @@ body, html {
     color: #ffffff;
     font-weight: bold;
     font-size: 16px;
-    transform: rotate(-90deg); /* Flips typography vertically up the strip */
+    transform: rotate(-90deg); 
     transform-origin: center;
     white-space: nowrap;
     font-family: 'Arial Black', sans-serif;
-    display: inline-block; /* Crucial anchor property for text transform mechanics */
+    display: inline-block; 
 }
 
-/* Link Actions Column Layer Layout */
 #start-menu-links {
     flex-grow: 1;
     padding: 4px;
@@ -170,7 +172,6 @@ body, html {
     cursor: pointer;
 }
 
-/* High contrast selection highlight bar on hover match */
 .start-menu-item:hover {
     background-color: #000080;
     color: #ffffff;
@@ -195,8 +196,8 @@ body, html {
     bottom: 0; left: 0;
     width: 100vw;
     height: 40px;
-    background-color: #c0c0c0; /* Retro Light Gray Finish */
-    border-top: 2px solid #ffffff; /* Gives that distinct raised bevel appearance */
+    background-color: #c0c0c0; 
+    border-top: 2px solid #ffffff; 
     display: flex;
     align-items: center;
     padding: 0 4px;
@@ -204,7 +205,6 @@ body, html {
     z-index: 90000;
 }
 
-/* The Start Button */
 #start-button {
     height: 28px;
     background-color: #c0c0c0;
@@ -225,10 +225,9 @@ body, html {
     border: 2px solid #000000;
     border-right-color: #ffffff;
     border-bottom-color: #ffffff;
-    padding: 1px 7px 0px 9px; /* Simulates physical button depression click down */
+    padding: 1px 7px 0px 9px; 
 }
 
-/* Taskbar Open Program Window Links Holder */
 #taskbar-tabs-zone {
     flex-grow: 1;
     height: 100%;
@@ -239,11 +238,36 @@ body, html {
     overflow-x: auto;
 }
 
-/* System Tray (Clock and Notifications Area) */
+/* Taskbar Program Navigation Toggle Tabs Buttons */
+.taskbar-tab {
+    height: 28px;
+    width: 120px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.taskbar-tab.active-tab {
+    border: 2px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    background-color: #e0e0e0;
+}
+
 #system-tray {
     height: 28px;
     background-color: #c0c0c0;
-    /* Inverted borders make the tray look sunken into the taskbar */
     border: 2px solid #808080;
     border-right-color: #ffffff;
     border-bottom-color: #ffffff;
@@ -261,32 +285,32 @@ body, html {
 }
 
 /* ==========================================================================
-   PHASE 2: GRAPHICAL WINDOW MANAGER (3D RETRO FLOATING PANE)
+   PHASE 2: RESIZABLE WINDOW MANAGER EXTENSIONS (v1.7.0 REBOOT)
    ========================================================================== */
 .window-frame {
     position: absolute;
-    top: 50px;
-    left: 50px;
-    width: 400px;
-    height: 300px;
+    top: 60px;
+    left: 60px;
+    width: 440px;
+    height: 320px;
     background-color: #c0c0c0;
     border: 2px solid #ffffff;
     border-right-color: #000000;
     border-bottom-color: #000000;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
-    z-index: 100;
+    min-width: 200px;  /* Safety structural size floors */
+    min-height: 120px;
 }
 
-/* Active Depth Highlight: Top-most window gets a dark blue title header */
 .window-frame.active-window #window-header {
     background: #000080;
     color: #ffffff;
 }
 
 #window-header {
-    background: #808080; /* Inactive gray default */
+    background: #808080; 
     color: #c0c0c0;
     padding: 4px 6px;
     font-size: 13px;
@@ -294,13 +318,16 @@ body, html {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    cursor: move; /* Indicates the banner is draggable */
+    user-select: none;
 }
 
 #window-title {
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #window-controls {
@@ -324,12 +351,6 @@ body, html {
     cursor: pointer;
 }
 
-.win-btn:active {
-    border: 1px solid #000000;
-    border-right-color: #ffffff;
-    border-bottom-color: #ffffff;
-}
-
 .window-body {
     flex-grow: 1;
     background-color: #ffffff;
@@ -341,91 +362,90 @@ body, html {
     position: relative;
 }
 
+/* NEW FOR v1.7.0: Interactive Windows 3D Resizing Corner Handle Anchor */
+.window-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    cursor: se-resize; /* Informs mouse that item scales diagonally down-right */
+    background: linear-gradient(135deg, transparent 40%, #808080 40%, #808080 55%, transparent 55%, transparent 70%, #808080 70%);
+    background-size: 4px 4px; /* Classic ridged mechanical friction handle grip look */
+    z-index: 1000;
+}
+
+/* Fullscreen Maximized Override CSS Rule State Flag */
+.window-maximized {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: calc(100vh - 40px) !important;
+}
+
 /* ==========================================================================
-   APP WINDOW SPECIFIC EXTENSIONS: TEXT EDITOR
+   APP WINDOW SPECIFIC EXTENSIONS: ZEB EXPLORER FILE MANAGER UI
    ========================================================================== */
-.app-editor-container {
+.explorer-container {
     display: flex;
     flex-direction: column;
-    width: 100%;
     height: 100%;
     background-color: #ffffff;
-    box-sizing: border-box;
 }
 
-.app-editor-menu {
+.explorer-toolbar {
     background-color: #c0c0c0;
-    color: #000000;
-    padding: 2px 6px;
-    font-size: 12px;
+    padding: 4px 8px;
     border-bottom: 2px solid #808080;
-    position: relative;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    gap: 6px;
 }
 
-.app-menu-item {
-    cursor: pointer;
-    padding: 2px 6px;
+.explorer-btn {
+    padding: 2px 8px;
+    font-size: 12px;
     font-weight: bold;
-    border: 1px solid transparent;
-}
-
-.app-menu-item:hover, .app-menu-item.active {
-    background-color: #000080;
-    color: #ffffff;
-}
-
-.app-editor-filename {
-    font-size: 11px;
-    font-weight: bold;
-    color: #404040;
-    padding-right: 6px;
-}
-
-.app-file-dropdown {
-    position: absolute;
-    top: 20px;
-    left: 6px;
     background-color: #c0c0c0;
-    color: #000000;
-    border: 2px solid #ffffff;
+    border: 1px solid #ffffff;
     border-right-color: #000000;
     border-bottom-color: #000000;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
-    min-width: 120px;
-}
-
-.app-dropdown-option {
-    padding: 4px 10px;
     cursor: pointer;
 }
 
-.app-dropdown-option:hover {
+.explorer-btn:disabled {
+    color: #808080;
+    cursor: default;
+    border-color: #eeeeee;
+}
+
+.explorer-grid {
+    flex-grow: 1;
+    padding: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-content: flex-start;
+   .explorer-item {
+    width: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+}
+
+.explorer-icon {
+    font-size: 32px;
+    margin-bottom: 4px;
+}
+
+.explorer-name {
+    font-size: 12px;
+    color: #000000;
+    word-break: break-all;
+}
+
+.explorer-item:hover .explorer-name {
     background-color: #000080;
     color: #ffffff;
 }
-
-.app-editor-textarea {
-    flex-grow: 1;
-    border: none;
-    outline: none;
-    padding: 8px;
-    font-family: monospace;
-    font-size: 14px;
-    resize: none;
-    background-color: #ffffff;
-    color: #000000;
-}
-
-.app-editor-footer {
-    background-color: #c0c0c0;
-    color: #000000;
-    padding: 2px 6px;
-    font-size: 11px;
-    font-weight: bold;
-    border-top: 2px solid #ffffff;
-}
-
