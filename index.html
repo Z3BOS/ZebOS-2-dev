@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZebOS 2 (Pre-Alpha v1.6.7)</title>
+    <title>ZebOS 2 (Pre-Alpha v1.7.0)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,14 +18,12 @@
     <!-- LAYER 1: Fullscreen Desktop Wallpaper Grid Canvas -->
     <div id="desktop-canvas">
         
-        <!-- FIXED: Retro Windows-95 Style Gray Pop-Up Start Menu moved to canvas context layer -->
+        <!-- Retro Windows-95 Style Gray Pop-Up Start Menu -->
         <div id="start-menu" class="hidden-view">
-            <!-- Blue Side Branding Panel Accent Strip -->
             <div id="start-menu-sidebar">
-                <span id="sidebar-brand-text">ZebOS 2 (Codename Wavy)</span>
+                <span id="sidebar-brand-text">ZebOS 2 Codename Wavy</span>
             </div>
             
-            <!-- Your Customized Application Launcher Grid Links -->
             <div id="start-menu-links"> 
                 <div class="start-menu-item" id="start-link-prompt"> 
                     <span class="menu-icon">🐚</span> Zeb Terminal 
@@ -62,32 +60,32 @@
         </div>
 
         <!-- App Shortcut Icons Grid Flexbox Container Alignment Panel -->
-        <div id="desktop-icons-zone">
-            <!-- Icon templates will go here dynamically in Phase 3 -->
-        </div>
+        <div id="desktop-icons-zone"></div>
 
         <!-- Float Window Workspace Layer -->
         <div id="window-workspace"></div>
+
+        <!-- NEW FOR v1.7.0: Classic Desktop System Build Information Tag Label -->
+        <div id="desktop-build-tag">
+            <div>ZebOS v1.7.0 (Major Release Candidate)</div>
+            <div>Build 2026.08.07.1700_PreAlpha_DevFork</div>
+        </div>
 
     </div>
 
     <!-- LAYER 2: Bottom Fixed Windows-95 Style Gray System Taskbar Strip Panel -->
     <div id="system-taskbar">
-        <!-- The Left Active Start Navigation Control Button Trigger -->
         <button id="start-button">
             <span class="start-logo">🔼</span> Start
         </button>
 
-        <!-- Active Open Program Window Shortcut Tab Group Container -->
         <div id="taskbar-tabs-zone"></div>
 
-        <!-- Right Side Real-Time System Notification Tray -->
         <div id="system-tray">
             <span id="live-clock">12:00 PM</span>
         </div>
     </div>
 
-    <!-- Operating System Core Kernel Script Handoff Module Link -->
     <script type="module" src="os.js"></script>
 </body>
 </html>
