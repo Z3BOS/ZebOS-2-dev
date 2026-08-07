@@ -265,7 +265,7 @@ function setupStartMenuController() {
 }
 
 // ==========================================================================
-// KERNEL INITIALIZATION LAUNCHPOINT
+// KERNEL INITIALIZATION LAUNCHPOINT (call our functions)
 // ==========================================================================
 initializeBootSequence();
 startSystemClock();
