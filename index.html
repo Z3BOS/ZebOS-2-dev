@@ -18,20 +18,7 @@
     <!-- LAYER 1: Fullscreen Desktop Wallpaper Grid Canvas -->
     <div id="desktop-canvas">
         
-        <!-- App Shortcut Icons Grid Flexbox Container Alignment Panel -->
-        <div id="desktop-icons-zone">
-            <!-- Icon templates will go here dynamically in Phase 3 -->
-        </div>
-
-        <!-- Float Window Workspace Layer (Target for dynamic application spawning elements) -->
-        <div id="window-workspace"></div>
-
-    </div>
-
-    <!-- LAYER 2: Bottom Fixed Windows-95 Style Gray System Taskbar Strip Panel -->
-    <div id="system-taskbar">
-        
-        <!-- Retro Windows-95 Style Gray Pop-Up Start Menu -->
+        <!-- FIXED: Retro Windows-95 Style Gray Pop-Up Start Menu moved to canvas context layer -->
         <div id="start-menu" class="hidden-view">
             <!-- Blue Side Branding Panel Accent Strip -->
             <div id="start-menu-sidebar">
@@ -74,6 +61,18 @@
             </div>
         </div>
 
+        <!-- App Shortcut Icons Grid Flexbox Container Alignment Panel -->
+        <div id="desktop-icons-zone">
+            <!-- Icon templates will go here dynamically in Phase 3 -->
+        </div>
+
+        <!-- Float Window Workspace Layer -->
+        <div id="window-workspace"></div>
+
+    </div>
+
+    <!-- LAYER 2: Bottom Fixed Windows-95 Style Gray System Taskbar Strip Panel -->
+    <div id="system-taskbar">
         <!-- The Left Active Start Navigation Control Button Trigger -->
         <button id="start-button">
             <span class="start-logo">🔼</span> Start
