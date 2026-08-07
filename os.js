@@ -1,20 +1,60 @@
 // State tracking & Advanced VFS Storage Device Module (ZebOS 2 Release Candidate v1.7.0)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 Alpha v1.8.0 Core)
 let systemState = { 
-    version: "1.7.0", 
+    version: "1.8.0", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
     currentDirectory: "", // "" means root directory. Matches folder name if nested (e.g., "documents")
-    fileSystem: {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 1.7.0! Resizable floating window matrices are now active." },
+    fileSystem: {} // Initialized dynamically below from local disk image
+};
+
+let topZIndex = 100; // Track screen depth layers globally across desktop workspace
+
+// ==========================================================================
+// PERSISTENT HARD DISK STORAGE ENGINE (LOCALSTORAGE SUBSYSTEM)
+// ==========================================================================
+
+// Routine reads from browser sector to pull previous database allocations
+function loadFileSystem() {
+    const diskImage = localStorage.getItem('ZEBOS_V2_DISK');
+    
+    if (diskImage) {
+        try {
+            systemState.fileSystem = JSON.parse(diskImage);
+            console.log("Storage System: Restored persistent file allocations from disk image sector.");
+        } catch (err) {
+            console.error("Storage System Error: Hard drive image corrupted. Resetting data cells.", err);
+            provisionDefaultRootFS();
+        }
+    } else {
+        console.log("Storage System: Initializing new root filesystem partition.");
+        provisionDefaultRootFS();
+    }
+}
+
+// Routine writes active filesystem states down onto browser local partition blocks
+export function saveFileSystem() {
+    try {
+        const serializedFS = JSON.stringify(systemState.fileSystem);
+        localStorage.setItem('ZEBOS_V2_DISK', serializedFS);
+        console.log("Storage System: Changes committed to local storage sectors successfully.");
+    } catch (err) {
+        console.error("Storage System Error: Write operation failed to commit.", err);
+    }
+}
+
+// Fallback script setups standard baseline starting assets if no storage image is matched
+function provisionDefaultRootFS() {
+    systemState.fileSystem = {
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 1.8.0! Persistent storage disk saving is now active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
         } } 
-    }
-};
-
-let topZIndex = 100; // Track screen depth layers globally across desktop workspace
+    };
+    saveFileSystem(); // Save immediately to bake the core nodes image
+}
 
 // ==========================================================================
 // FILE SYSTEM ROUTINES
@@ -23,8 +63,14 @@ function getActiveFolderContext() {
     if (systemState.currentDirectory === "") {
         return systemState.fileSystem; 
     }
+    // Safety check fallback mapping redirects back to root node context if handle drops out
+    if (!systemState.fileSystem[systemState.currentDirectory]) {
+        systemState.currentDirectory = "";
+        return systemState.fileSystem;
+    }
     return systemState.fileSystem[systemState.currentDirectory].content; 
 }
+
 
 // ==========================================================================
 // SYSTEM CLOCK SUBSYSTEM (REAL-TIME TASKBAR WIDGET)
@@ -392,10 +438,14 @@ function setupStartMenuController() {
     });
 }
 
-// Initialize core components
+// ==========================================================================
+// Call functions
+// ==========================================================================
+loadFileSystem(); // Step 1: Spin up the local storage drive sector registers
 initializeBootSequence();
 startSystemClock();
 setupStartMenuController();
 
 setInterval(() => { systemState.uptime++; }, 1000);
+
 
