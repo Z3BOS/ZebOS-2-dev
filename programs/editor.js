@@ -21,37 +21,47 @@ export class TextEditor {
     }
 
     // Called right after your Window Manager spawns the window frame
+        // Replace the open function in programs/editor.js with this:
     open(windowBodyElement) {
         this.bodyElement = windowBodyElement;
         
-        // Inject the complete standalone editor interface inside this specific window container
+        // Restores your exact HTML layout from the right screenshot image
         this.bodyElement.innerHTML = `
-            <div class="app-editor-container">
-                <div class="app-editor-menu">
-                    <span class="app-menu-item">File</span>
-                    <div class="app-file-dropdown hidden-view">
-                        <div class="app-dropdown-option opt-save">Save (F2)</div>
-                        <div class="app-dropdown-option opt-saveas">Save As... (F3)</div>
-                        <div class="app-dropdown-option opt-exit">Exit (Esc)</div>
+            <div style="padding: 10px; font-family: Arial, sans-serif; font-size: 16px; color: #000000; display: flex; flex-direction: column; height: calc(100% - 20px); box-sizing: border-box;">
+                
+                <!-- Menu / Filename Header Strip Line -->
+                <div style="margin-bottom: 8px; font-size: 18px;">
+                    <span class="app-menu-item" style="cursor: pointer; font-weight: normal; margin-right: 4px;">File</span>
+                    <div class="app-file-dropdown hidden-view" style="position: absolute; background: #c0c0c0; border: 1px solid black; padding: 4px; z-index: 1000; font-size: 14px; margin-top: 4px;">
+                        <div class="opt-save" style="padding: 4px 8px; cursor: pointer;">Save (F2)</div>
+                        <div class="opt-saveas" style="padding: 4px 8px; cursor: pointer;">Save As... (F3)</div>
+                        <div class="opt-exit" style="padding: 4px 8px; cursor: pointer;">Exit (Esc)</div>
                     </div>
                     <span class="app-editor-filename">${this.fileName}</span>
                 </div>
-                <textarea class="app-editor-textarea" spellcheck="false"></textarea>
-                <div class="app-editor-footer">F2: Save | F3: Save As | Esc: Exit</div>
+
+                <!-- Your Classic White Inset Text Box Element Frame -->
+                <textarea class="app-editor-textarea" spellcheck="false" style="width: 175px; height: 50px; padding: 5px; font-size: 16px; border: 1px solid black; font-family: Arial, sans-serif; resize: both; box-sizing: border-box; margin-bottom: 10px; display: block;"></textarea>
+                
+                <!-- Hotkey Shortcut Legend Bar Line -->
+                <div class="app-editor-footer" style="font-size: 18px; margin-top: auto; padding-bottom: 5px;">
+                    F2: Save | F3: Save As | Esc: Exit
+                </div>
+
             </div>
         `;
 
-        // Query our newly generated local elements inside the container
+        // Map component variable references back cleanly
         this.textarea = this.bodyElement.querySelector('.app-editor-textarea');
         this.menuFile = this.bodyElement.querySelector('.app-menu-item');
         this.fileDropdown = this.bodyElement.querySelector('.app-file-dropdown');
         this.footer = this.bodyElement.querySelector('.app-editor-footer');
 
-        // Populate initial content buffer payload
+        // Feed original storage contents back onto the canvas array logic
         this.textarea.value = this.content;
         this.textarea.focus();
 
-        // Connect Event Listeners
+        // Bind application workspace action interceptors
         window.addEventListener('keydown', this.keyHandler);
         document.addEventListener('click', this.documentClickHandler);
         this.menuFile.addEventListener('click', this.menuToggleHandler);
@@ -59,6 +69,7 @@ export class TextEditor {
         this.bodyElement.querySelector('.opt-saveas').addEventListener('click', this.saveAsClickHandler);
         this.bodyElement.querySelector('.opt-exit').addEventListener('click', this.exitClickHandler);
     }
+
 
     toggleDropdown(e) {
         e.stopPropagation(); // Stops the master document click from closing it instantly
