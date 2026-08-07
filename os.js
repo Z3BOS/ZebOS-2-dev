@@ -1,6 +1,6 @@
 // State tracking & Advanced VFS Storage Device Module (ZebOS 2 Architecture)
 let systemState = { 
-    version: "1.6.5", 
+    version: "1.6.6", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
