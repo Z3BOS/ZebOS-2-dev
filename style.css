@@ -25,14 +25,12 @@ body, html {
     position: fixed;
     top: 0; left: 0; 
     width: 100vw; height: 100vh;
-    
     /* Sunken cinema style prevents your artwork from cropping on any screen size */
-    background-color: #000000; 
+    background-color: #000000;
     background-image: url('assets/system/splashboot.png'); 
     background-size: contain;     /* Fits the complete image safely on screen */
     background-position: center;  /* Keeps your center logo perfectly balanced */
     background-repeat: no-repeat;
-    
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -66,14 +64,9 @@ body, html {
 
 /* Fluid marquee keyframe physics loop to cross full screen width seamlessly */
 @keyframes marchWidescreen {
-    0% { 
-        transform: translateX(-100%); 
-    }
-    100% { 
-        transform: translateX(400%); 
-    }
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
 }
-
 
 /* ==========================================================================
    LAYER 1: DESKTOP CANVAS WORKSPACE
@@ -119,6 +112,82 @@ body, html {
 }
 
 /* ==========================================================================
+   START MENU EXTENSIONS (FIXED SIDEBAR & TEXT ROTATION)
+   ========================================================================== */
+#start-menu {
+    position: absolute;
+    bottom: 0; /* Rests right on the baseline edge of the desktop canvas */
+    left: 2px;
+    width: 240px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.4);
+    display: flex;
+    z-index: 95000;
+}
+
+/* Vertical Blue Title Strip Left Column */
+#start-menu-sidebar {
+    width: 35px;
+    background: linear-gradient(180deg, #000080 0%, #008080 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 30px; /* Increased to allow proper spacing for the text rotation matrix */
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+#sidebar-brand-text {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 16px;
+    transform: rotate(-90deg); /* Flips typography vertically up the strip */
+    transform-origin: center;
+    white-space: nowrap;
+    font-family: 'Arial Black', sans-serif;
+    display: inline-block; /* Crucial anchor property for text transform mechanics */
+}
+
+/* Link Actions Column Layer Layout */
+#start-menu-links {
+    flex-grow: 1;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+.start-menu-item {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    font-size: 13px;
+    color: #000000;
+    cursor: pointer;
+}
+
+/* High contrast selection highlight bar on hover match */
+.start-menu-item:hover {
+    background-color: #000080;
+    color: #ffffff;
+}
+
+.menu-icon {
+    font-size: 16px;
+}
+
+.start-menu-divider {
+    border: none;
+    border-top: 1px solid #808080;
+    border-bottom: 1px solid #ffffff;
+    margin: 4px 2px;
+}
+
+/* ==========================================================================
    LAYER 2: WINDOWS-95 STYLE SYSTEM TASKBAR
    ========================================================================== */
 #system-taskbar {
@@ -159,11 +228,6 @@ body, html {
     padding: 1px 7px 0px 9px; /* Simulates physical button depression click down */
 }
 
-.start-logo {
-    color: #000080;
-    font-size: 16px;
-}
-
 /* Taskbar Open Program Window Links Holder */
 #taskbar-tabs-zone {
     flex-grow: 1;
@@ -194,4 +258,85 @@ body, html {
     font-size: 13px;
     font-weight: bold;
     color: #000000;
+}
+
+/* ==========================================================================
+   PHASE 2: GRAPHICAL WINDOW MANAGER (3D RETRO FLOATING PANE)
+   ========================================================================== */
+.window-frame {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 400px;
+    height: 300px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+/* Active Depth Highlight: Top-most window gets a dark blue title header */
+.window-frame.active-window #window-header {
+    background: #000080;
+    color: #ffffff;
+}
+
+#window-header {
+    background: #808080; /* Inactive gray default */
+    color: #c0c0c0;
+    padding: 4px 6px;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move; /* Indicates the banner is draggable */
+}
+
+#window-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#window-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.win-btn {
+    width: 16px;
+    height: 14px;
+    background-color: #c0c0c0;
+    border: 1px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    font-size: 10px;
+    font-weight: bold;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.win-btn:active {
+    border: 1px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+
+.window-body {
+    flex-grow: 1;
+    background-color: #ffffff;
+    border: 2px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    margin: 4px;
+    overflow: auto;
+    position: relative;
 }
