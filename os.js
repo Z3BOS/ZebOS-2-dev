@@ -1,6 +1,6 @@
 // State tracking & Advanced VFS Storage Device Module (ZebOS 2 Architecture)
 let systemState = { 
-    version: "1.6.3", 
+    version: "1.6.4", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -71,3 +71,36 @@ startSystemClock();
 setInterval(() => { 
     systemState.uptime++; 
 }, 1000);
+
+// ==========================================================================
+// START MENU INTERACTIVITY CONTROLLER
+// ==========================================================================
+function setupStartMenuController() {
+    const startBtn = document.getElementById('start-button');
+    const startMenu = document.getElementById('start-menu');
+
+    // Click handler to toggle the start menu visibility layer
+    startBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevents the desktop click handler below from closing it instantly
+        startMenu.classList.toggle('hidden-view');
+    });
+
+    // Automatically hide the start menu tray if a user clicks anywhere else on the desktop
+    document.addEventListener('click', (e) => {
+        if (!startMenu.classList.contains('hidden-view')) {
+            startMenu.classList.add('hidden-view');
+        }
+    });
+
+    // Hook up individual menu choices so you can track them in the console log
+    const menuItems = document.querySelectorAll('.start-menu-item');
+    menuItems.forEach(item => {
+        item.addEventListener('click', () => {
+            console.log(`Launcher Registry: Clicked system shortcut target '${item.id}'.`);
+        });
+    });
+}
+
+// Initialize the menu handler on startup execution
+setupStartMenuController();
+
