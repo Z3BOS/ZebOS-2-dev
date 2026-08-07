@@ -5,48 +5,72 @@ export class TextEditor {
         this.content = fileContent;
         this.onExit = onExitCallback;
         
-        this.shellLog = document.getElementById('shell-log');
-        this.inputRow = document.querySelector('.input-row');
-        this.editorScreen = document.getElementById('editor-screen');
-        this.textarea = document.getElementById('editor-textarea');
-        this.fileNameSpan = document.getElementById('current-filename');
-        
-        this.menuFile = document.getElementById('menu-file');
-        this.fileDropdown = document.getElementById('file-dropdown');
-        this.optSave = document.getElementById('opt-save');
-        this.optSaveAs = document.getElementById('opt-saveas');
-        this.optExit = document.getElementById('opt-exit');
+        // This will hold the dynamic HTML elements we inject into the window body
+        this.bodyElement = null;
+        this.textarea = null;
+        this.fileDropdown = null;
+        this.menuFile = null;
+        this.footer = null;
 
+        // Bound Event Handlers for Clean Memory Management Cleanup
         this.keyHandler = (e) => this.handleKeyDown(e);
         this.menuToggleHandler = (e) => this.toggleDropdown(e);
         this.saveClickHandler = () => this.saveFile();
         this.saveAsClickHandler = () => this.saveAsFile();
         this.exitClickHandler = () => this.close();
+        this.documentClickHandler = () => this.hideMenu();
     }
 
-    open() {
-        this.shellLog.classList.add('hidden-view');
-        this.inputRow.classList.add('hidden-view');
-        this.editorScreen.classList.remove('hidden-view');
+    // Called right after your Window Manager spawns the window frame
+    open(windowBodyElement) {
+        this.bodyElement = windowBodyElement;
         
-        this.fileNameSpan.textContent = this.fileName;
+        // Inject the complete standalone editor interface inside this specific window container
+        this.bodyElement.innerHTML = `
+            <div class="app-editor-container">
+                <div class="app-editor-menu">
+                    <span class="app-menu-item">File</span>
+                    <div class="app-file-dropdown hidden-view">
+                        <div class="app-dropdown-option opt-save">Save (F2)</div>
+                        <div class="app-dropdown-option opt-saveas">Save As... (F3)</div>
+                        <div class="app-dropdown-option opt-exit">Exit (Esc)</div>
+                    </div>
+                    <span class="app-editor-filename">${this.fileName}</span>
+                </div>
+                <textarea class="app-editor-textarea" spellcheck="false"></textarea>
+                <div class="app-editor-footer">F2: Save | F3: Save As | Esc: Exit</div>
+            </div>
+        `;
+
+        // Query our newly generated local elements inside the container
+        this.textarea = this.bodyElement.querySelector('.app-editor-textarea');
+        this.menuFile = this.bodyElement.querySelector('.app-menu-item');
+        this.fileDropdown = this.bodyElement.querySelector('.app-file-dropdown');
+        this.footer = this.bodyElement.querySelector('.app-editor-footer');
+
+        // Populate initial content buffer payload
         this.textarea.value = this.content;
         this.textarea.focus();
-        
+
+        // Connect Event Listeners
         window.addEventListener('keydown', this.keyHandler);
+        document.addEventListener('click', this.documentClickHandler);
         this.menuFile.addEventListener('click', this.menuToggleHandler);
-        this.optSave.addEventListener('click', this.saveClickHandler);
-        this.optSaveAs.addEventListener('click', this.saveAsClickHandler);
-        this.optExit.addEventListener('click', this.exitClickHandler);
+        this.bodyElement.querySelector('.opt-save').addEventListener('click', this.saveClickHandler);
+        this.bodyElement.querySelector('.opt-saveas').addEventListener('click', this.saveAsClickHandler);
+        this.bodyElement.querySelector('.opt-exit').addEventListener('click', this.exitClickHandler);
     }
 
     toggleDropdown(e) {
-        e.stopPropagation();
+        e.stopPropagation(); // Stops the master document click from closing it instantly
         this.fileDropdown.classList.toggle('hidden-view');
         this.menuFile.classList.toggle('active');
     }
 
     handleKeyDown(e) {
+        // Only intercept shortcuts if this window textarea has active document focus
+        if (document.activeElement !== this.textarea) return;
+
         if (e.key === 'F2') { e.preventDefault(); this.saveFile(); }
         if (e.key === 'F3') { e.preventDefault(); this.saveAsFile(); }
         if (e.key === 'Escape') { e.preventDefault(); this.close(); }
@@ -55,47 +79,58 @@ export class TextEditor {
     saveFile() {
         this.content = this.textarea.value;
         this.hideMenu();
-        this.flashFooterFeedback(`SAVED SUCCESSFUL TO FILE: ${this.fileName}`);
+        this.flashFooterFeedback(`Saved: ${this.fileName}`);
     }
 
     saveAsFile() {
         this.hideMenu();
         const newName = prompt("Enter new filename:", this.fileName);
-        if (newName === null || newName.trim() === "") { this.textarea.focus(); return; }
+        if (newName === null || newName.trim() === "") {
+            this.textarea.focus();
+            return;
+        }
         this.fileName = newName.trim();
         this.content = this.textarea.value;
-        this.fileNameSpan.textContent = this.fileName;
-        this.flashFooterFeedback(`SAVED AS SUCCESSFUL: ${this.fileName}`);
+        
+        // Dynamically update file label readout inside menu bar
+        this.bodyElement.querySelector('.app-editor-filename').textContent = this.fileName;
+        
+        this.flashFooterFeedback(`Saved As: ${this.fileName}`);
         this.textarea.focus();
     }
 
     hideMenu() {
-        this.fileDropdown.classList.add('hidden-view');
-        this.menuFile.classList.remove('active');
+        if (this.fileDropdown) {
+            this.fileDropdown.classList.add('hidden-view');
+            this.menuFile.classList.remove('active');
+        }
     }
 
     flashFooterFeedback(message) {
-        const footer = document.getElementById('editor-footer');
-        footer.textContent = message;
-        footer.style.backgroundColor = "#55ff55";
+        this.footer.textContent = message;
+        this.footer.style.backgroundColor = "#55ff55";
+        this.footer.style.color = "#000000";
         setTimeout(() => {
-            footer.textContent = "F2: Save File | F3: Save As | Esc: Exit Editor View";
-            footer.style.backgroundColor = "#00aaaa";
+            if (this.footer) {
+                this.footer.textContent = "F2: Save | F3: Save As | Esc: Exit";
+                this.footer.style.backgroundColor = "#c0c0c0";
+                this.footer.style.color = "#000000";
+            }
         }, 1500);
     }
 
     close() {
         this.content = this.textarea.value;
-        window.removeEventListener('keydown', this.keyHandler);
-        this.menuFile.removeEventListener('click', this.menuToggleHandler);
-        this.optSave.removeEventListener('click', this.saveClickHandler);
-        this.optSaveAs.removeEventListener('click', this.saveAsClickHandler);
-        this.optExit.removeEventListener('click', this.exitClickHandler);
         
-        this.hideMenu();
-        this.editorScreen.classList.add('hidden-view');
-        this.shellLog.classList.remove('hidden-view');
-        this.inputRow.classList.remove('hidden-view');
+        // Clean out active global scope window event listener intercepts cleanly
+        window.removeEventListener('keydown', this.keyHandler);
+        document.removeEventListener('click', this.documentClickHandler);
+        
+        // Find parent main window frame element and purge it from window-workspace context
+        const windowFrame = this.bodyElement.closest('.window-frame');
+        if (windowFrame) windowFrame.remove();
+        
+        // Send output data payload back to your filesystem map tracker state
         this.onExit(this.fileName, this.content);
     }
 }
