@@ -285,103 +285,106 @@ body, html {
 }
 
 /* ==========================================================================
-   PHASE 2: RESIZABLE WINDOW MANAGER EXTENSIONS (v1.7.0 REBOOT)
-   ========================================================================== */
-.window-frame {
-    position: absolute;
-    top: 60px;
-    left: 60px;
-    width: 440px;
-    height: 320px;
-    background-color: #c0c0c0;
-    border: 2px solid #ffffff;
-    border-right-color: #000000;
-    border-bottom-color: #000000;
-    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.35);
-    display: flex;
-    flex-direction: column;
-    min-width: 200px;  /* Safety structural size floors */
-    min-height: 120px;
-}
+   PHASE 2: RESIZABLE WINDOW MANAGER EXTENSIONS (v1.7.0 CORE FIX)
+   ========================================================================== */ 
+.window-frame { 
+    position: absolute; 
+    top: 60px; 
+    left: 60px; 
+    width: 440px; 
+    height: 320px; 
+    background-color: #c0c0c0; 
+    border: 2px solid #ffffff; 
+    border-right-color: #000000; 
+    border-bottom-color: #000000; 
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.35); 
+    display: flex; 
+    flex-direction: column; 
+    min-width: 200px; 
+    min-height: 120px; 
+} 
 
-.window-frame.active-window #window-header {
-    background: #000080;
-    color: #ffffff;
-}
+/* FIX: Changed from ID to Class selector so multiple active bars color blue correctly */
+.window-frame.active-window .window-header { 
+    background: #000080 !important; 
+    color: #ffffff !important; 
+} 
 
-#window-header {
+/* FIX: Changed from #window-header to .window-header */
+.window-header { 
     background: #808080; 
-    color: #c0c0c0;
-    padding: 4px 6px;
-    font-size: 13px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    user-select: none;
+    color: #c0c0c0; 
+    padding: 4px 6px; 
+    font-size: 13px; 
+    font-weight: bold; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    user-select: none; 
+} 
+
+/* FIX: Changed from #window-title to .window-title */
+.window-title { 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+} 
+
+/* FIX: Changed from #window-controls to .window-controls */
+.window-controls { 
+    display: flex; 
+    gap: 2px; 
+} 
+
+.win-btn { 
+    width: 16px; 
+    height: 14px; 
+    background-color: #c0c0c0; 
+    border: 1px solid #ffffff; 
+    border-right-color: #000000; 
+    border-bottom-color: #000000; 
+    font-size: 10px; 
+    font-weight: bold; 
+    color: #000000; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+} 
+
+.window-body { 
+    flex-grow: 1; 
+    background-color: #ffffff; 
+    border: 2px solid #808080; 
+    border-right-color: #ffffff; 
+    border-bottom-color: #ffffff; 
+    margin: 4px; 
+    overflow: auto; 
+    position: relative; 
+} 
+
+.window-resize-handle { 
+    position: absolute; 
+    bottom: 0; 
+    right: 0; 
+    width: 14px; 
+    height: 14px; 
+    cursor: se-resize; 
+    background: linear-gradient(135deg, transparent 40%, #808080 40%, #808080 55%, transparent 55%, transparent 70%, #808080 70%); 
+    background-size: 4px 4px; 
+    z-index: 1000; 
+} 
+
+.window-maximized { 
+    top: 0 !important; 
+    left: 0 !important; 
+    width: 100vw !important; 
+    height: calc(100vh - 40px) !important; 
 }
 
-#window-title {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-#window-controls {
-    display: flex;
-    gap: 2px;
-}
-
-.win-btn {
-    width: 16px;
-    height: 14px;
-    background-color: #c0c0c0;
-    border: 1px solid #ffffff;
-    border-right-color: #000000;
-    border-bottom-color: #000000;
-    font-size: 10px;
-    font-weight: bold;
-    color: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.window-body {
-    flex-grow: 1;
-    background-color: #ffffff;
-    border: 2px solid #808080;
-    border-right-color: #ffffff;
-    border-bottom-color: #ffffff;
-    margin: 4px;
-    overflow: auto;
-    position: relative;
-}
-
-/* NEW FOR v1.7.0: Interactive Windows 3D Resizing Corner Handle Anchor */
-.window-resize-handle {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 14px;
-    height: 14px;
-    cursor: se-resize; /* Informs mouse that item scales diagonally down-right */
-    background: linear-gradient(135deg, transparent 40%, #808080 40%, #808080 55%, transparent 55%, transparent 70%, #808080 70%);
-    background-size: 4px 4px; /* Classic ridged mechanical friction handle grip look */
-    z-index: 1000;
-}
-
-/* Fullscreen Maximized Override CSS Rule State Flag */
-.window-maximized {
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: calc(100vh - 40px) !important;
-}
 
 /* ==========================================================================
    APP WINDOW SPECIFIC EXTENSIONS: ZEB EXPLORER FILE MANAGER UI
