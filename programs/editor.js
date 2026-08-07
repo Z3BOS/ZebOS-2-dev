@@ -5,7 +5,6 @@ export class TextEditor {
         this.content = fileContent;
         this.onExit = onExitCallback;
         
-        // This will hold the dynamic HTML elements we inject into the window body
         this.bodyElement = null;
         this.textarea = null;
         this.fileDropdown = null;
