@@ -95,6 +95,7 @@ export function createWindow(title, icon, uniqueId) {
     win.style.left = `${60 + (currentWindows * 25)}px`;
 
     win.innerHTML = `
+        <!-- CHANGE id="window-header" TO class="window-header" BELOW: -->
         <div class="window-header" style="cursor: move;">
             <div class="window-title"><span>${icon}</span> ${title}</div>
             <div class="window-controls">
@@ -106,6 +107,7 @@ export function createWindow(title, icon, uniqueId) {
         <div class="window-body" id="body-${uniqueId}"></div>
         <div class="window-resize-handle" id="resize-${uniqueId}"></div>
     `;
+
 
 
     workspace.appendChild(win);
