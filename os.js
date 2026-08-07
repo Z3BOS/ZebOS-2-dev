@@ -1,6 +1,6 @@
 // State tracking & Advanced VFS Storage Device Module (ZebOS 2 Release Candidate v1.7.0)
 let systemState = { 
-    version: "1.7.0-RC1", 
+    version: "1.7.0", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -84,7 +84,7 @@ export function createWindow(title, icon, uniqueId) {
         return null;
     }
 
-    // 1. Build Window Shell Layout Nodes
+    // 1. Build Window Shell Layout Nodes using corrected Classes template
     const win = document.createElement('div');
     win.className = 'window-frame active-window';
     win.id = `win-${uniqueId}`;
@@ -95,7 +95,6 @@ export function createWindow(title, icon, uniqueId) {
     win.style.left = `${60 + (currentWindows * 25)}px`;
 
     win.innerHTML = `
-        <!-- CHANGE id="window-header" TO class="window-header" BELOW: -->
         <div class="window-header" style="cursor: move;">
             <div class="window-title"><span>${icon}</span> ${title}</div>
             <div class="window-controls">
@@ -108,18 +107,15 @@ export function createWindow(title, icon, uniqueId) {
         <div class="window-resize-handle" id="resize-${uniqueId}"></div>
     `;
 
-
-
     workspace.appendChild(win);
 
-    // 2. Generate Taskbar Tab Button Link Component 
+    // 2. Generate Taskbar Tab button component link
     const tab = document.createElement('div');
     tab.className = 'taskbar-tab active-tab';
     tab.id = `tab-${uniqueId}`;
     tab.innerHTML = `<span>${icon}</span> ${title}`;
     tabsZone.appendChild(tab);
 
-    // Tab Click Logic: Toggles Minimize/Restore visibility focus on toggle
     tab.addEventListener('click', () => {
         if (win.classList.contains('hidden-view') || !win.classList.contains('active-window')) {
             win.classList.remove('hidden-view');
@@ -139,194 +135,172 @@ export function createWindow(title, icon, uniqueId) {
         tab.classList.remove('active-tab');
     });
 
-                // Maximize Button Handler
-            let isMaximized = false;
-            let preMaxTop, preMaxLeft, preMaxWidth, preMaxHeight;
-            
-            document.getElementById(`win-max-${uniqueId}`).addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!isMaximized) {
-                    preMaxTop = win.style.top; preMaxLeft = win.style.left;
-                    preMaxWidth = win.style.width; preMaxHeight = win.style.height;
-                    win.classList.add('window-maximized');
-                    isMaximized = true;
-                } else {
-                    win.classList.remove('window-maximized');
-                    win.style.top = preMaxTop; win.style.left = preMaxLeft;
-                    win.style.width = preMaxWidth; win.style.height = preMaxHeight;
-                    isMaximized = false;
-                }
-            });
-
-            // Close Button Action: Purges layout nodes completely from frame sets
-            document.getElementById(`win-close-${uniqueId}`).addEventListener('click', (e) => {
-                e.stopPropagation();
-                win.remove();
-                tab.remove();
-            });
-
-            // Inject Drag and Drag-Sizing Event Subsystem Hooks
-            setupWindowDrag(win);
-            setupWindowResize(win);
-            bringToFront(win);
-            
-            return document.getElementById(`body-${uniqueId}`);
+    // Maximize Button Handler
+    let isMaximized = false;
+    let preMaxTop, preMaxLeft, preMaxWidth, preMaxHeight;
+    
+    document.getElementById(`win-max-${uniqueId}`).addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!isMaximized) {
+            preMaxTop = win.style.top; preMaxLeft = win.style.left;
+            preMaxWidth = win.style.width; preMaxHeight = win.style.height;
+            win.classList.add('window-maximized');
+            isMaximized = true;
+        } else {
+            win.classList.remove('window-maximized');
+            win.style.top = preMaxTop; win.style.left = preMaxLeft;
+            win.style.width = preMaxWidth; win.style.height = preMaxHeight;
+            isMaximized = false;
         }
+    });
 
-        function bringToFront(windowElement) {
-            document.querySelectorAll('.window-frame').forEach(f => f.classList.remove('active-window'));
-            document.querySelectorAll('.taskbar-tab').forEach(t => t.classList.remove('active-tab'));
-            
-            windowElement.classList.remove('hidden-view');
-            windowElement.classList.add('active-window');
-            windowElement.style.zIndex = ++topZIndex;
+    // Close Button Action
+    document.getElementById(`win-close-${uniqueId}`).addEventListener('click', (e) => {
+        e.stopPropagation();
+        win.remove();
+        tab.remove();
+    });
 
-            const associatedTab = document.getElementById(`tab-${windowElement.id.substring(4)}`);
-            if (associatedTab) associatedTab.classList.add('active-tab');
-        }
+    // Inject Interactivity Engines
+    setupWindowDrag(win);
+    setupWindowResize(win);
+    bringToFront(win);
+    
+    return document.getElementById(`body-${uniqueId}`);
+}
 
-        // ==========================================================================
-        // WINDOW MANAGER UTILITY HANDLERS (DRAG & RESIZE SUB-ENGINES)
-        // ==========================================================================
-        function setupWindowDrag(win) {
-            const header = win.querySelector('.window-header');
-            let isDragging = false; 
-            let offsetX = 0; 
-            let offsetY = 0;
+function bringToFront(windowElement) {
+    document.querySelectorAll('.window-frame').forEach(f => f.classList.remove('active-window'));
+    document.querySelectorAll('.taskbar-tab').forEach(t => t.classList.remove('active-tab'));
+    
+    windowElement.classList.remove('hidden-view');
+    windowElement.classList.add('active-window');
+    windowElement.style.zIndex = ++topZIndex;
 
-            header.addEventListener('mousedown', (e) => {
-                // Ignore drag if clicking header buttons or if maximized
-                if (e.target.classList.contains('win-btn') || win.classList.contains('window-maximized')) return;
-                
-                isDragging = true;
-                offsetX = e.clientX - win.offsetLeft; 
-                offsetY = e.clientY - win.offsetTop;
-                bringToFront(win);
-            });
+    const associatedTab = document.getElementById(`tab-${windowElement.id.substring(4)}`);
+    if (associatedTab) associatedTab.classList.add('active-tab');
+}
 
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                
-                let nextX = e.clientX - offsetX;
-                let nextY = e.clientY - offsetY;
+// ==========================================================================
+// WINDOW MANAGER UTILITY HANDLERS (DRAG & RESIZE SUB-ENGINES)
+// ==========================================================================
+function setupWindowDrag(win) {
+    const header = win.querySelector('.window-header');
+    let isDragging = false; let offsetX = 0; let offsetY = 0;
 
-                // Keep header bar from being dragged above top of screen
-                if (nextY < 0) nextY = 0; 
-                
-                win.style.left = `${nextX}px`; 
-                win.style.top = `${nextY}px`;
-            });
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('win-btn') || win.classList.contains('window-maximized')) return;
+        isDragging = true;
+        offsetX = e.clientX - win.offsetLeft; offsetY = e.clientY - win.offsetTop;
+        bringToFront(win);
+    });
 
-            document.addEventListener('mouseup', () => { 
-                isDragging = false; 
-            });
-        }
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        let nextY = e.clientY - offsetY;
+        if (nextY < 0) nextY = 0;
+        win.style.left = `${e.clientX - offsetX}px`; win.style.top = `${nextY}px`;
+    });
 
-        function setupWindowResize(win) {
-            const handle = win.querySelector('.window-resize-handle');
-            let isResizing = false; 
-            let startWidth, startHeight, startX, startY;
+    document.addEventListener('mouseup', () => { isDragging = false; });
+}
 
-            handle.addEventListener('mousedown', (e) => {
-                e.stopPropagation(); 
-                e.preventDefault();
-                if (win.classList.contains('window-maximized')) return;
-                
-                isResizing = true;
-                startWidth = parseInt(document.defaultView.getComputedStyle(win).width, 10);
-                startHeight = parseInt(document.defaultView.getComputedStyle(win).height, 10);
-                startX = e.clientX; 
-                startY = e.clientY;
-                bringToFront(win);
-            });
+function setupWindowResize(win) {
+    const handle = win.querySelector('.window-resize-handle');
+    let isResizing = false; let startWidth, startHeight, startX, startY;
 
-            document.addEventListener('mousemove', (e) => {
-                if (!isResizing) return;
-                
-                const newWidth = startWidth + (e.clientX - startX);
-                const newHeight = startHeight + (e.clientY - startY);
-                
-                // Enforce safe structural size floors
-                if (newWidth > 200) win.style.width = `${newWidth}px`;
-                if (newHeight > 120) win.style.height = `${newHeight}px`;
-            });
+    handle.addEventListener('mousedown', (e) => {
+        e.stopPropagation(); e.preventDefault();
+        if (win.classList.contains('window-maximized')) return;
+        isResizing = true;
+        startWidth = parseInt(document.defaultView.getComputedStyle(win).width, 10);
+        startHeight = parseInt(document.defaultView.getComputedStyle(win).height, 10);
+        startX = e.clientX; startY = e.clientY;
+        bringToFront(win);
+    });
 
-            document.addEventListener('mouseup', () => { 
-                isResizing = false; 
-            });
-        }
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const newWidth = startWidth + (e.clientX - startX);
+        const newHeight = startHeight + (e.clientY - startY);
+        
+        if (newWidth > 220) win.style.width = `${newWidth}px`;
+        if (newHeight > 140) win.style.height = `${newHeight}px`;
+    });
 
-        // ==========================================================================
-        // CENTRAL APPLICATION ROUTER SYSTEM
-        // ==========================================================================
-        async function launchApplication(appId) {
-            const currentContext = getActiveFolderContext();
+    document.addEventListener('mouseup', () => { isResizing = false; });
+}
 
-            switch (appId) {
-                case 'start-link-files':
-                    const explorerBody = createWindow("Zeb Explorer", "📁", "explorer-root");
-                    if (explorerBody) {
-                        renderZebExplorer(explorerBody);
-                    }
-                    break;
+// ==========================================================================
+// CENTRAL APPLICATION ROUTER SYSTEM
+// ==========================================================================
+async function launchApplication(appId) {
+    const currentContext = getActiveFolderContext();
 
-                case 'start-link-text-editor':
-                    const targetEditFile = "untitled.txt";
-                    try {
-                        const module = await import('./programs/editor.js');
-                        const existingContent = currentContext[targetEditFile] ? currentContext[targetEditFile].content : "";
-                        const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "📝", `edit-${targetEditFile}`);
-                        
-                        if (appBodyElement) {
-                            const editorInstance = new module.TextEditor(
-                                targetEditFile,
-                                existingContent,
-                                (savedName, savedData) => {
-                                    if (savedName) {
-                                        const saveContext = getActiveFolderContext();
-                                        saveContext[savedName] = { type: "file", content: savedData };
-                                        const activeExp = document.querySelector('.explorer-grid');
-                                        if (activeExp) renderZebExplorer(activeExp.parentElement);
-                                    }
-                                }
-                            );
-                            editorInstance.open(appBodyElement);
-                        }
-                    } catch (err) {
-                        console.error("Kernel Error: Failed to mount editor.js", err);
-                    }
-                    break;
-
-                case 'start-link-shutdown':
-                    alert("ZebOS Shutdown Sequence Initiated.");
-                    break;
-
-                default:
-                    const fallbackTitles = {
-                        'start-link-prompt': { name: "Zeb Terminal", icon: "🐚" },
-                        'start-link-paint': { name: "Paint", icon: "🎨" },
-                        'start-link-mines': { name: "Minesweeper", icon: "💣" },
-                        'start-link-snake': { name: "Snake", icon: "🐍" },
-                        'start-link-calc': { name: "Calc", icon: "🧮" },
-                        'start-link-media': { name: "Media Player", icon: "🎬" },
-                        'start-link-vm': { name: "ZebVM Manager", icon: "🎛️" }
-                    };
-
-                    if (fallbackTitles[appId]) {
-                        const app = fallbackTitles[appId];
-                        const placeholderBody = createWindow(app.name, app.icon, appId);
-                        if (placeholderBody) {
-                            placeholderBody.innerHTML = `
-                                <div style="padding:20px; font-size:14px; color:#000000; font-family:sans-serif;">
-                                    <strong>${app.name}</strong> core architecture coming soon in Phase 4!
-                                </div>
-                            `;
-                        }
-                    }
-                    break;
+    switch (appId) {
+        case 'start-link-files': 
+            const explorerBody = createWindow("Zeb Explorer", "📁", "explorer-root");
+            if (explorerBody) {
+                renderZebExplorer(explorerBody);
             }
-        }
+            break;
 
+        case 'start-link-text-editor':
+            const targetEditFile = "untitled.txt";
+            try {
+                const module = await import('./programs/editor.js');
+                const existingContent = currentContext[targetEditFile] ? currentContext[targetEditFile].content : "";
+                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "📝", `edit-${targetEditFile}`);
+                
+                if (appBodyElement) {
+                    const editorInstance = new module.TextEditor(
+                        targetEditFile,
+                        existingContent,
+                        (savedName, savedData) => {
+                            if (savedName) {
+                                const saveContext = getActiveFolderContext();
+                                saveContext[savedName] = { type: "file", content: savedData };
+                                const activeExp = document.querySelector('.explorer-grid');
+                                if (activeExp) renderZebExplorer(activeExp.parentElement);
+                            }
+                        }
+                    );
+                    editorInstance.open(appBodyElement);
+                }
+            } catch (err) {
+                console.error("Kernel Error: Failed to mount editor.js", err);
+            }
+            break;
+
+        case 'start-link-shutdown':
+            alert("ZebOS Shutdown Sequence Initiated.");
+            break;
+
+        default:
+            const fallbackTitles = {
+                'start-link-prompt': { name: "Zeb Terminal", icon: "🐚" },
+                'start-link-paint': { name: "Paint", icon: "🎨" },
+                'start-link-mines': { name: "Minesweeper", icon: "💣" },
+                'start-link-snake': { name: "Snake", icon: "🐍" },
+                'start-link-calc': { name: "Calc", icon: "🧮" },
+                'start-link-media': { name: "Media Player", icon: "🎬" },
+                'start-link-vm': { name: "ZebVM Manager", icon: "🎛️" }
+            };
+
+            if (fallbackTitles[appId]) {
+                const app = fallbackTitles[appId];
+                const placeholderBody = createWindow(app.name, app.icon, appId);
+                if (placeholderBody) {
+                    placeholderBody.innerHTML = `
+                        <div style="padding:20px; font-size:14px; color:#000000; font-family:sans-serif;">
+                            <strong>${app.name}</strong> core architecture coming soon in Phase 4!
+                        </div>
+                    `;
+                }
+            }
+            break;
+    }
+}
 
 // ==========================================================================
 // DYNAMIC ZEB EXPLORER APP MODULE RENDERING ENGINE
@@ -418,11 +392,10 @@ function setupStartMenuController() {
     });
 }
 
-// ==========================================================================
-// KERNEL INITIALIZATION LAUNCHPOINT (calling functions)
-// ==========================================================================
+// Initialize core components
 initializeBootSequence();
 startSystemClock();
 setupStartMenuController();
 
 setInterval(() => { systemState.uptime++; }, 1000);
+
