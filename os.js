@@ -264,7 +264,9 @@ function setupWindowResize(win) {
 // ==========================================================================
 // CENTRAL APPLICATION ROUTER SYSTEM
 // ==========================================================================
-async function launchApplication(appId) {
+// Overwrite this specific switch block section inside your launchApplication(appId) in os.js:
+// We add an optional second parameter to dynamically handle targeted file names
+async function launchApplication(appId, customFileName = null) {
     const currentContext = getActiveFolderContext();
 
     switch (appId) {
@@ -276,11 +278,17 @@ async function launchApplication(appId) {
             break;
 
         case 'start-link-text-editor':
-            const targetEditFile = "untitled.txt";
+            // FIX: If a filename is passed by Explorer, use it. Otherwise fallback to untitled.txt
+            const targetEditFile = customFileName || "untitled.txt";
             try {
                 const module = await import('./programs/editor.js');
+                
+                // Read content from the context based on the correct filename variable
                 const existingContent = currentContext[targetEditFile] ? currentContext[targetEditFile].content : "";
-                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "📝", `edit-${targetEditFile}`);
+                
+                // Generate a unique window ID using the file name string to avoid frame conflicts
+                const cleanId = targetEditFile.replace(/[^a-zA-Z0-9]/g, '');
+                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "📝", `edit-${cleanId}`);
                 
                 if (appBodyElement) {
                     const editorInstance = new module.TextEditor(
@@ -290,7 +298,11 @@ async function launchApplication(appId) {
                             if (savedName) {
                                 const saveContext = getActiveFolderContext();
                                 saveContext[savedName] = { type: "file", content: savedData };
-                                saveFileSystem(); // Commit changes straight to hard disk image
+                                
+                                // Call your localStorage persistent write system
+                                saveFileSystem(); 
+                                
+                                // Repaint open Explorer grids immediately to list the fresh document row
                                 const activeExp = document.querySelector('.explorer-grid');
                                 if (activeExp) renderZebExplorer(activeExp.parentElement);
                             }
@@ -302,6 +314,7 @@ async function launchApplication(appId) {
                 console.error("Kernel Error: Failed to mount editor.js", err);
             }
             break;
+
 
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
