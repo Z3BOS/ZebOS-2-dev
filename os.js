@@ -1,4 +1,3 @@
-// State tracking & Advanced VFS Storage Device Module (ZebOS 2 Release Candidate v1.7.0)
 // State tracking & Persistent VFS Storage Module (ZebOS 2 Alpha v1.8.0 Core)
 let systemState = { 
     version: "1.8.0", 
@@ -291,7 +290,7 @@ async function launchApplication(appId) {
             }
             break;
 
-        case 'start-link-text-editor':
+                case 'start-link-text-editor':
             const targetEditFile = "untitled.txt";
             try {
                 const module = await import('./programs/editor.js');
@@ -306,6 +305,10 @@ async function launchApplication(appId) {
                             if (savedName) {
                                 const saveContext = getActiveFolderContext();
                                 saveContext[savedName] = { type: "file", content: savedData };
+                                
+                                // NEW FOR v1.8.0: Force structural commit to persistent localStorage
+                                saveFileSystem();
+                                
                                 const activeExp = document.querySelector('.explorer-grid');
                                 if (activeExp) renderZebExplorer(activeExp.parentElement);
                             }
@@ -317,6 +320,7 @@ async function launchApplication(appId) {
                 console.error("Kernel Error: Failed to mount editor.js", err);
             }
             break;
+
 
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
@@ -400,17 +404,17 @@ function renderZebExplorer(containerElement) {
         renderZebExplorer(containerElement);
     });
 
-    btnMkdir.addEventListener('click', () => {
+        btnMkdir.addEventListener('click', () => {
         const folderName = prompt("Enter new folder name:");
         if (folderName && folderName.trim() !== "") {
             const context = getActiveFolderContext();
             context[folderName.trim()] = { type: "dir", content: {} };
+            
+            saveFileSystem(); //added in 1.8.0 for file saving
             refreshExplorerGrid();
         }
     });
 
-    refreshExplorerGrid();
-}
 
 // ==========================================================================
 // START MENU INTERACTIVITY CONTROLLER
