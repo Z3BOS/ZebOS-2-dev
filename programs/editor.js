@@ -88,6 +88,10 @@ export class TextEditor {
     saveFile() {
         this.content = this.textarea.value;
         this.hideMenu();
+        
+        // FIX: Notify the OS kernel callback that a write action happened to sync disk sectors
+        this.onExit(this.fileName, this.content);
+        
         this.flashFooterFeedback(`Saved: ${this.fileName}`);
     }
 
@@ -98,10 +102,15 @@ export class TextEditor {
             this.textarea.focus();
             return;
         }
+        
         this.fileName = newName.trim();
         this.content = this.textarea.value;
         
         this.bodyElement.querySelector('.app-editor-filename').textContent = this.fileName;
+        
+        // FIX: Notify kernel configuration to add the newly titled file into the storage allocations map
+        this.onExit(this.fileName, this.content);
+        
         this.flashFooterFeedback(`Saved As: ${this.fileName}`);
         this.textarea.focus();
     }
