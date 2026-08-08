@@ -14,7 +14,6 @@ let topZIndex = 100; // Track screen depth layers globally across desktop worksp
 // PERSISTENT HARD DISK STORAGE ENGINE (LOCALSTORAGE SUBSYSTEM)
 // ==========================================================================
 
-// Routine reads from browser sector to pull previous database allocations
 function loadFileSystem() {
     const diskImage = localStorage.getItem('ZEBOS_V2_DISK');
     
@@ -32,7 +31,6 @@ function loadFileSystem() {
     }
 }
 
-// Routine writes active filesystem states down onto browser local partition blocks
 export function saveFileSystem() {
     try {
         const serializedFS = JSON.stringify(systemState.fileSystem);
@@ -43,7 +41,6 @@ export function saveFileSystem() {
     }
 }
 
-// Fallback script setups standard baseline starting assets if no storage image is matched
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
         "readme.txt": { type: "file", content: "Welcome to ZebOS 1.8.0! Persistent storage disk saving is now active." },
@@ -52,24 +49,22 @@ function provisionDefaultRootFS() {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
         } } 
     };
-    saveFileSystem(); // Save immediately to bake the core nodes image
+    saveFileSystem(); 
 }
 
 // ==========================================================================
-// FILE SYSTEM ROUTINES
+// FILE SYSTEM WORKSPACE MANAGER ROUTINES
 // ==========================================================================
 function getActiveFolderContext() {
     if (systemState.currentDirectory === "") {
         return systemState.fileSystem; 
     }
-    // Safety check fallback mapping redirects back to root node context if handle drops out
     if (!systemState.fileSystem[systemState.currentDirectory]) {
         systemState.currentDirectory = "";
         return systemState.fileSystem;
     }
     return systemState.fileSystem[systemState.currentDirectory].content; 
 }
-
 
 // ==========================================================================
 // SYSTEM CLOCK SUBSYSTEM (REAL-TIME TASKBAR WIDGET)
@@ -98,7 +93,7 @@ function startSystemClock() {
 // BOOT SCREEN HANDOFF CONTROLLER
 // ==========================================================================
 function initializeBootSequence() {
-    console.log("SYSTEM START: Initializing Zeb Kernel v1.7.0...");
+    console.log("SYSTEM START: Initializing Zeb Kernel v1.8.0...");
     setTimeout(() => {
         const bootScreen = document.getElementById('boot-screen');
         if (bootScreen) {
@@ -118,7 +113,6 @@ export function createWindow(title, icon, uniqueId) {
     const workspace = document.getElementById('window-workspace');
     const tabsZone = document.getElementById('taskbar-tabs-zone');
     
-    // If window is currently open but minimized/hidden, restore it instantly
     const existingWin = document.getElementById(`win-${uniqueId}`);
     if (existingWin) {
         if (existingWin.classList.contains('hidden-view')) {
@@ -129,7 +123,6 @@ export function createWindow(title, icon, uniqueId) {
         return null;
     }
 
-    // 1. Build Window Shell Layout Nodes using corrected Classes template
     const win = document.createElement('div');
     win.className = 'window-frame active-window';
     win.id = `win-${uniqueId}`;
@@ -154,7 +147,6 @@ export function createWindow(title, icon, uniqueId) {
 
     workspace.appendChild(win);
 
-    // 2. Generate Taskbar Tab button component link
     const tab = document.createElement('div');
     tab.className = 'taskbar-tab active-tab';
     tab.id = `tab-${uniqueId}`;
@@ -173,14 +165,12 @@ export function createWindow(title, icon, uniqueId) {
 
     win.addEventListener('mousedown', () => bringToFront(win));
 
-    // Minimize Button Handler
     document.getElementById(`win-min-${uniqueId}`).addEventListener('click', (e) => {
         e.stopPropagation();
         win.classList.add('hidden-view');
         tab.classList.remove('active-tab');
     });
 
-    // Maximize Button Handler
     let isMaximized = false;
     let preMaxTop, preMaxLeft, preMaxWidth, preMaxHeight;
     
@@ -199,14 +189,12 @@ export function createWindow(title, icon, uniqueId) {
         }
     });
 
-    // Close Button Action
     document.getElementById(`win-close-${uniqueId}`).addEventListener('click', (e) => {
         e.stopPropagation();
         win.remove();
         tab.remove();
     });
 
-    // Inject Interactivity Engines
     setupWindowDrag(win);
     setupWindowResize(win);
     bringToFront(win);
@@ -226,9 +214,6 @@ function bringToFront(windowElement) {
     if (associatedTab) associatedTab.classList.add('active-tab');
 }
 
-// ==========================================================================
-// WINDOW MANAGER UTILITY HANDLERS (DRAG & RESIZE SUB-ENGINES)
-// ==========================================================================
 function setupWindowDrag(win) {
     const header = win.querySelector('.window-header');
     let isDragging = false; let offsetX = 0; let offsetY = 0;
@@ -290,7 +275,7 @@ async function launchApplication(appId) {
             }
             break;
 
-                case 'start-link-text-editor':
+        case 'start-link-text-editor':
             const targetEditFile = "untitled.txt";
             try {
                 const module = await import('./programs/editor.js');
@@ -305,10 +290,7 @@ async function launchApplication(appId) {
                             if (savedName) {
                                 const saveContext = getActiveFolderContext();
                                 saveContext[savedName] = { type: "file", content: savedData };
-                                
-                                // NEW FOR v1.8.0: Force structural commit to persistent localStorage
-                                saveFileSystem();
-                                
+                                saveFileSystem(); // Commit changes straight to hard disk image
                                 const activeExp = document.querySelector('.explorer-grid');
                                 if (activeExp) renderZebExplorer(activeExp.parentElement);
                             }
@@ -320,7 +302,6 @@ async function launchApplication(appId) {
                 console.error("Kernel Error: Failed to mount editor.js", err);
             }
             break;
-
 
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
@@ -404,17 +385,18 @@ function renderZebExplorer(containerElement) {
         renderZebExplorer(containerElement);
     });
 
-        btnMkdir.addEventListener('click', () => {
+    btnMkdir.addEventListener('click', () => {
         const folderName = prompt("Enter new folder name:");
         if (folderName && folderName.trim() !== "") {
             const context = getActiveFolderContext();
             context[folderName.trim()] = { type: "dir", content: {} };
-            
-            saveFileSystem(); //added in 1.8.0 for file saving
+            saveFileSystem(); // Save changes permanently to disk
             refreshExplorerGrid();
         }
     });
 
+    refreshExplorerGrid();
+}
 
 // ==========================================================================
 // START MENU INTERACTIVITY CONTROLLER
@@ -443,13 +425,11 @@ function setupStartMenuController() {
 }
 
 // ==========================================================================
-// Call functions
+// KERNEL INITIALIZATION LAUNCHPOINT
 // ==========================================================================
-loadFileSystem(); // Step 1: Spin up the local storage drive sector registers
+loadFileSystem(); 
 initializeBootSequence();
 startSystemClock();
 setupStartMenuController();
 
 setInterval(() => { systemState.uptime++; }, 1000);
-
-
