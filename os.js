@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.2.1 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.3.0 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.2.1", 
+    version: "2.3.0", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -65,6 +65,12 @@ function enterDevMode() {
 
 function loadFileSystem() {
     const diskImage = localStorage.getItem('ZEBOS_V2_DISK');
+    const savedBg = localStorage.getItem('ZEBOS_V2_BG');
+    if (savedBg) {
+        systemState.desktopBackground = savedBg;
+        const canvas = document.getElementById('desktop-canvas');
+        if (canvas) canvas.style.backgroundColor = savedBg;
+    }
 
     if (diskImage) {
         try {
@@ -84,6 +90,9 @@ export function saveFileSystem() {
     try {
         const serializedFS = JSON.stringify(systemState.fileSystem);
         localStorage.setItem('ZEBOS_V2_DISK', serializedFS);
+        if (systemState.desktopBackground) {
+            localStorage.setItem('ZEBOS_V2_BG', systemState.desktopBackground);
+        }
         logKernel("Storage System: Changes committed to local storage sectors successfully.");
     } catch (err) {
         logKernel(`Storage System Error: Write operation failed to commit. (${err.message})`, "ERROR");
@@ -92,7 +101,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.2.1! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.3.0! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -151,7 +160,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.2.1 Pre-Alpha...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.3.0 Pre-Alpha...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
