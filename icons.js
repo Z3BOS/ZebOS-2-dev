@@ -124,7 +124,7 @@ const SVGS = {
         </svg>
     `,
     officialZLogo: `
-        <svg class="sys-official-logo" viewBox="0 0 260 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:240px; height:auto; filter:drop-shadow(0 0 16px rgba(54,209,220,0.4));">
+        <svg class="sys-official-logo" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:240px; height:auto; filter:drop-shadow(0 0 16px rgba(54,209,220,0.4));">
             <defs>
                 <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#20b2aa" />
@@ -132,8 +132,8 @@ const SVGS = {
                     <stop offset="100%" stop-color="#003366" />
                 </linearGradient>
             </defs>
-            <polygon points="130,10 215,55 215,155 130,200 45,155 45,55" fill="url(#hexGrad)" stroke="#55ffff" stroke-width="3.5"/>
-            <path d="M85 65 H175 L95 145 H175" stroke="#ffffff" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter"/>
+            <polygon points="256,24 430,124 430,344 256,444 82,344 82,124" fill="url(#hexGrad)" stroke="#55ffff" stroke-width="8"/>
+            <path d="M160 140 H352 L192 316 H352" stroke="#ffffff" stroke-width="32" stroke-linecap="square" stroke-linejoin="miter"/>
         </svg>
     `,
     winMin: `<svg viewBox="0 0 10 10" style="width:10px; height:10px; display:block;"><line x1="1" y1="8" x2="9" y2="8" stroke="#000000" stroke-width="2" stroke-linecap="square"/></svg>`,
