@@ -140,17 +140,17 @@ function getContextMenuForElement(target, callbacks) {
         { 
             label: 'View', icon: 'explorer', hasSubmenu: true,
             submenu: [
-                { label: 'Large Icons', icon: 'explorer', action: () => callbacks.onChangeDesktopView?.('large') },
-                { label: 'Small Icons', icon: 'file', action: () => callbacks.onChangeDesktopView?.('small') },
-                { label: 'Auto Arrange', icon: 'settings', action: () => callbacks.onArrangeIcons?.('auto') }
+                { label: 'Large Icons', icon: 'explorer', isCheckable: true, checked: callbacks.getCurrentViewMode?.() === 'large', action: () => callbacks.onChangeDesktopView?.('large') },
+                { label: 'Small Icons', icon: 'file', isCheckable: true, checked: callbacks.getCurrentViewMode?.() === 'small', action: () => callbacks.onChangeDesktopView?.('small') },
+                { label: 'Auto Arrange', icon: 'settings', isCheckable: true, checked: callbacks.getAutoArrange?.(), action: () => callbacks.onArrangeIcons?.('auto') }
             ]
         },
         { 
             label: 'Arrange Icons', icon: 'file', hasSubmenu: true,
             submenu: [
-                { label: 'By Name', icon: 'editor', action: () => callbacks.onArrangeIcons?.('name') },
-                { label: 'By Type', icon: 'folder', action: () => callbacks.onArrangeIcons?.('type') },
-                { label: 'By Size', icon: 'calc', action: () => callbacks.onArrangeIcons?.('size') }
+                { label: 'By Name', icon: 'editor', isCheckable: true, checked: callbacks.getSortBy?.() === 'name', action: () => callbacks.onArrangeIcons?.('name') },
+                { label: 'By Type', icon: 'folder', isCheckable: true, checked: callbacks.getSortBy?.() === 'type', action: () => callbacks.onArrangeIcons?.('type') },
+                { label: 'By Size', icon: 'calc', isCheckable: true, checked: callbacks.getSortBy?.() === 'size', action: () => callbacks.onArrangeIcons?.('size') }
             ]
         },
         { label: 'Refresh', icon: 'startLogo', action: () => callbacks.onRefreshDesktop?.() },
@@ -165,6 +165,7 @@ function getContextMenuForElement(target, callbacks) {
             ]
         },
         { type: 'separator' },
+        { label: 'Personalize', icon: 'personalize', bold: true, action: () => callbacks.onOpenPersonalize?.() },
         { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog('Display Properties', 'Control Panel Applet', 'ZebOS 2 Desktop') }
     ];
 }
@@ -225,9 +226,11 @@ function renderContextMenu(x, y, items, parentRow = null) {
 
         const iconSvg = item.icon ? `<span style="width:16px; height:16px; display:inline-flex; align-items:center; margin-right:8px;">${getIcon(item.icon)}</span>` : '<span style="width:16px; margin-right:8px;"></span>';
         const hasSub = item.hasSubmenu || (item.submenu && item.submenu.length > 0);
-        
+        const checkPrefix = item.checked ? '<span style="font-weight:bold; width:12px; margin-right:4px; text-align:center;">✓</span>' : (item.isCheckable ? '<span style="width:12px; margin-right:4px; display:inline-block;"></span>' : '');
+
         row.innerHTML = `
             <div style="display:flex; align-items:center;">
+                ${checkPrefix}
                 ${iconSvg}
                 <span>${item.label}</span>
             </div>
@@ -296,12 +299,14 @@ function renderContextMenu(x, y, items, parentRow = null) {
 
 function showPropertiesDialog(name, type, location) {
     const dialog = document.createElement('div');
-    dialog.className = 'window-frame active-window';
+    dialog.className = 'os-prompt-modal active-window';
     dialog.style.cssText = `
-        position: fixed;
-        left: calc(50vw - 160px);
-        top: calc(50vh - 120px);
-        width: 320px;
+        position: fixed !important;
+        left: calc(50vw - 160px) !important;
+        top: calc(50vh - 110px) !important;
+        width: 320px !important;
+        height: auto !important;
+        min-height: 160px !important;
         background-color: #c0c0c0;
         border: 2px solid #ffffff;
         border-right-color: #000000;
@@ -309,6 +314,7 @@ function showPropertiesDialog(name, type, location) {
         box-shadow: 4px 4px 16px rgba(0,0,0,0.5);
         z-index: 100001;
         font-family: Arial, sans-serif;
+        box-sizing: border-box;
     `;
 
     dialog.innerHTML = `
@@ -327,7 +333,7 @@ function showPropertiesDialog(name, type, location) {
                 </div>
             </div>
             <div><strong>Location:</strong> ${location}</div>
-            <div><strong>System:</strong> ZebOS 2 Kernel v2.1.9 (Pre-Alpha)</div>
+            <div><strong>System:</strong> ZebOS 2 Kernel v2.2.1 (Pre-Alpha)</div>
             <div><strong>Status:</strong> Read/Write Accessible</div>
             <button id="prop-ok" style="align-self:flex-end; padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; margin-top:8px;">OK</button>
         </div>

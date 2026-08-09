@@ -10,10 +10,23 @@ const SVGS = {
             <line x1="12" y1="16" x2="17" y2="16" stroke="#55ff55" stroke-width="2" stroke-linecap="round"/>
         </svg>
     `,
+    personalize: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3" width="20" height="13" rx="1.5" fill="#c0c0c0" stroke="#444444" stroke-width="1.5"/>
+            <rect x="4" y="5" width="16" height="9" fill="#008080" stroke="#000000" stroke-width="1"/>
+            <path d="M8 16L7 19H17L16 16" fill="#808080" stroke="#444444" stroke-width="1.2"/>
+            <rect x="5" y="19" width="14" height="2" fill="#aaaaaa" stroke="#444444" stroke-width="1"/>
+            <path d="M14 8L18 4C18.5 3.5 19.5 3.5 20 4C20.5 4.5 20.5 5.5 20 6L16 10L14 8Z" fill="#ffca28" stroke="#000000" stroke-width="0.8"/>
+            <circle cx="13.5" cy="10.5" r="1.5" fill="#e53935"/>
+        </svg>
+    `,
     explorer: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 6C3 4.89543 3.89543 4 5 4H10L12 6H19C20.1046 6 21 6.89543 21 8V18C21 19.1046 20.1046 20 19 20H5C3.89543 20 3 19.1046 3 18V6Z" fill="#ffca28" stroke="#c79100" stroke-width="1.5"/>
-            <path d="M3 9H21V18C21 19.1046 20.1046 20 19 20H5C3.89543 20 3 19.1046 3 18V9Z" fill="#ffd54f" stroke="#c79100" stroke-width="1.5"/>
+            <path d="M2 5C2 4.1 2.9 3.5 3.8 3.8L8 5H18C19.1 5 20 5.9 20 7V15C20 16.1 19.1 17 18 17H4C2.9 17 2 16.1 2 15V5Z" fill="#ffb300" stroke="#b27b00" stroke-width="1.2"/>
+            <path d="M2 9C2 7.9 2.9 7 4 7H20C21.1 7 22 7.9 22 9V17C22 18.1 21.1 19 20 19H4C2.9 19 2 18.1 2 17V9Z" fill="#ffca28" stroke="#c79100" stroke-width="1.2"/>
+            <rect x="7" y="10" width="10" height="7" rx="1" fill="#000080" stroke="#00ffff" stroke-width="1"/>
+            <circle cx="10" cy="13.5" r="1.5" fill="#55ffff"/>
+            <rect x="13" y="12.5" width="3" height="2" fill="#ffffff"/>
         </svg>
     `,
     editor: `

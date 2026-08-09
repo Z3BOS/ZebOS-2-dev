@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.1.9 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.2.1 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,11 +7,13 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.1.9", 
+    version: "2.2.1", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
     currentDirectory: "", // "" means root directory. Matches folder name if nested (e.g., "documents")
+    desktopSortBy: "type", // Default sort by type for all users
+    autoArrange: true,
     fileSystem: {} // Initialized dynamically below from local disk image
 };
 
@@ -90,7 +92,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.1.9! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.2.1! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -149,7 +151,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.9 Pre-Alpha...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.2.1 Pre-Alpha...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -678,6 +680,35 @@ async function launchApplication(appId, customFileName = null) {
             break;
         }
 
+        case 'start-link-personalize': {
+            const winId = 'personalize-dialog';
+            try {
+                const module = await import('./programs/personalize.js');
+                const pBody = createWindow("Display Properties", "personalize", winId);
+                if (pBody) {
+                    setWindowBounds(pBody, 420, 440);
+                    const pInstance = new module.PersonalizeApp(
+                        () => closeWindow(winId),
+                        (bgColor, pattern) => {
+                            systemState.desktopBackground = bgColor;
+                            const desktopCanvas = document.getElementById('desktop-canvas');
+                            if (desktopCanvas) {
+                                desktopCanvas.style.backgroundColor = bgColor;
+                            }
+                            saveFileSystem();
+                            logKernel(`Personalize: Updated desktop background color to ${bgColor}.`);
+                        },
+                        systemState.desktopBackground || '#008080'
+                    );
+                    registerWindowCleanup(winId, () => {});
+                    pInstance.open(pBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount personalize.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
             break;
@@ -867,27 +898,37 @@ function renderDesktopIcons() {
 
     shortcuts.forEach(shortcut => {
         const iconEl = document.createElement('div');
-        iconEl.className = 'desktop-icon';
         iconEl.dataset.appId = shortcut.id;
         
         if (currentDesktopViewMode === 'small') {
-            iconEl.style.cssText = "display:flex; align-items:center; gap:6px; width:140px; padding:3px 6px;";
+            iconEl.className = 'desktop-icon small-view';
             iconEl.innerHTML = `
-                <div class="sys-icon" style="width:20px; height:20px; flex-shrink:0;">${getIcon(shortcut.icon)}</div>
-                <div class="desktop-icon-label" style="font-size:11px; text-align:left;">${shortcut.label}</div>
+                <div class="sys-icon" style="width:18px; height:18px; flex-shrink:0;">${getIcon(shortcut.icon)}</div>
+                <div class="desktop-icon-label">${shortcut.label}</div>
             `;
         } else {
+            iconEl.className = 'desktop-icon';
             iconEl.innerHTML = `
                 <div class="desktop-icon-glyph">${getIcon(shortcut.icon)}</div>
                 <div class="desktop-icon-label">${shortcut.label}</div>
             `;
         }
 
-        iconEl.addEventListener('dblclick', () => launchApplication(shortcut.id));
+        iconEl.addEventListener('dblclick', () => {
+            if (shortcut.isCustomVfs) {
+                if (shortcut.itemType === 'dir') {
+                    launchApplication('start-link-files', shortcut.vfsName || shortcut.label);
+                } else {
+                    launchApplication(shortcut.id, shortcut.vfsName || shortcut.label);
+                }
+            } else {
+                launchApplication(shortcut.id);
+            }
+        });
         zone.appendChild(iconEl);
     });
 
-    logKernel(`Desktop: Rendered ${shortcuts.length} shortcuts (${currentDesktopViewMode} view mode).`);
+    logKernel(`Desktop: Rendered ${shortcuts.length} shortcuts (${currentDesktopViewMode} view mode, sorted by ${systemState.desktopSortBy}).`);
 }
 
 // ==========================================================================
@@ -1010,7 +1051,11 @@ setupStartMenuController();
 renderDesktopIcons();
 
 initContextMenuSystem({
+    getCurrentViewMode: () => currentDesktopViewMode,
+    getAutoArrange: () => !!systemState.autoArrange,
+    getSortBy: () => systemState.desktopSortBy || 'type',
     onOpenApp: (appId) => launchApplication(appId),
+    onOpenPersonalize: () => launchApplication('start-link-personalize'),
     onDeleteAppShortcut: (el) => el.remove(),
     onRenameAppShortcut: (el) => {
         const label = el.querySelector('.desktop-icon-label, .desktop-shortcut-label');
@@ -1035,7 +1080,7 @@ initContextMenuSystem({
     onCloseWindow: (winId) => closeWindow(winId),
     onOpenExplorerItem: (itemName, itemType) => {
         if (itemType === 'dir') {
-            launchApplication('start-link-files');
+            launchApplication('start-link-files', itemName);
         } else {
             launchApplication('start-link-text-editor', itemName);
         }
@@ -1068,7 +1113,14 @@ initContextMenuSystem({
             
             if (systemState.currentDirectory === "") {
                 if (!DESKTOP_SHORTCUTS.some(s => s.label === folderName)) {
-                    DESKTOP_SHORTCUTS.push({ id: 'start-link-files', icon: 'folder', label: folderName });
+                    DESKTOP_SHORTCUTS.push({
+                        id: 'start-link-files',
+                        icon: 'folder',
+                        label: folderName,
+                        isCustomVfs: true,
+                        vfsName: folderName,
+                        itemType: 'dir'
+                    });
                 }
             }
 
@@ -1131,7 +1183,11 @@ initContextMenuSystem({
         renderDesktopIcons();
     },
     onArrangeIcons: (sortBy) => {
-        systemState.desktopSortBy = sortBy;
+        if (sortBy === 'auto') {
+            systemState.autoArrange = !systemState.autoArrange;
+        } else {
+            systemState.desktopSortBy = sortBy;
+        }
         renderDesktopIcons();
     },
     onCascadeWindows: () => {
