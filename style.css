@@ -202,6 +202,77 @@ body, html {
 .desktop-icon-glyph {
     font-size: 32px;
     filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.6));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   SYSTEM SVG ICON SUBSYSTEM (CODE-BASED RETRO ICONS)
+   ========================================================================== */
+.sys-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.desktop-icon .sys-icon {
+    width: 38px;
+    height: 38px;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.start-menu-item .sys-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.window-title .sys-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.taskbar-tab .sys-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.paint-tool-btn {
+    width: 34px;
+    height: 34px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    box-sizing: border-box;
+}
+
+.paint-tool-btn.active-tool {
+    background-color: #e0e0e0;
+    border: 2px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+
+.paint-btn {
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .desktop-icon-label {

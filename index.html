@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZebOS 2 (Alpha v1.8.0)</title>
+    <title>ZebOS 2 Pro (v2.0.0)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,39 +33,39 @@
             
             <!-- Application Launcher Grid Links -->
             <div id="start-menu-links"> 
-                <div class="start-menu-item" id="start-link-prompt"> 
-                    <span class="menu-icon">🐚</span> Zeb Terminal 
+                <div class="start-menu-item" id="start-link-prompt" data-icon="terminal"> 
+                    <span class="menu-icon"></span> Zeb Terminal 
                 </div> 
-                <div class="start-menu-item" id="start-link-files"> 
-                    <span class="menu-icon">📁</span> Zeb Explorer 
+                <div class="start-menu-item" id="start-link-files" data-icon="explorer"> 
+                    <span class="menu-icon"></span> Zeb Explorer 
                 </div> 
-                <div class="start-menu-item" id="start-link-text-editor"> 
-                    <span class="menu-icon">📝</span> Text Editor 
+                <div class="start-menu-item" id="start-link-text-editor" data-icon="editor"> 
+                    <span class="menu-icon"></span> Text Editor 
                 </div> 
-                <div class="start-menu-item" id="start-link-paint"> 
-                    <span class="menu-icon">🎨</span> Paint 
+                <div class="start-menu-item" id="start-link-paint" data-icon="paint"> 
+                    <span class="menu-icon"></span> Paint 
                 </div> 
-                <div class="start-menu-item" id="start-link-mines"> 
-                    <span class="menu-icon">💣</span> Minesweeper 
+                <div class="start-menu-item" id="start-link-mines" data-icon="mines"> 
+                    <span class="menu-icon"></span> Minesweeper 
                 </div> 
-                <div class="start-menu-item" id="start-link-snake"> 
-                    <span class="menu-icon">🐍</span> Snake 
+                <div class="start-menu-item" id="start-link-snake" data-icon="snake"> 
+                    <span class="menu-icon"></span> Snake 
                 </div> 
-                <div class="start-menu-item" id="start-link-calc"> 
-                    <span class="menu-icon">🧮</span> Calc 
+                <div class="start-menu-item" id="start-link-calc" data-icon="calc"> 
+                    <span class="menu-icon"></span> Calc 
                 </div> 
-                <div class="start-menu-item" id="start-link-media"> 
-                    <span class="menu-icon">🎬</span> Media Player 
+                <div class="start-menu-item" id="start-link-media" data-icon="media"> 
+                    <span class="menu-icon"></span> Media Player 
                 </div> 
-                <div class="start-menu-item" id="start-link-vm">
-                    <span class="menu-icon">🎛️</span> ZebVM Manager
+                <div class="start-menu-item" id="start-link-vm" data-icon="vm">
+                    <span class="menu-icon"></span> ZebVM Manager
                 </div>
-                <div class="start-menu-item" id="start-link-courgette">
-                    <span class="menu-icon">🥒</span> Courgette Info
+                <div class="start-menu-item" id="start-link-courgette" data-icon="courgette">
+                    <span class="menu-icon"></span> Courgette Info
                 </div>
                 <hr class="start-menu-divider">
-                <div class="start-menu-item" id="start-link-shutdown"> 
-                    <span class="menu-icon">⭕</span> Shut Down... 
+                <div class="start-menu-item" id="start-link-shutdown" data-icon="shutdown"> 
+                    <span class="menu-icon"></span> Shut Down... 
                 </div> 
             </div>
         </div>
@@ -78,8 +78,8 @@
 
         <!-- Pinned Monochrome Desktop System Build Information Tag -->
         <div id="desktop-build-tag">
-            <div>ZebOS v1.8.0 (Alpha)</div>
-            <div>Build 1.8.0 (filesystem)</div>
+            <div>ZebOS v2.0.0 Pro</div>
+            <div>Build 2.0.0 (filesystem)</div>
             <div id="build-git-hash">git-...</div>
         </div>
 
@@ -88,13 +88,13 @@
     <!-- LAYER 2: Bottom Fixed Windows-95 Style Gray System Taskbar Strip Panel -->
     <div id="system-taskbar">
         <button id="start-button">
-            <span class="start-logo">🔼</span> Start
+            <span class="start-logo"></span> Start
         </button>
 
         <div id="taskbar-tabs-zone"></div>
 
         <div id="system-tray">
-            <span id="current-user-tag">👤 guest</span>
+            <span id="current-user-tag">guest</span>
             <span id="live-clock">12:00 PM</span>
         </div>
     </div>

@@ -1,11 +1,12 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 Alpha v1.8.0 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.0.0 Core)
+import { getIcon } from './icons.js';
 
 // No build pipeline generates this — it's the short commit hash as of the
 // last time this file was edited, updated by hand alongside version bumps.
-const BUILD_GIT_HASH = "cf604bd";
+const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "1.8.0", 
+    version: "2.0.0", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -88,7 +89,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 1.8.0! Persistent storage disk saving is now active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.0.0! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -147,7 +148,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v1.8.0...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.0.0 Pro...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -166,7 +167,7 @@ function initializeBootSequence() {
                     module.showLogonScreen((username) => {
                         systemState.currentUser = username;
                         const userTag = document.getElementById('current-user-tag');
-                        if (userTag) userTag.textContent = `👤 ${username}`;
+                        if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
                         logKernel(`Session: User '${username}' signed in.`);
                     });
                 } catch (err) {
@@ -234,7 +235,7 @@ export function closeWindow(uniqueId) {
     logKernel(`Window closed: ${uniqueId}`);
 }
 
-export function createWindow(title, icon, uniqueId) {
+export function createWindow(title, iconName, uniqueId) {
     const workspace = document.getElementById('window-workspace');
     const tabsZone = document.getElementById('taskbar-tabs-zone');
     
@@ -242,7 +243,7 @@ export function createWindow(title, icon, uniqueId) {
     if (existingWin) {
         if (existingWin.classList.contains('hidden-view')) {
             existingWin.classList.remove('hidden-view');
-            document.getElementById(`tab-${uniqueId}`).classList.add('active-tab');
+            document.getElementById(`tab-${uniqueId}`)?.classList.add('active-tab');
         }
         bringToFront(existingWin);
         return null;
@@ -257,12 +258,14 @@ export function createWindow(title, icon, uniqueId) {
     win.style.top = `${60 + (currentWindows * 25)}px`;
     win.style.left = `${60 + (currentWindows * 25)}px`;
 
+    const iconSvg = iconName.includes('<svg') ? iconName : getIcon(iconName);
+
     win.innerHTML = `
         <div class="window-header" style="cursor: move;">
-            <div class="window-title"><span>${icon}</span> ${title}</div>
+            <div class="window-title"><span class="win-title-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${title}</div>
             <div class="window-controls">
                 <button class="win-btn" id="win-min-${uniqueId}">_</button>
-                <button class="win-btn" id="win-max-${uniqueId}">⤏</button>
+                <button class="win-btn" id="win-max-${uniqueId}">□</button>
                 <button class="win-btn" id="win-close-${uniqueId}">X</button>
             </div>
         </div>
@@ -276,7 +279,7 @@ export function createWindow(title, icon, uniqueId) {
     const tab = document.createElement('div');
     tab.className = 'taskbar-tab active-tab';
     tab.id = `tab-${uniqueId}`;
-    tab.innerHTML = `<span>${icon}</span> ${title}`;
+    tab.innerHTML = `<span class="taskbar-tab-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${title}`;
     tabsZone.appendChild(tab);
 
     tab.addEventListener('click', () => {
@@ -411,7 +414,7 @@ async function launchApplication(appId, customFileName = null) {
 
     switch (appId) {
         case 'start-link-files':
-            const explorerBody = createWindow("Zeb Explorer", "📁", "explorer-root");
+            const explorerBody = createWindow("Zeb Explorer", "explorer", "explorer-root");
             if (explorerBody) {
                 renderZebExplorer(explorerBody);
             }
@@ -421,7 +424,7 @@ async function launchApplication(appId, customFileName = null) {
             const winId = 'app-terminal';
             try {
                 const module = await import('./programs/terminal.js');
-                const termBody = createWindow("Zeb Terminal", "🐚", winId);
+                const termBody = createWindow("Zeb Terminal", "terminal", winId);
                 if (termBody) {
                     const shellApi = {
                         getContext: () => getActiveFolderContext(),
@@ -445,18 +448,13 @@ async function launchApplication(appId, customFileName = null) {
         }
 
         case 'start-link-text-editor':
-            // FIX: If a filename is passed by Explorer, use it. Otherwise fallback to untitled.txt
             const targetEditFile = customFileName || "untitled.txt";
             try {
                 const module = await import('./programs/editor.js');
-                
-                // Read content from the context based on the correct filename variable
                 const existingContent = currentContext[targetEditFile] ? currentContext[targetEditFile].content : "";
-                
-                // Generate a unique window ID using the file name string to avoid frame conflicts
                 const cleanId = targetEditFile.replace(/[^a-zA-Z0-9]/g, '');
                 const winId = `edit-${cleanId}`;
-                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "📝", winId);
+                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "editor", winId);
 
                 if (appBodyElement) {
                     const editorInstance = new module.TextEditor(
@@ -466,11 +464,7 @@ async function launchApplication(appId, customFileName = null) {
                             if (savedName) {
                                 const saveContext = getActiveFolderContext();
                                 saveContext[savedName] = { type: "file", content: savedData };
-
-                                // Call your localStorage persistent write system
                                 saveFileSystem();
-
-                                // Repaint open Explorer grids immediately to list the fresh document row
                                 const activeExp = document.querySelector('.explorer-grid');
                                 if (activeExp) renderZebExplorer(activeExp.parentElement);
                             }
@@ -488,11 +482,90 @@ async function launchApplication(appId, customFileName = null) {
             }
             break;
 
+        case 'start-link-paint': {
+            const winId = 'app-paint';
+            try {
+                const module = await import('./programs/paint.js');
+                const paintBody = createWindow("Paint", "paint", winId);
+                if (paintBody) {
+                    const paintInstance = new module.PaintApp(
+                        () => closeWindow(winId),
+                        (filename, dataUrl) => {
+                            const saveContext = getActiveFolderContext();
+                            saveContext[filename] = { type: "file", content: dataUrl };
+                            saveFileSystem();
+                            const activeExp = document.querySelector('.explorer-grid');
+                            if (activeExp) renderZebExplorer(activeExp.parentElement);
+                        }
+                    );
+                    registerWindowCleanup(winId, () => paintInstance.cleanup());
+                    paintInstance.open(paintBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount paint.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-mines': {
+            const winId = 'app-mines';
+            try {
+                const module = await import('./programs/mines.js');
+                const minesBody = createWindow("Minesweeper", "mines", winId);
+                if (minesBody) {
+                    const minesInstance = new module.MinesweeperGame(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => minesInstance.cleanup());
+                    minesInstance.open(minesBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount mines.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-media': {
+            const winId = 'app-media';
+            try {
+                const module = await import('./programs/media.js');
+                const mediaBody = createWindow("Media Player", "media", winId);
+                if (mediaBody) {
+                    const mediaInstance = new module.MediaPlayer(
+                        () => closeWindow(winId),
+                        (filename) => {
+                            const saveContext = getActiveFolderContext();
+                            return saveContext[filename] ? saveContext[filename].content : null;
+                        }
+                    );
+                    registerWindowCleanup(winId, () => mediaInstance.cleanup());
+                    mediaInstance.open(mediaBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount media.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-vm': {
+            const winId = 'app-vm';
+            try {
+                const module = await import('./programs/vm.js');
+                const vmBody = createWindow("ZebVM Manager", "vm", winId);
+                if (vmBody) {
+                    const vmInstance = new module.ZebVMManager(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => vmInstance.cleanup());
+                    vmInstance.open(vmBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount vm.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
         case 'start-link-calc': {
             const winId = 'app-calc';
             try {
                 const module = await import('./programs/calc.js');
-                const calcBody = createWindow("Calculator", "🧮", winId);
+                const calcBody = createWindow("Calculator", "calc", winId);
                 if (calcBody) {
                     const calcInstance = new module.RetroCalculator(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => calcInstance.cleanup());
@@ -508,7 +581,7 @@ async function launchApplication(appId, customFileName = null) {
             const winId = 'app-snake';
             try {
                 const module = await import('./programs/snake.js');
-                const snakeBody = createWindow("Snake", "🐍", winId);
+                const snakeBody = createWindow("Snake", "snake", winId);
                 if (snakeBody) {
                     const snakeInstance = new module.SnakeGame(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => snakeInstance.cleanup());
@@ -524,7 +597,7 @@ async function launchApplication(appId, customFileName = null) {
             const winId = 'app-courgette';
             try {
                 const module = await import('./courgette/courgette.js');
-                const cgBody = createWindow("Courgette Info", "🥒", winId);
+                const cgBody = createWindow("Courgette Info", "courgette", winId);
                 if (cgBody) {
                     const counts = countFilesystemEntries(systemState.fileSystem);
                     const diskBytes = new Blob([JSON.stringify(systemState.fileSystem)]).size;
@@ -547,27 +620,6 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
             break;
-
-        default:
-            const fallbackTitles = {
-                'start-link-paint': { name: "Paint", icon: "🎨" },
-                'start-link-mines': { name: "Minesweeper", icon: "💣" },
-                'start-link-media': { name: "Media Player", icon: "🎬" },
-                'start-link-vm': { name: "ZebVM Manager", icon: "🎛️" }
-            };
-
-            if (fallbackTitles[appId]) {
-                const app = fallbackTitles[appId];
-                const placeholderBody = createWindow(app.name, app.icon, appId);
-                if (placeholderBody) {
-                    placeholderBody.innerHTML = `
-                        <div style="padding:20px; font-size:14px; color:#000000; font-family:sans-serif;">
-                            <strong>${app.name}</strong> core architecture coming soon in Phase 4!
-                        </div>
-                    `;
-                }
-            }
-            break;
     }
 }
 
@@ -578,8 +630,8 @@ function renderZebExplorer(containerElement) {
     containerElement.innerHTML = `
         <div class="explorer-container">
             <div class="explorer-toolbar">
-                <button class="explorer-btn" id="exp-btn-up">🔼 Up to Root</button>
-                <button class="explorer-btn" id="exp-btn-mkdir">📁 New Folder</button>
+                <button class="explorer-btn" id="exp-btn-up">${getIcon('up')} Up to Root</button>
+                <button class="explorer-btn" id="exp-btn-mkdir">${getIcon('newFolder')} New Folder</button>
             </div>
             <div class="explorer-grid"></div>
         </div>
@@ -597,7 +649,7 @@ function renderZebExplorer(containerElement) {
         
         Object.keys(context).forEach(name => {
             const item = context[name];
-            const icon = item.type === "dir" ? "📁" : "📄";
+            const icon = item.type === "dir" ? getIcon('folder') : getIcon('file');
             
             const itemEl = document.createElement('div');
             itemEl.className = 'explorer-item';
@@ -628,7 +680,7 @@ function renderZebExplorer(containerElement) {
         if (folderName && folderName.trim() !== "") {
             const context = getActiveFolderContext();
             context[folderName.trim()] = { type: "dir", content: {} };
-            saveFileSystem(); // Save changes permanently to disk
+            saveFileSystem();
             refreshExplorerGrid();
         }
     });
@@ -695,23 +747,28 @@ function shellRemove(name) {
 // DESKTOP SHORTCUT ICONS
 // ==========================================================================
 const DESKTOP_SHORTCUTS = [
-    { id: 'start-link-files', icon: '📁', label: 'Zeb Explorer' },
-    { id: 'start-link-text-editor', icon: '📝', label: 'Text Editor' },
-    { id: 'start-link-prompt', icon: '🐚', label: 'Zeb Terminal' },
-    { id: 'start-link-calc', icon: '🧮', label: 'Calculator' },
-    { id: 'start-link-snake', icon: '🐍', label: 'Snake' },
-    { id: 'start-link-courgette', icon: '🥒', label: 'Courgette Info' }
+    { id: 'start-link-files', icon: 'explorer', label: 'Zeb Explorer' },
+    { id: 'start-link-text-editor', icon: 'editor', label: 'Text Editor' },
+    { id: 'start-link-prompt', icon: 'terminal', label: 'Zeb Terminal' },
+    { id: 'start-link-paint', icon: 'paint', label: 'Paint' },
+    { id: 'start-link-mines', icon: 'mines', label: 'Minesweeper' },
+    { id: 'start-link-calc', icon: 'calc', label: 'Calculator' },
+    { id: 'start-link-snake', icon: 'snake', label: 'Snake' },
+    { id: 'start-link-media', icon: 'media', label: 'Media Player' },
+    { id: 'start-link-vm', icon: 'vm', label: 'ZebVM Manager' },
+    { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette Info' }
 ];
 
 function renderDesktopIcons() {
     const zone = document.getElementById('desktop-icons-zone');
     if (!zone) return;
+    zone.innerHTML = '';
 
     DESKTOP_SHORTCUTS.forEach(shortcut => {
         const iconEl = document.createElement('div');
         iconEl.className = 'desktop-icon';
         iconEl.innerHTML = `
-            <div class="desktop-icon-glyph">${shortcut.icon}</div>
+            <div class="desktop-icon-glyph">${getIcon(shortcut.icon)}</div>
             <div class="desktop-icon-label">${shortcut.label}</div>
         `;
         iconEl.addEventListener('dblclick', () => launchApplication(shortcut.id));
@@ -728,6 +785,26 @@ function setupStartMenuController() {
     const startBtn = document.getElementById('start-button');
     const startMenu = document.getElementById('start-menu');
 
+    // Render Start logo & User icon
+    const startLogoEl = document.querySelector('.start-logo');
+    if (startLogoEl) startLogoEl.innerHTML = getIcon('startLogo');
+
+    const userTagEl = document.getElementById('current-user-tag');
+    if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${systemState.currentUser}</span>`;
+
+    // Populate start menu SVG icons
+    const menuItems = document.querySelectorAll('.start-menu-item');
+    menuItems.forEach(item => {
+        const iconName = item.dataset.icon;
+        const iconSpan = item.querySelector('.menu-icon');
+        if (iconName && iconSpan) {
+            iconSpan.innerHTML = getIcon(iconName);
+        }
+        item.addEventListener('click', () => {
+            launchApplication(item.id);
+        });
+    });
+
     startBtn.addEventListener('click', (e) => {
         e.stopPropagation(); 
         startMenu.classList.toggle('hidden-view');
@@ -737,13 +814,6 @@ function setupStartMenuController() {
         if (!startMenu.classList.contains('hidden-view')) {
             startMenu.classList.add('hidden-view');
         }
-    });
-
-    const menuItems = document.querySelectorAll('.start-menu-item');
-    menuItems.forEach(item => {
-        item.addEventListener('click', () => {
-            launchApplication(item.id);
-        });
     });
 }
 
