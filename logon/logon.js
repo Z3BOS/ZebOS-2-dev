@@ -16,13 +16,13 @@ export function showLogonScreen(onSignedIn) {
     `;
 
     screen.innerHTML = `
-        <div style="width:300px; background-color:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 16px rgba(0,0,0,0.5); padding:24px 20px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:8px; font-family:Arial, sans-serif;">
-            <div style="width:72px; height:72px; display:flex; align-items:center; justify-content:center;">${getIcon('officialZLogo')}</div>
+        <div style="width:310px; background-color:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 16px rgba(0,0,0,0.5); padding:24px 20px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:8px; font-family:Arial, sans-serif;">
+            <img src="assets/system/z_logo.png" style="width:72px; height:72px; object-fit:contain; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));" alt="ZebOS Logo">
             <div style="font-size:20px; font-weight:bold; color:#000080; letter-spacing:0.5px;">ZebOS 2 Pro</div>
             <div style="font-size:12px; color:#404040; margin-bottom:10px;">Welcome back</div>
             <input class="logon-username" type="text" value="guest" autocomplete="off" spellcheck="false" style="width:100%; box-sizing:border-box; padding:6px 8px; font-size:13px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff; font-family:Arial, sans-serif;">
             <input class="logon-password" type="password" placeholder="Password (optional)" autocomplete="off" style="width:100%; box-sizing:border-box; padding:6px 8px; font-size:13px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff; font-family:Arial, sans-serif;">
-            <button class="logon-btn" style="width:100%; margin-top:6px; padding:7px 8px; font-size:13px; font-weight:bold; cursor:pointer; background-color:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; display:flex; align-items:center; justify-content:center; gap:6px;">Sign In</button>
+            <button class="logon-btn" style="width:100%; margin-top:6px; padding:7px 8px; font-size:13px; font-weight:bold; cursor:pointer; background-color:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; display:flex; align-items:center; justify-content:center; gap:6px;">Sign In &rarr;</button>
             <div style="font-size:11px; color:#404040; text-align:center; margin-top:6px;">Any username works — this is a local guest session.</div>
         </div>
     `;
@@ -38,9 +38,9 @@ export function showLogonScreen(onSignedIn) {
 
     function completeSignIn() {
         const username = userInput.value.trim() || 'guest';
-        screen.style.opacity = "0";
-        setTimeout(() => screen.remove(), 400);
         onSignedIn(username);
+        screen.style.opacity = "0";
+        setTimeout(() => screen.remove(), 500);
     }
 
     btn.addEventListener('click', completeSignIn);
