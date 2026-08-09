@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.4.0 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.5.0 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,14 +7,19 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.4.0", 
-    currentUser: "guest", 
+    version: "2.5.0",
+    currentUser: "guest",
     uptime: 0,
     activeApp: null,
-    currentDirectory: "", // "" means root directory. Matches folder name if nested (e.g., "documents")
-    desktopSortBy: "type", // Default sort by type for all users
+    currentDirectory: "",
+    desktopSortBy: "type",
     autoArrange: true,
-    fileSystem: {} // Initialized dynamically below from local disk image
+    desktopBackground: '#008080',
+    desktopPattern: 'solid',
+    desktopScheme: 'standard',
+    uiFontSize: '12',
+    roundedCorners: false,
+    fileSystem: {}
 };
 
 let topZIndex = 100; // Track screen depth layers globally across desktop workspace
@@ -65,11 +70,17 @@ function enterDevMode() {
 
 function loadFileSystem() {
     const diskImage = localStorage.getItem('ZEBOS_V2_DISK');
-    const savedBg = localStorage.getItem('ZEBOS_V2_BG');
-    if (savedBg) {
-        systemState.desktopBackground = savedBg;
-        const canvas = document.getElementById('desktop-canvas');
-        if (canvas) canvas.style.backgroundColor = savedBg;
+    // Restore persisted OS appearance settings
+    const savedSettings = localStorage.getItem('ZEBOS_V2_SETTINGS');
+    if (savedSettings) {
+        try {
+            const s = JSON.parse(savedSettings);
+            if (s.color)          systemState.desktopBackground = s.color;
+            if (s.pattern)        systemState.desktopPattern    = s.pattern;
+            if (s.scheme)         systemState.desktopScheme     = s.scheme;
+            if (s.fontSize)       systemState.uiFontSize        = s.fontSize;
+            if (s.roundedCorners !== undefined) systemState.roundedCorners = s.roundedCorners;
+        } catch(e) { /* ignore */ }
     }
 
     if (diskImage) {
@@ -90,18 +101,79 @@ export function saveFileSystem() {
     try {
         const serializedFS = JSON.stringify(systemState.fileSystem);
         localStorage.setItem('ZEBOS_V2_DISK', serializedFS);
-        if (systemState.desktopBackground) {
-            localStorage.setItem('ZEBOS_V2_BG', systemState.desktopBackground);
-        }
+        // Persist OS appearance settings
+        const settings = {
+            color:          systemState.desktopBackground,
+            pattern:        systemState.desktopPattern,
+            scheme:         systemState.desktopScheme,
+            fontSize:       systemState.uiFontSize,
+            roundedCorners: systemState.roundedCorners,
+        };
+        localStorage.setItem('ZEBOS_V2_SETTINGS', JSON.stringify(settings));
         logKernel("Storage System: Changes committed to local storage sectors successfully.");
     } catch (err) {
         logKernel(`Storage System Error: Write operation failed to commit. (${err.message})`, "ERROR");
     }
 }
 
+// Apply all OS appearance settings to live DOM
+function applyOsSettings(settings) {
+    const desktop = document.getElementById('desktop-canvas');
+    if (!desktop) return;
+
+    // Background color + pattern
+    const color   = settings.color   || systemState.desktopBackground || '#008080';
+    const pattern = settings.pattern || systemState.desktopPattern    || 'solid';
+    desktop.style.backgroundColor = color;
+    if (pattern === 'gradient') {
+        desktop.style.backgroundImage = `linear-gradient(135deg, ${color} 0%, #000080 100%)`;
+    } else if (pattern === 'grid') {
+        desktop.style.backgroundImage = `repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0px,rgba(0,0,0,.12) 1px,transparent 1px,transparent 24px),repeating-linear-gradient(90deg,rgba(0,0,0,.12) 0px,rgba(0,0,0,.12) 1px,transparent 1px,transparent 24px)`;
+    } else if (pattern === 'diamonds') {
+        desktop.style.backgroundImage = `repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0px,rgba(255,255,255,.06) 8px,transparent 8px,transparent 16px),repeating-linear-gradient(-45deg,rgba(255,255,255,.06) 0px,rgba(255,255,255,.06) 8px,transparent 8px,transparent 16px)`;
+    } else if (pattern === 'dots') {
+        desktop.style.backgroundImage = `radial-gradient(rgba(255,255,255,.15) 1px,transparent 1px)`;
+        desktop.style.backgroundSize  = '20px 20px';
+    } else {
+        desktop.style.backgroundImage = 'none';
+        desktop.style.backgroundSize  = '';
+    }
+
+    // Color scheme — apply CSS custom properties that window headers reference
+    const schemes = {
+        'standard':      { '--os-titlebar-bg': '#000080', '--os-titlebar-fg': '#ffffff' },
+        'high-contrast': { '--os-titlebar-bg': '#000000', '--os-titlebar-fg': '#ffffff' },
+        'rose':          { '--os-titlebar-bg': '#8b1a4a', '--os-titlebar-fg': '#ffffff' },
+        'emerald':       { '--os-titlebar-bg': '#064e3b', '--os-titlebar-fg': '#ffffff' },
+        'midnight':      { '--os-titlebar-bg': '#1a237e', '--os-titlebar-fg': '#ffffff' },
+    };
+    const scheme = schemes[settings.scheme] || schemes['standard'];
+    Object.entries(scheme).forEach(([prop, val]) => document.documentElement.style.setProperty(prop, val));
+
+    // Font size
+    if (settings.fontSize) {
+        document.documentElement.style.setProperty('--os-font-size', settings.fontSize + 'px');
+        document.body.style.fontSize = settings.fontSize + 'px';
+    }
+
+    // Rounded corners
+    if (settings.roundedCorners) {
+        document.body.classList.add('rounded-corners');
+    } else {
+        document.body.classList.remove('rounded-corners');
+    }
+
+    // Update systemState
+    systemState.desktopBackground = color;
+    systemState.desktopPattern    = pattern;
+    if (settings.scheme)         systemState.desktopScheme   = settings.scheme;
+    if (settings.fontSize)       systemState.uiFontSize      = settings.fontSize;
+    if (settings.roundedCorners !== undefined) systemState.roundedCorners = settings.roundedCorners;
+}
+
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.4.0! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.0! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -160,7 +232,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.4.0 Alpha...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.5.0 Alpha...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -183,6 +255,14 @@ function initializeBootSequence() {
                         if (desktopCanvas) {
                             desktopCanvas.style.display = 'block';
                             requestAnimationFrame(() => { desktopCanvas.style.opacity = '1'; });
+                            // Apply persisted appearance settings
+                            applyOsSettings({
+                                color:          systemState.desktopBackground,
+                                pattern:        systemState.desktopPattern,
+                                scheme:         systemState.desktopScheme,
+                                fontSize:       systemState.uiFontSize,
+                                roundedCorners: systemState.roundedCorners,
+                            });
                         }
                         if (taskbar) {
                             taskbar.style.display = 'flex';
@@ -695,19 +775,19 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/personalize.js');
                 const pBody = createWindow("Display Properties", "personalize", winId);
                 if (pBody) {
-                    setWindowBounds(pBody, 460, 480);
+                    setWindowBounds(pBody, 470, 490);
                     const pInstance = new module.PersonalizeApp(
                         () => closeWindow(winId),
-                        (bgColor, pattern) => {
-                            systemState.desktopBackground = bgColor;
-                            const desktopCanvas = document.getElementById('desktop-canvas');
-                            if (desktopCanvas) {
-                                desktopCanvas.style.backgroundColor = bgColor;
-                            }
+                        (settings) => {
+                            // settings = { color, pattern, scheme, fontSize, roundedCorners }
+                            applyOsSettings(settings);
                             saveFileSystem();
-                            logKernel(`Personalize: Updated desktop background color to ${bgColor}.`);
+                            logKernel(`Personalize: Applied settings — color:${settings.color} pattern:${settings.pattern} scheme:${settings.scheme}`);
                         },
-                        systemState.desktopBackground || '#008080'
+                        systemState.desktopBackground || '#008080',
+                        systemState.desktopPattern    || 'solid',
+                        systemState.desktopScheme     || 'standard',
+                        systemState.roundedCorners    || false
                     );
                     registerWindowCleanup(winId, () => {});
                     pInstance.open(pBody);

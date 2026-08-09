@@ -1,256 +1,297 @@
-// programs/personalize.js - ZebOS 2 Authentic Windows 95 Display Properties Applet Engine
-import { getIcon } from '../icons.js';
+// programs/personalize.js - ZebOS 2 Alpha Display Properties Applet v2.5.0
+// All settings actually apply to the live OS. No browser page reloads.
 
 export class PersonalizeApp {
-    constructor(onCloseRequest, onApplyCallback, currentBg = '#008080') {
+    constructor(onCloseRequest, onApplyCallback, currentBg, currentPattern, currentScheme, currentRoundedCorners) {
         this.onCloseRequest = onCloseRequest;
-        this.onApplyCallback = onApplyCallback;
+        this.onApplyCallback = onApplyCallback; // fn(settings) where settings = { color, pattern, scheme, fontSize, roundedCorners }
 
-        this.initialColor = currentBg || '#008080';
-        this.selectedColor = this.initialColor;
-        this.selectedPattern = 'solid';
-        this.selectedScheme = 'standard';
-        this.selectedResolution = '1024x768';
-        this.colorDepth = '32bit';
-        this.activeTab = 'background'; // 'background', 'appearance', 'settings'
-        
+        // Load initial state from what's currently applied
+        this.initialState = {
+            color: currentBg || '#008080',
+            pattern: currentPattern || 'solid',
+            scheme: currentScheme || 'standard',
+            fontSize: document.documentElement.style.getPropertyValue('--os-font-size') || '12',
+            roundedCorners: currentRoundedCorners || false,
+        };
+
+        // Working state (changes before Apply)
+        this.workingState = { ...this.initialState };
+
+        this.activeTab = 'background';
         this.isDirty = false;
         this.container = null;
 
         this.colorPresets = [
-            { name: "Classic Teal", hex: "#008080" },
-            { name: "Windows Blue", hex: "#000080" },
-            { name: "Slate Gray", hex: "#1f2937" },
-            { name: "Emerald Green", hex: "#064e3b" },
-            { name: "Cyber Purple", hex: "#2d1b4e" },
-            { name: "Matrix Black", hex: "#000000" }
+            { name: "Classic Teal",    hex: "#008080" },
+            { name: "ZebOS Blue",      hex: "#000080" },
+            { name: "Slate Gray",      hex: "#1f2937" },
+            { name: "Emerald Green",   hex: "#064e3b" },
+            { name: "Cyber Purple",    hex: "#2d1b4e" },
+            { name: "Matrix Black",    hex: "#111111" },
         ];
+
+        this.schemes = {
+            'standard':      { name: 'ZebOS Classic (Gray)',    titlebar: '#000080', titlebarbg: '#c0c0c0', wbg: '#c0c0c0' },
+            'high-contrast': { name: 'High Contrast Dark',      titlebar: '#ffffff', titlebarbg: '#000000', wbg: '#1a1a1a' },
+            'rose':          { name: 'Rose Retro',              titlebar: '#ffffff', titlebarbg: '#8b1a4a', wbg: '#c0c0c0' },
+            'emerald':       { name: 'Emerald Desktop',         titlebar: '#ffffff', titlebarbg: '#064e3b', wbg: '#c0c0c0' },
+            'midnight':      { name: 'Midnight Blue',           titlebar: '#ffffff', titlebarbg: '#1a237e', wbg: '#c0c0c0' },
+        };
     }
 
     open(windowBodyElement) {
         this.container = windowBodyElement;
-        this.container.style.height = "100%";
+        this.container.style.height = '100%';
         this.render();
     }
 
+    // -----------------------------------------------------------------------
+    // FULL RENDER — only called on tab switch or initial open
+    // -----------------------------------------------------------------------
     render() {
         if (!this.container) return;
+        const ws = this.workingState;
 
         this.container.innerHTML = `
-            <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; font-family:Arial, Helvetica, sans-serif; font-size:11px; padding:6px; box-sizing:border-box; user-select:none; overflow:hidden;">
-                
-                <!-- Authentic Windows 95 Tab Bar -->
-                <div style="display:flex; border-bottom:2px solid #ffffff; gap:2px; flex-shrink:0; padding-left:4px;">
-                    <button class="p-tab-btn ${this.activeTab === 'background' ? 'active-tab-btn' : ''}" data-tab="background" style="padding:4px 12px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:${this.activeTab === 'background' ? '#000000' : '#808080'}; border-bottom:none; font-weight:${this.activeTab === 'background' ? 'bold' : 'normal'}; cursor:pointer; margin-bottom:-2px; z-index:${this.activeTab === 'background' ? '2' : '1'}; outline:none;">Background</button>
-                    <button class="p-tab-btn ${this.activeTab === 'appearance' ? 'active-tab-btn' : ''}" data-tab="appearance" style="padding:4px 12px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:${this.activeTab === 'appearance' ? '#000000' : '#808080'}; border-bottom:none; font-weight:${this.activeTab === 'appearance' ? 'bold' : 'normal'}; cursor:pointer; margin-bottom:-2px; z-index:${this.activeTab === 'appearance' ? '2' : '1'}; outline:none;">Appearance</button>
-                    <button class="p-tab-btn ${this.activeTab === 'settings' ? 'active-tab-btn' : ''}" data-tab="settings" style="padding:4px 12px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:${this.activeTab === 'settings' ? '#000000' : '#808080'}; border-bottom:none; font-weight:${this.activeTab === 'settings' ? 'bold' : 'normal'}; cursor:pointer; margin-bottom:-2px; z-index:${this.activeTab === 'settings' ? '2' : '1'}; outline:none;">Settings</button>
-                </div>
+<div id="p-root" style="display:flex;flex-direction:column;height:100%;background:#c0c0c0;font-family:Arial,Helvetica,sans-serif;font-size:11px;padding:6px;box-sizing:border-box;user-select:none;overflow:hidden;">
 
-                <!-- Main Dialog 3D Inset Panel Box -->
-                <div style="flex-grow:1; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; padding:10px; display:flex; flex-direction:column; gap:10px; box-sizing:border-box; overflow-y:auto;">
-                    
-                    ${this.renderTopPreview()}
+  <!-- Tab strip -->
+  <div style="display:flex;border-bottom:2px solid #ffffff;gap:2px;flex-shrink:0;padding-left:4px;">
+    ${['background','appearance','settings'].map(tab => `
+      <button class="p-tab-btn" data-tab="${tab}" style="
+        padding:4px 12px;background:#c0c0c0;
+        border:2px solid #ffffff;
+        border-right-color:${this.activeTab===tab?'#000000':'#808080'};
+        border-bottom:none;
+        font-weight:${this.activeTab===tab?'bold':'normal'};
+        cursor:pointer;margin-bottom:-2px;
+        z-index:${this.activeTab===tab?'2':'1'};outline:none;
+        font-family:Arial,sans-serif;font-size:11px;">
+        ${tab.charAt(0).toUpperCase()+tab.slice(1)}
+      </button>`).join('')}
+  </div>
 
-                    ${this.renderTabContent()}
-                </div>
+  <!-- Main content box -->
+  <div style="flex-grow:1;background:#c0c0c0;border:2px solid #ffffff;border-right-color:#808080;border-bottom-color:#808080;padding:10px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box;overflow-y:auto;">
 
-                <!-- Windows 95 Buttons: OK | Cancel | Apply -->
-                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px; flex-shrink:0;">
-                    <button id="p-btn-ok" style="padding:4px 18px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; font-size:11px; outline:none;">OK</button>
-                    <button id="p-btn-cancel" style="padding:4px 14px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-size:11px; outline:none;">Cancel</button>
-                    <button id="p-btn-apply" ${this.isDirty ? '' : 'disabled'} style="padding:4px 14px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:${this.isDirty ? '#000000' : '#808080'}; border-bottom-color:${this.isDirty ? '#000000' : '#808080'}; color:${this.isDirty ? '#000000' : '#808080'}; cursor:${this.isDirty ? 'pointer' : 'default'}; font-size:11px; outline:none; text-shadow:${this.isDirty ? 'none' : '1px 1px 0px #ffffff'};">Apply</button>
-                </div>
-            </div>
-        `;
+    ${this.renderPreview()}
+    ${this.renderTabContent()}
 
+  </div>
+
+  <!-- Button bar -->
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;flex-shrink:0;">
+    <button id="p-btn-ok"     style="padding:4px 18px;background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;cursor:pointer;font-weight:bold;font-size:11px;outline:none;">OK</button>
+    <button id="p-btn-cancel" style="padding:4px 14px;background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;cursor:pointer;font-size:11px;outline:none;">Cancel</button>
+    <button id="p-btn-apply" ${!ws._dirty?'disabled':''} style="
+      padding:4px 14px;background:#c0c0c0;
+      border:2px solid #fff;
+      border-right-color:${this.isDirty?'#000':'#808080'};
+      border-bottom-color:${this.isDirty?'#000':'#808080'};
+      color:${this.isDirty?'#000':'#808080'};
+      cursor:${this.isDirty?'pointer':'default'};
+      font-size:11px;outline:none;
+      text-shadow:${this.isDirty?'none':'1px 1px 0 #fff'};">Apply</button>
+  </div>
+</div>`;
+
+        this.refreshApplyState();
         this.bindEvents();
     }
 
-    renderTopPreview() {
+    // -----------------------------------------------------------------------
+    // PREVIEW PANEL — CRT Monitor for bg/settings, Window Preview for appearance
+    // -----------------------------------------------------------------------
+    renderPreview() {
         if (this.activeTab === 'appearance') {
-            // Windows 95 Appearance Scheme Live Window Preview Box (Screenshot 4)
+            const scheme = this.schemes[this.workingState.scheme] || this.schemes['standard'];
             return `
-                <div style="width:100%; height:140px; background:${this.selectedColor}; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; box-sizing:border-box; position:relative; overflow:hidden; margin-bottom:4px; flex-shrink:0;">
-                    
-                    <!-- Inactive Window Frame -->
-                    <div style="position:absolute; top:8px; left:12px; width:220px; height:90px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; box-shadow:2px 2px 6px rgba(0,0,0,0.5);">
-                        <div style="background:#808080; height:14px; color:#c0c0c0; font-size:9px; padding:1px 4px; font-weight:bold; display:flex; align-items:center; justify-content:space-between;">
-                            <span>Inactive Window</span>
-                            <span style="font-size:8px;">×</span>
-                        </div>
-                        <div style="padding:4px; font-size:9px; color:#000;">Normal text area</div>
-                    </div>
-
-                    <!-- Active Window Frame -->
-                    <div style="position:absolute; top:28px; left:36px; width:240px; height:96px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; box-shadow:3px 3px 8px rgba(0,0,0,0.6);">
-                        <div style="background:#000080; height:15px; color:#ffffff; font-size:9px; padding:1px 4px; font-weight:bold; display:flex; align-items:center; justify-content:space-between;">
-                            <span>Active Window</span>
-                            <span style="font-size:8px;">×</span>
-                        </div>
-                        <div style="padding:6px; font-size:9px; color:#000; background:#c0c0c0;">
-                            <div style="background:#ffffff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:4px; height:45px; box-sizing:border-box; font-size:9px;">
-                                Window Text Content Area
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Floating Message Box -->
-                    <div style="position:absolute; top:55px; left:120px; width:150px; height:60px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; box-shadow:4px 4px 10px rgba(0,0,0,0.7); z-index:5;">
-                        <div style="background:#000080; height:13px; color:#ffffff; font-size:8px; padding:1px 4px; font-weight:bold;">Message Box</div>
-                        <div style="padding:4px 6px; font-size:8.5px; color:#000; display:flex; flex-direction:column; align-items:center; gap:4px;">
-                            <div>Message Text</div>
-                            <div style="padding:1px 10px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; font-size:8px; font-weight:bold; cursor:pointer;">OK</div>
-                        </div>
-                    </div>
-
+            <div id="p-preview-box" style="width:100%;height:130px;background:${this.workingState.color};border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;box-sizing:border-box;position:relative;overflow:hidden;flex-shrink:0;">
+              <!-- Inactive window -->
+              <div style="position:absolute;top:8px;left:10px;width:200px;height:80px;background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;box-shadow:2px 2px 6px rgba(0,0,0,.5);">
+                <div id="p-scheme-inactive-bar" style="background:#808080;height:13px;color:#c0c0c0;font-size:8px;padding:1px 4px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;">
+                  <span>Inactive Window</span><span>×</span>
                 </div>
-            `;
+                <div style="padding:4px;font-size:8px;color:#000;">Normal text area</div>
+              </div>
+              <!-- Active window -->
+              <div style="position:absolute;top:26px;left:32px;width:220px;height:88px;background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;box-shadow:3px 3px 8px rgba(0,0,0,.6);">
+                <div id="p-scheme-active-bar" style="background:${scheme.titlebarbg};height:14px;color:${scheme.titlebar};font-size:8px;padding:1px 4px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;">
+                  <span>Active Window</span><span>×</span>
+                </div>
+                <div style="padding:5px;font-size:8px;background:#c0c0c0;height:calc(100% - 14px);box-sizing:border-box;">
+                  <div style="background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;padding:3px;height:40px;box-sizing:border-box;font-size:7px;">Window Text</div>
+                </div>
+              </div>
+              <!-- Message box -->
+              <div style="position:absolute;top:50px;left:108px;width:140px;height:56px;background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;box-shadow:4px 4px 10px rgba(0,0,0,.7);z-index:5;">
+                <div style="background:${scheme.titlebarbg};height:12px;color:${scheme.titlebar};font-size:7px;padding:1px 4px;font-weight:bold;">Message Box</div>
+                <div style="padding:3px 5px;font-size:8px;color:#000;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                  <div>Message Text</div>
+                  <div style="padding:1px 8px;background:#c0c0c0;border:1px solid #fff;border-right-color:#000;border-bottom-color:#000;font-size:7px;font-weight:bold;">OK</div>
+                </div>
+              </div>
+            </div>`;
         }
 
-        // Standard Background / Settings Tab Retro CRT Monitor Live Preview Box (Screenshot 2 & 3)
-        return `
-            <div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0; margin-bottom:4px;">
-                <!-- CRT Chassis Outer Frame -->
-                <div style="width:230px; height:140px; background:#d4d0c8; border:2px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; border-radius:10px; padding:8px 8px 12px 8px; box-shadow:inset -1px -1px 0px #444444, inset 1px 1px 0px #ffffff; display:flex; flex-direction:column; align-items:center; position:relative; box-sizing:border-box;">
-                    
-                    <!-- Inner Screen Bezel -->
-                    <div style="width:100%; height:108px; background:#222222; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; border-radius:3px; padding:2px; box-sizing:border-box; position:relative;">
-                        
-                        <!-- CRT Screen Viewport (Live Wallpaper Color & Windows Preview) -->
-                        <div id="crt-screen-viewport" style="width:100%; height:100%; background:${this.selectedColor}; position:relative; overflow:hidden; transition:background 0.15s ease-in-out;">
-                            
-                            <!-- Mini Desktop Icons (Left Column) -->
-                            <div style="position:absolute; top:4px; left:4px; display:flex; flex-direction:column; gap:4px;">
-                                <div style="width:8px; height:8px; background:#ffca28; border:1px solid #000;"></div>
-                                <div style="width:8px; height:8px; background:#ffffff; border:1px solid #000;"></div>
-                            </div>
-
-                            <!-- Mini Floating Windows 95 Window Frame (Center) -->
-                            <div style="position:absolute; top:12px; left:30px; width:125px; height:70px; background:#c0c0c0; border:1px solid #ffffff; border-right-color:#000; border-bottom-color:#000; box-shadow:2px 2px 6px rgba(0,0,0,0.5);">
-                                <div style="background:#000080; height:12px; color:#ffffff; font-size:8px; padding:1px 4px; font-weight:bold; display:flex; align-items:center; justify-content:space-between;">
-                                    <span>ZebOS 2</span>
-                                    <span style="font-size:7px;">×</span>
-                                </div>
-                                <div style="padding:4px; font-size:7.5px; color:#000000; background:#c0c0c0; height:calc(100% - 12px); box-sizing:border-box;">
-                                    <div style="background:#ffffff; border:1px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:3px; height:36px; box-sizing:border-box; font-size:7px; color:#333;">
-                                        Live Desktop Display Preview
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Mini Taskbar (Bottom) -->
-                            <div style="position:absolute; bottom:0; left:0; width:100%; height:11px; background:#c0c0c0; border-top:1px solid #ffffff; display:flex; align-items:center; padding:0 2px;">
-                                <div style="width:24px; height:7px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; font-size:5.5px; font-weight:bold; line-height:7px; text-align:center; color:#000;">Start</div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Power Button & LED -->
-                    <div style="position:absolute; bottom:3px; right:14px; display:flex; align-items:center; gap:4px;">
-                        <div style="width:5px; height:5px; border-radius:50%; background:#00ff00; box-shadow:0 0 4px #00ff00;"></div>
-                        <div style="width:10px; height:4px; background:#808080; border:1px solid #444;"></div>
-                    </div>
-                </div>
-
-                <!-- Monitor Stand Base -->
-                <div style="width:68px; height:10px; background:#b0b0b0; border:2px solid #808080; border-top:none; border-radius:0 0 4px 4px; box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>
-            </div>
-        `;
+        // CRT Monitor Preview (background + settings tabs)
+        return this.buildCrtHtml(this.workingState.color, this.workingState.pattern);
     }
 
+    buildCrtHtml(color, pattern) {
+        const screenBg = this.buildPatternCss(color, pattern);
+        return `
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;margin-bottom:2px;">
+          <!-- Monitor chassis -->
+          <div style="width:230px;height:138px;background:#d4d0c8;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;border-radius:10px;padding:8px 8px 12px 8px;box-shadow:inset -1px -1px 0 #444,inset 1px 1px 0 #fff;display:flex;flex-direction:column;align-items:center;position:relative;box-sizing:border-box;">
+            <!-- Screen bezel -->
+            <div style="width:100%;height:106px;background:#222;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;border-radius:3px;padding:2px;box-sizing:border-box;">
+              <!-- Live screen viewport -->
+              <div id="crt-screen-viewport" style="width:100%;height:100%;${screenBg}position:relative;overflow:hidden;transition:all 0.15s;">
+                <!-- Mini desktop icons -->
+                <div style="position:absolute;top:4px;left:4px;display:flex;flex-direction:column;gap:4px;">
+                  <div style="width:8px;height:8px;background:#ffca28;border:1px solid #000;"></div>
+                  <div style="width:8px;height:8px;background:#fff;border:1px solid #000;"></div>
+                </div>
+                <!-- Mini window -->
+                <div style="position:absolute;top:10px;left:26px;width:120px;height:66px;background:#c0c0c0;border:1px solid #fff;border-right-color:#000;border-bottom-color:#000;box-shadow:2px 2px 5px rgba(0,0,0,.5);">
+                  <div style="background:#000080;height:11px;color:#fff;font-size:7.5px;padding:1px 3px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;"><span>ZebOS 2</span><span>×</span></div>
+                  <div style="padding:3px;font-size:7px;background:#c0c0c0;height:calc(100% - 11px);box-sizing:border-box;">
+                    <div style="background:#fff;border:1px solid #808080;padding:2px;height:32px;box-sizing:border-box;font-size:6.5px;color:#333;">Live Preview</div>
+                  </div>
+                </div>
+                <!-- Mini taskbar -->
+                <div style="position:absolute;bottom:0;left:0;width:100%;height:10px;background:#c0c0c0;border-top:1px solid #fff;display:flex;align-items:center;padding:0 2px;">
+                  <div style="width:22px;height:6px;background:#c0c0c0;border:1px solid #fff;border-right-color:#000;border-bottom-color:#000;font-size:5px;font-weight:bold;line-height:6px;text-align:center;color:#000;">Start</div>
+                </div>
+              </div>
+            </div>
+            <!-- Power LED -->
+            <div style="position:absolute;bottom:3px;right:14px;display:flex;align-items:center;gap:4px;">
+              <div style="width:5px;height:5px;border-radius:50%;background:#00ff00;box-shadow:0 0 4px #0f0;"></div>
+              <div style="width:10px;height:4px;background:#808080;border:1px solid #444;"></div>
+            </div>
+          </div>
+          <!-- Stand base -->
+          <div style="width:66px;height:10px;background:#b0b0b0;border:2px solid #808080;border-top:none;border-radius:0 0 4px 4px;box-shadow:0 2px 4px rgba(0,0,0,.3);"></div>
+        </div>`;
+    }
+
+    buildPatternCss(color, pattern) {
+        if (pattern === 'gradient') {
+            return `background:linear-gradient(135deg,${color} 0%,#000080 100%);`;
+        }
+        if (pattern === 'grid') {
+            return `background-color:${color};background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.15) 0px,rgba(0,0,0,.15) 1px,transparent 1px,transparent 12px),repeating-linear-gradient(90deg,rgba(0,0,0,.15) 0px,rgba(0,0,0,.15) 1px,transparent 1px,transparent 12px);`;
+        }
+        if (pattern === 'diamonds') {
+            return `background-color:${color};background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.08) 0px,rgba(255,255,255,.08) 6px,transparent 6px,transparent 12px),repeating-linear-gradient(-45deg,rgba(255,255,255,.08) 0px,rgba(255,255,255,.08) 6px,transparent 6px,transparent 12px);`;
+        }
+        if (pattern === 'dots') {
+            return `background-color:${color};background-image:radial-gradient(rgba(255,255,255,.18) 1px,transparent 1px);background-size:10px 10px;`;
+        }
+        return `background:${color};`;
+    }
+
+    // -----------------------------------------------------------------------
+    // TAB CONTENT
+    // -----------------------------------------------------------------------
     renderTabContent() {
+        const ws = this.workingState;
+
         if (this.activeTab === 'background') {
             return `
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <!-- Color Palette Presets Group Box (Gray background, NO pure white) -->
-                    <fieldset style="border:2px solid #ffffff; border-left-color:#808080; border-top-color:#808080; padding:8px 10px; margin:0; background:#c0c0c0; box-sizing:border-box;">
-                        <legend style="color:#000080; font-weight:bold; padding:0 4px;">Wallpaper Presets</legend>
-                        <div style="display:flex; flex-direction:column; gap:5px; margin-top:2px;">
-                            ${this.colorPresets.map(preset => `
-                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:11px; color:#000;">
-                                    <input type="radio" name="bg-color" value="${preset.hex}" ${this.selectedColor.toLowerCase() === preset.hex.toLowerCase() ? 'checked' : ''} style="margin:0; cursor:pointer;">
-                                    <span style="width:14px; height:14px; background:${preset.hex}; border:1px solid #000; display:inline-block; flex-shrink:0;"></span>
-                                    <span>${preset.name}</span>
-                                </label>
-                            `).join('')}
-                        </div>
-                    </fieldset>
-
-                    <!-- Custom Color Selector Group Box (Gray background, NO pure white) -->
-                    <fieldset style="border:2px solid #ffffff; border-left-color:#808080; border-top-color:#808080; padding:8px 10px; margin:0; background:#c0c0c0; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box;">
-                        <legend style="color:#000080; font-weight:bold; padding:0 4px;">Custom Color Palette</legend>
-                        <div>
-                            <div style="font-size:11px; color:#000; margin-bottom:6px;">Custom hex color:</div>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="color" id="p-custom-color" value="${this.selectedColor}" style="width:40px; height:24px; cursor:pointer; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; background:#fff; padding:0; outline:none;">
-                                <input type="text" id="p-custom-hex-text" value="${this.selectedColor}" spellcheck="false" style="width:75px; padding:3px 5px; font-size:11px; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; background:#fff; outline:none; font-family:Arial, sans-serif;">
-                            </div>
-                        </div>
-
-                        <div style="margin-top:10px;">
-                            <div style="font-weight:bold; color:#000080; font-size:11px; margin-bottom:4px;">Display Pattern</div>
-                            <select id="p-pattern-select" style="width:100%; padding:3px 4px; font-size:11px; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; outline:none; font-family:Arial, sans-serif;">
-                                <option value="solid" ${this.selectedPattern === 'solid' ? 'selected' : ''}>Solid Color</option>
-                                <option value="gradient" ${this.selectedPattern === 'gradient' ? 'selected' : ''}>Blue Gradient</option>
-                                <option value="grid" ${this.selectedPattern === 'grid' ? 'selected' : ''}>DOS Grid Pattern</option>
-                            </select>
-                        </div>
-                    </fieldset>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:8px 10px;margin:0;background:#c0c0c0;box-sizing:border-box;">
+                <legend style="color:#000080;font-weight:bold;padding:0 4px;">Wallpaper Presets</legend>
+                <div style="display:flex;flex-direction:column;gap:5px;margin-top:2px;">
+                  ${this.colorPresets.map(p=>`
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;color:#000;">
+                    <input type="radio" name="bg-color" value="${p.hex}" ${ws.color.toLowerCase()===p.hex.toLowerCase()?'checked':''} style="margin:0;cursor:pointer;">
+                    <span style="width:14px;height:14px;background:${p.hex};border:1px solid #000;display:inline-block;flex-shrink:0;"></span>
+                    <span>${p.name}</span>
+                  </label>`).join('')}
                 </div>
-            `;
+              </fieldset>
+
+              <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:8px 10px;margin:0;background:#c0c0c0;display:flex;flex-direction:column;gap:10px;box-sizing:border-box;">
+                <legend style="color:#000080;font-weight:bold;padding:0 4px;">Custom Color</legend>
+                <div>
+                  <div style="font-size:11px;color:#000;margin-bottom:5px;">Hex color:</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <input type="color" id="p-custom-color" value="${ws.color}" style="width:38px;height:22px;cursor:pointer;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;padding:0;outline:none;">
+                    <input type="text" id="p-custom-hex-text" value="${ws.color}" maxlength="7" spellcheck="false" style="width:70px;padding:2px 4px;font-size:11px;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;background:#fff;outline:none;font-family:monospace;">
+                  </div>
+                </div>
+                <div>
+                  <div style="font-weight:bold;color:#000080;font-size:11px;margin-bottom:4px;">Display Pattern</div>
+                  <select id="p-pattern-select" style="width:100%;padding:3px 4px;font-size:11px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;outline:none;font-family:Arial,sans-serif;">
+                    <option value="solid"    ${ws.pattern==='solid'?'selected':''}>Solid Color</option>
+                    <option value="gradient" ${ws.pattern==='gradient'?'selected':''}>Gradient (Teal→Blue)</option>
+                    <option value="grid"     ${ws.pattern==='grid'?'selected':''}>DOS Grid Pattern</option>
+                    <option value="diamonds" ${ws.pattern==='diamonds'?'selected':''}>Diamond Pattern</option>
+                    <option value="dots"     ${ws.pattern==='dots'?'selected':''}>Dot Matrix</option>
+                  </select>
+                </div>
+              </fieldset>
+            </div>`;
         }
 
         if (this.activeTab === 'appearance') {
             return `
-                <fieldset style="border:2px solid #ffffff; border-left-color:#808080; border-top-color:#808080; padding:10px; margin:0; background:#c0c0c0; box-sizing:border-box;">
-                    <legend style="color:#000080; font-weight:bold; padding:0 4px;">Window Scheme Options</legend>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px;">
-                        <div>
-                            <div style="font-size:11px; margin-bottom:4px; font-weight:bold; color:#000;">Color Scheme:</div>
-                            <select id="p-scheme-select" style="width:100%; padding:3px 5px; font-size:11px; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; outline:none; font-family:Arial, sans-serif;">
-                                <option value="standard" ${this.selectedScheme === 'standard' ? 'selected' : ''}>Windows Standard (Classic Gray)</option>
-                                <option value="high-contrast" ${this.selectedScheme === 'high-contrast' ? 'selected' : ''}>High Contrast Dark</option>
-                                <option value="rose" ${this.selectedScheme === 'rose' ? 'selected' : ''}>Rose Retro 95</option>
-                                <option value="emerald" ${this.selectedScheme === 'emerald' ? 'selected' : ''}>Emerald Desktop</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div style="font-size:11px; margin-bottom:4px; font-weight:bold; color:#000;">Font Size:</div>
-                            <select style="width:100%; padding:3px 5px; font-size:11px; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; outline:none; font-family:Arial, sans-serif;">
-                                <option selected>Normal (9 pt)</option>
-                                <option>Large (12 pt)</option>
-                            </select>
-                        </div>
-                    </div>
-                </fieldset>
-            `;
+            <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:10px;margin:0;background:#c0c0c0;box-sizing:border-box;">
+              <legend style="color:#000080;font-weight:bold;padding:0 4px;">ZebOS Scheme Options</legend>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;">
+                <div>
+                  <div style="font-size:11px;margin-bottom:4px;font-weight:bold;color:#000;">Color Scheme:</div>
+                  <select id="p-scheme-select" style="width:100%;padding:3px 5px;font-size:11px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;outline:none;font-family:Arial,sans-serif;">
+                    ${Object.entries(this.schemes).map(([k,v])=>`
+                    <option value="${k}" ${ws.scheme===k?'selected':''}>${v.name}</option>`).join('')}
+                  </select>
+                </div>
+                <div>
+                  <div style="font-size:11px;margin-bottom:4px;font-weight:bold;color:#000;">UI Font Size:</div>
+                  <select id="p-font-size-select" style="width:100%;padding:3px 5px;font-size:11px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;outline:none;font-family:Arial,sans-serif;">
+                    <option value="11" ${ws.fontSize==='11'?'selected':''}>Small (11px)</option>
+                    <option value="12" ${ws.fontSize==='12'||!ws.fontSize?'selected':''}>Normal (12px)</option>
+                    <option value="14" ${ws.fontSize==='14'?'selected':''}>Large (14px)</option>
+                    <option value="16" ${ws.fontSize==='16'?'selected':''}>Extra Large (16px)</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>`;
         }
 
-        // Settings Tab
+        // Settings tab
         return `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <fieldset style="border:2px solid #ffffff; border-left-color:#808080; border-top-color:#808080; padding:8px 10px; margin:0; background:#c0c0c0; box-sizing:border-box;">
-                    <legend style="color:#000080; font-weight:bold; padding:0 4px;">Color Palette</legend>
-                    <select id="p-color-depth" style="width:100%; padding:3px 5px; font-size:11px; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; outline:none; margin-top:4px; font-family:Arial, sans-serif;">
-                        <option value="16">16 Color</option>
-                        <option value="256">256 Color</option>
-                        <option value="16bit">High Color (16 bit)</option>
-                        <option value="32bit" selected>True Color (32 bit)</option>
-                    </select>
-                </fieldset>
-                
-                <fieldset style="border:2px solid #ffffff; border-left-color:#808080; border-top-color:#808080; padding:8px 10px; margin:0; background:#c0c0c0; box-sizing:border-box;">
-                    <legend style="color:#000080; font-weight:bold; padding:0 4px;">Desktop Area</legend>
-                    <div style="font-size:11px; color:#000; margin-bottom:6px; margin-top:4px;">Screen Resolution: <strong id="p-res-label">1024 by 768</strong> pixels</div>
-                    <input type="range" id="p-res-slider" min="1" max="4" value="3" style="width:100%; cursor:pointer;">
-                </fieldset>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:8px 10px;margin:0;background:#c0c0c0;box-sizing:border-box;">
+            <legend style="color:#000080;font-weight:bold;padding:0 4px;">Visual Style</legend>
+            <div style="margin-top:4px;display:flex;flex-direction:column;gap:8px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;color:#000;">
+                <input type="checkbox" id="p-rounded-corners" ${ws.roundedCorners?'checked':''} style="cursor:pointer;">
+                <span>Rounded Window Corners</span>
+              </label>
+              <div style="font-size:10px;color:#555;padding-left:18px;">Applies a subtle border-radius to all windows and menus.</div>
             </div>
-        `;
+          </fieldset>
+          <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:8px 10px;margin:0;background:#c0c0c0;box-sizing:border-box;">
+            <legend style="color:#000080;font-weight:bold;padding:0 4px;">Display Info</legend>
+            <div style="font-size:11px;color:#000;margin-top:4px;display:flex;flex-direction:column;gap:4px;">
+              <div>Resolution: <strong>${window.innerWidth} × ${window.innerHeight}</strong></div>
+              <div>Color Depth: <strong>True Color (32 bit)</strong></div>
+              <div>Refresh: <strong>60 Hz</strong></div>
+            </div>
+          </fieldset>
+        </div>`;
     }
 
+    // -----------------------------------------------------------------------
+    // BIND EVENTS — no re-render, direct DOM manipulation
+    // -----------------------------------------------------------------------
     bindEvents() {
-        // Tab switching
+        // Tab switching (this DOES re-render since HTML structure changes)
         this.container.querySelectorAll('.p-tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.activeTab = btn.dataset.tab;
@@ -258,156 +299,165 @@ export class PersonalizeApp {
             });
         });
 
-        // Background color radio options
+        // --- Background tab ---
         this.container.querySelectorAll('input[name="bg-color"]').forEach(radio => {
             radio.addEventListener('change', () => {
-                this.selectedColor = radio.value;
-                const hexText = this.container.querySelector('#p-custom-hex-text');
-                const customInput = this.container.querySelector('#p-custom-color');
-                if (hexText) hexText.value = radio.value;
-                if (customInput) customInput.value = radio.value;
-
+                this.workingState.color = radio.value;
+                this._syncColorInputs(radio.value);
                 this.updateCrtPreview();
                 this.markDirty();
             });
         });
 
-        // Custom color input & text input
-        const customColorInput = this.container.querySelector('#p-custom-color');
-        const customHexText = this.container.querySelector('#p-custom-hex-text');
+        const colorPicker = this.container.querySelector('#p-custom-color');
+        const hexText = this.container.querySelector('#p-custom-hex-text');
 
-        if (customColorInput) {
-            customColorInput.addEventListener('input', () => {
-                this.selectedColor = customColorInput.value;
-                if (customHexText) customHexText.value = customColorInput.value;
+        if (colorPicker) {
+            colorPicker.addEventListener('input', () => {
+                this.workingState.color = colorPicker.value;
+                if (hexText) hexText.value = colorPicker.value;
                 this.updateCrtPreview();
                 this.markDirty();
             });
         }
-        if (customHexText) {
-            customHexText.addEventListener('input', () => {
-                const val = customHexText.value.trim();
-                if (/^#[0-9A-F]{6}$/i.test(val)) {
-                    this.selectedColor = val;
-                    if (customColorInput) customColorInput.value = val;
+        if (hexText) {
+            hexText.addEventListener('input', () => {
+                const val = hexText.value.trim();
+                if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                    this.workingState.color = val;
+                    if (colorPicker) colorPicker.value = val;
                     this.updateCrtPreview();
                     this.markDirty();
                 }
             });
         }
 
-        // Pattern dropdown
         const patternSelect = this.container.querySelector('#p-pattern-select');
         if (patternSelect) {
             patternSelect.addEventListener('change', () => {
-                this.selectedPattern = patternSelect.value;
+                this.workingState.pattern = patternSelect.value;
                 this.updateCrtPreview();
                 this.markDirty();
             });
         }
 
-        // Scheme select
+        // --- Appearance tab ---
         const schemeSelect = this.container.querySelector('#p-scheme-select');
         if (schemeSelect) {
             schemeSelect.addEventListener('change', () => {
-                this.selectedScheme = schemeSelect.value;
+                this.workingState.scheme = schemeSelect.value;
+                this.updateAppearancePreview();
                 this.markDirty();
             });
         }
 
-        // Resolution Slider
-        const resSlider = this.container.querySelector('#p-res-slider');
-        const resLabel = this.container.querySelector('#p-res-label');
-        if (resSlider) {
-            const resolutions = ['640 by 480', '800 by 600', '1024 by 768', '1920 by 1080'];
-            resSlider.addEventListener('input', () => {
-                const idx = parseInt(resSlider.value) - 1;
-                if (resLabel) resLabel.textContent = resolutions[idx] || '1024 by 768';
+        const fontSizeSelect = this.container.querySelector('#p-font-size-select');
+        if (fontSizeSelect) {
+            fontSizeSelect.addEventListener('change', () => {
+                this.workingState.fontSize = fontSizeSelect.value;
                 this.markDirty();
             });
         }
 
-        // Buttons: Apply | OK | Cancel
+        // --- Settings tab ---
+        const roundedCornersChk = this.container.querySelector('#p-rounded-corners');
+        if (roundedCornersChk) {
+            roundedCornersChk.addEventListener('change', () => {
+                this.workingState.roundedCorners = roundedCornersChk.checked;
+                this.markDirty();
+            });
+        }
+
+        // --- Buttons ---
         const applyBtn = this.container.querySelector('#p-btn-apply');
-        const okBtn = this.container.querySelector('#p-btn-ok');
-        const cancelBtn = this.container.querySelector('#p-btn-cancel');
+        const okBtn    = this.container.querySelector('#p-btn-ok');
+        const cancelBtn= this.container.querySelector('#p-btn-cancel');
 
-        const doApply = () => {
-            if (!this.isDirty) return;
-            if (this.onApplyCallback) {
-                this.onApplyCallback(this.selectedColor, this.selectedPattern);
+        if (applyBtn) applyBtn.addEventListener('click', () => this.doApply());
+        if (okBtn)    okBtn.addEventListener('click',    () => { this.doApply(); this.onCloseRequest(); });
+        if (cancelBtn) cancelBtn.addEventListener('click', () => {
+            // Revert live OS to initial state
+            if (this.isDirty && this.onApplyCallback) {
+                this.onApplyCallback({ ...this.initialState });
             }
-            this.markClean();
-        };
+            this.onCloseRequest();
+        });
+    }
 
-        if (applyBtn) {
-            applyBtn.addEventListener('click', doApply);
-            if (this.isDirty) {
-                applyBtn.disabled = false;
-                applyBtn.style.opacity = '1';
-                applyBtn.style.cursor = 'pointer';
-                applyBtn.style.color = '#000000';
-                applyBtn.style.borderColor = '#ffffff';
-                applyBtn.style.borderRightColor = '#000000';
-                applyBtn.style.borderBottomColor = '#000000';
-                applyBtn.style.textShadow = 'none';
-            }
-        }
+    // -----------------------------------------------------------------------
+    // LIVE PREVIEW UPDATERS (no re-render — direct DOM manipulation)
+    // -----------------------------------------------------------------------
+    updateCrtPreview() {
+        const viewport = this.container.querySelector('#crt-screen-viewport');
+        if (!viewport) return;
+        const css = this.buildPatternCss(this.workingState.color, this.workingState.pattern);
+        // Parse css string into background/background-image/background-color properties
+        viewport.removeAttribute('style');
+        viewport.style.cssText = `width:100%;height:100%;position:relative;overflow:hidden;transition:all 0.15s;${css}`;
+    }
 
-        if (okBtn) {
-            okBtn.addEventListener('click', () => {
-                if (this.isDirty && this.onApplyCallback) {
-                    this.onApplyCallback(this.selectedColor, this.selectedPattern);
-                }
-                this.onCloseRequest();
-            });
+    updateAppearancePreview() {
+        const scheme = this.schemes[this.workingState.scheme] || this.schemes['standard'];
+        const activeBar  = this.container.querySelector('#p-scheme-active-bar');
+        const inactiveBar= this.container.querySelector('#p-scheme-inactive-bar');
+        if (activeBar) {
+            activeBar.style.background = scheme.titlebarbg;
+            activeBar.style.color      = scheme.titlebar;
         }
+        if (inactiveBar) {
+            // Inactive bar stays gray, but update desktop preview bg
+        }
+        const previewBox = this.container.querySelector('#p-preview-box');
+        if (previewBox) previewBox.style.background = this.workingState.color;
+    }
 
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                if (this.isDirty && this.onApplyCallback) {
-                    // Revert desktop background back to initial color on cancel
-                    this.onApplyCallback(this.initialColor, 'solid');
-                }
-                this.onCloseRequest();
-            });
+    _syncColorInputs(hex) {
+        const cp = this.container.querySelector('#p-custom-color');
+        const ht = this.container.querySelector('#p-custom-hex-text');
+        if (cp) cp.value = hex;
+        if (ht) ht.value = hex;
+    }
+
+    // -----------------------------------------------------------------------
+    // APPLY / DIRTY STATE
+    // -----------------------------------------------------------------------
+    doApply() {
+        if (!this.isDirty) return;
+        if (this.onApplyCallback) {
+            this.onApplyCallback({ ...this.workingState });
         }
+        // Update initial state to current
+        this.initialState = { ...this.workingState };
+        this.markClean();
     }
 
     markDirty() {
         this.isDirty = true;
-        const applyBtn = this.container.querySelector('#p-btn-apply');
-        if (applyBtn) {
-            applyBtn.disabled = false;
-            applyBtn.style.opacity = '1';
-            applyBtn.style.cursor = 'pointer';
-            applyBtn.style.color = '#000000';
-            applyBtn.style.borderColor = '#ffffff';
-            applyBtn.style.borderRightColor = '#000000';
-            applyBtn.style.borderBottomColor = '#000000';
-            applyBtn.style.textShadow = 'none';
-        }
+        this.refreshApplyState();
     }
 
     markClean() {
         this.isDirty = false;
-        const applyBtn = this.container.querySelector('#p-btn-apply');
-        if (applyBtn) {
-            applyBtn.disabled = true;
-            applyBtn.style.opacity = '0.65';
-            applyBtn.style.cursor = 'default';
-            applyBtn.style.color = '#808080';
-            applyBtn.style.borderColor = '#ffffff';
-            applyBtn.style.borderRightColor = '#808080';
-            applyBtn.style.borderBottomColor = '#808080';
-            applyBtn.style.textShadow = '1px 1px 0px #ffffff';
-        }
+        this.refreshApplyState();
     }
 
-    updateCrtPreview() {
-        const crtScreen = this.container.querySelector('#crt-screen-viewport');
-        if (crtScreen) {
-            crtScreen.style.background = this.selectedColor;
+    refreshApplyState() {
+        const applyBtn = this.container && this.container.querySelector('#p-btn-apply');
+        if (!applyBtn) return;
+        if (this.isDirty) {
+            applyBtn.disabled = false;
+            applyBtn.style.color = '#000000';
+            applyBtn.style.borderRightColor  = '#000000';
+            applyBtn.style.borderBottomColor = '#000000';
+            applyBtn.style.cursor = 'pointer';
+            applyBtn.style.textShadow = 'none';
+        } else {
+            applyBtn.disabled = true;
+            applyBtn.style.color = '#808080';
+            applyBtn.style.borderRightColor  = '#808080';
+            applyBtn.style.borderBottomColor = '#808080';
+            applyBtn.style.cursor = 'default';
+            applyBtn.style.textShadow = '1px 1px 0 #ffffff';
         }
     }
 }

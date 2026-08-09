@@ -10,6 +10,31 @@ body, html {
     user-select: none;
 }
 
+/* ==========================================================================
+   ZEBOS 2: CSS THEMING CUSTOM PROPERTIES
+   ========================================================================== */
+:root {
+    --os-titlebar-bg: #000080;
+    --os-titlebar-fg: #ffffff;
+    --os-font-size: 12px;
+    --os-border-radius: 0px;
+}
+
+/* Rounded corners mode: toggled via body.rounded-corners */
+body.rounded-corners .window-frame {
+    border-radius: 6px !important;
+    overflow: hidden;
+}
+body.rounded-corners .window-header {
+    border-radius: 4px 4px 0 0 !important;
+}
+body.rounded-corners #start-menu {
+    border-radius: 6px 6px 0 0 !important;
+}
+body.rounded-corners .retro-context-menu {
+    border-radius: 4px !important;
+}
+
 .hidden-view {
     display: none !important;
 }
@@ -679,8 +704,8 @@ body, html {
 }
 
 .window-frame.active-window .window-header {
-    background: #000080 !important;
-    color: #ffffff !important;
+    background: var(--os-titlebar-bg, #000080) !important;
+    color: var(--os-titlebar-fg, #ffffff) !important;
 }
 
 .window-header {
