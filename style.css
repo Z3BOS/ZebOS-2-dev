@@ -492,6 +492,23 @@ body, html {
     transition: background-color 0.15s ease;
 }
 
+#tray-vol-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#tray-vol-icon svg, #current-user-tag svg {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+    display: block;
+}
+
 #system-tray:hover {
     background-color: #d4d4d4;
 }

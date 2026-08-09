@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.1.3 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.1.4 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.1.3", 
+    version: "2.1.4", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -90,7 +90,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.1.3! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.1.4! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -149,7 +149,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.3 Pro...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.4 Pro...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
