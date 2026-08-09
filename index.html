@@ -3,20 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZebOS 2 Pro (v2.1.0)</title>
+    <title>ZebOS 2 Pro (v2.1.2)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <!-- LAYER 3: Fullscreen Responsive Image Boot Screen Overlay -->
     <div id="boot-screen">
-        <!-- Kernel log lines print here first, before the splash art is revealed -->
-        <div id="boot-log-console"></div>
-        <img id="boot-splash-img" src="assets/system/splashboot.png" alt="">
-        <div id="boot-progress-track">
-            <div id="boot-progress-bar"></div>
+        <div id="boot-logo-area">
+            <svg class="sys-official-logo" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:240px; height:auto; filter:drop-shadow(0 0 16px rgba(54,209,220,0.4));">
+                <defs>
+                    <linearGradient id="hexGradBoot" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#20b2aa" />
+                        <stop offset="50%" stop-color="#008080" />
+                        <stop offset="100%" stop-color="#003366" />
+                    </linearGradient>
+                </defs>
+                <polygon points="256,30 446,140 446,372 256,482 66,372 66,140" fill="url(#hexGradBoot)" stroke="#55ffff" stroke-width="16"/>
+                <path d="M150 150 H362 L150 362 H362" stroke="#ffffff" stroke-width="44" stroke-linecap="square" stroke-linejoin="miter"/>
+            </svg>
+            <div id="boot-system-title">ZebOS 2 Pro</div>
+            <div id="boot-system-sub">Graphical OS Kernel Core v2.1.2</div>
         </div>
-        <div id="boot-dev-hint">Press Ctrl+Alt to enter Developer Mode</div>
+        <div id="boot-log-container">
+            <div id="boot-log-header">POST EXECUTION MONITOR - ZEBOS KERNEL</div>
+            <div id="boot-log-console"></div>
+        </div>
     </div>
 
     <!-- Sign-in screen is built entirely by logon/logon.js and mounted after boot -->
@@ -33,40 +45,40 @@
             
             <!-- Application Launcher Grid Links -->
             <div id="start-menu-links"> 
-                <div class="start-menu-item" id="start-link-prompt" data-icon="terminal"> 
-                    <span class="menu-icon"></span> Zeb Terminal 
-                </div> 
-                <div class="start-menu-item" id="start-link-files" data-icon="explorer"> 
-                    <span class="menu-icon"></span> Zeb Explorer 
-                </div> 
-                <div class="start-menu-item" id="start-link-text-editor" data-icon="editor"> 
-                    <span class="menu-icon"></span> Text Editor 
-                </div> 
-                <div class="start-menu-item" id="start-link-paint" data-icon="paint"> 
-                    <span class="menu-icon"></span> Paint 
-                </div> 
-                <div class="start-menu-item" id="start-link-mines" data-icon="mines"> 
-                    <span class="menu-icon"></span> Minesweeper 
-                </div> 
-                <div class="start-menu-item" id="start-link-snake" data-icon="snake"> 
-                    <span class="menu-icon"></span> Snake 
-                </div> 
-                <div class="start-menu-item" id="start-link-calc" data-icon="calc"> 
-                    <span class="menu-icon"></span> Calc 
-                </div> 
-                <div class="start-menu-item" id="start-link-media" data-icon="media"> 
-                    <span class="menu-icon"></span> Media Player 
-                </div> 
+                <div class="start-menu-item" id="start-link-files" data-icon="explorer">
+                    <span class="menu-icon"></span> File Explorer
+                </div>
+                <div class="start-menu-item" id="start-link-text-editor" data-icon="editor">
+                    <span class="menu-icon"></span> Text Editor
+                </div>
+                <div class="start-menu-item" id="start-link-prompt" data-icon="terminal">
+                    <span class="menu-icon"></span> Terminal Prompt
+                </div>
+                <div class="start-menu-item" id="start-link-paint" data-icon="paint">
+                    <span class="menu-icon"></span> Paint Studio
+                </div>
+                <div class="start-menu-item" id="start-link-mines" data-icon="mines">
+                    <span class="menu-icon"></span> Minesweeper
+                </div>
+                <div class="start-menu-item" id="start-link-media" data-icon="media">
+                    <span class="menu-icon"></span> Media Player
+                </div>
                 <div class="start-menu-item" id="start-link-vm" data-icon="vm">
                     <span class="menu-icon"></span> ZebVM Manager
                 </div>
+                <div class="start-menu-item" id="start-link-calc" data-icon="calc">
+                    <span class="menu-icon"></span> Calculator
+                </div>
+                <div class="start-menu-item" id="start-link-snake" data-icon="snake">
+                    <span class="menu-icon"></span> Snake Game
+                </div>
                 <div class="start-menu-item" id="start-link-courgette" data-icon="courgette">
-                    <span class="menu-icon"></span> Courgette Info
+                    <span class="menu-icon"></span> System Info
                 </div>
                 <hr class="start-menu-divider">
-                <div class="start-menu-item" id="start-link-shutdown" data-icon="shutdown"> 
-                    <span class="menu-icon"></span> Shut Down... 
-                </div> 
+                <div class="start-menu-item" id="start-link-shutdown" data-icon="shutdown">
+                    <span class="menu-icon"></span> Shut Down...
+                </div>
             </div>
         </div>
 
@@ -78,8 +90,8 @@
 
         <!-- Pinned Monochrome Desktop System Build Information Tag -->
         <div id="desktop-build-tag">
-            <div>ZebOS v2.1.0 Pro</div>
-            <div>Build 2.1.0 (filesystem)</div>
+            <div>ZebOS v2.1.2 Pro</div>
+            <div>Build 2.1.2 (filesystem)</div>
             <div id="build-git-hash">git-...</div>
         </div>
 

@@ -35,12 +35,12 @@ export class FileExplorerApp {
                 </div>
 
                 <!-- 2. Standard Toolbar -->
-                <div class="explorer-toolbar" style="display:flex; align-items:center; gap:4px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:nowrap; overflow-x:auto;">
+                <div class="explorer-toolbar" style="display:flex; align-items:center; gap:4px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:wrap; overflow-x:auto;">
                     <button class="exp-tb-btn" id="exp-tb-back" title="Back" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('back')}</span> Back
+                        <span class="exp-icon-wrap">${getIcon('back')}</span> Back
                     </button>
                     <button class="exp-tb-btn" id="exp-tb-up" title="Up One Level" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('up')}</span> Up
+                        <span class="exp-icon-wrap">${getIcon('up')}</span> Up
                     </button>
                     <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
                     <button class="exp-tb-btn" id="exp-tb-cut" title="Cut" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cut</button>
@@ -63,7 +63,7 @@ export class FileExplorerApp {
                 <div class="explorer-addressbar" style="display:flex; align-items:center; gap:6px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080;">
                     <span style="font-weight:bold; font-size:11px;">Address:</span>
                     <div style="display:flex; align-items:center; flex-grow:1; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:1px 4px;">
-                        <span style="width:16px; height:16px; margin-right:4px; display:inline-flex; align-items:center;">${getIcon('drive')}</span>
+                        <span class="exp-icon-wrap" style="margin-right:4px;">${getIcon('drive')}</span>
                         <input type="text" id="exp-address-input" value="Z:\\" style="flex-grow:1; border:none; outline:none; font-family:Arial, sans-serif; font-size:12px;">
                     </div>
                 </div>
@@ -101,7 +101,7 @@ export class FileExplorerApp {
                     <div id="exp-status-left">0 object(s)</div>
                     <div id="exp-status-mid">Disk Free: 819 MB</div>
                     <div style="display:flex; align-items:center; gap:4px;">
-                        <span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('computer')}</span> Zeb Machine
+                        <span class="exp-icon-wrap">${getIcon('computer')}</span> Zeb Machine
                     </div>
                 </div>
             </div>

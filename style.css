@@ -570,6 +570,21 @@ body, html {
     font-size: 12px;
 }
 
+.sys-icon {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.exp-icon-wrap {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
 .context-menu-item:hover {
     background-color: #000080 !important;
     color: #ffffff !important;

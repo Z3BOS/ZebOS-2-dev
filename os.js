@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.1.0 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.1.2 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.1.0", 
+    version: "2.1.2", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -90,7 +90,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.1.0! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.1.2! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -149,7 +149,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.0 Pro...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.2 Pro...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -439,6 +439,11 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/explorer.js');
                 const explorerBody = createWindow("Exploring - ZebRoot (Z:)", "explorer", winId);
                 if (explorerBody) {
+                    const winFrame = explorerBody.closest('.window-frame');
+                    if (winFrame) {
+                        winFrame.style.width = '640px';
+                        winFrame.style.height = '440px';
+                    }
                     const expInstance = new module.FileExplorerApp(
                         () => closeWindow(winId),
                         (fileName) => launchApplication('start-link-text-editor', fileName),
@@ -663,66 +668,22 @@ async function launchApplication(appId, customFileName = null) {
 // ==========================================================================
 // DYNAMIC ZEB EXPLORER APP MODULE RENDERING ENGINE
 // ==========================================================================
-function renderZebExplorer(containerElement) {
-    containerElement.innerHTML = `
-        <div class="explorer-container">
-            <div class="explorer-toolbar">
-                <button class="explorer-btn" id="exp-btn-up">${getIcon('up')} Up to Root</button>
-                <button class="explorer-btn" id="exp-btn-mkdir">${getIcon('newFolder')} New Folder</button>
-            </div>
-            <div class="explorer-grid"></div>
-        </div>
-    `;
-
-    const grid = containerElement.querySelector('.explorer-grid');
-    const btnUp = containerElement.querySelector('#exp-btn-up');
-    const btnMkdir = containerElement.querySelector('#exp-btn-mkdir');
-
-    btnUp.disabled = (systemState.currentDirectory === "");
-
-    function refreshExplorerGrid() {
-        grid.innerHTML = "";
-        const context = getActiveFolderContext();
-        
-        Object.keys(context).forEach(name => {
-            const item = context[name];
-            const icon = item.type === "dir" ? getIcon('folder') : getIcon('file');
-            
-            const itemEl = document.createElement('div');
-            itemEl.className = 'explorer-item';
-            itemEl.innerHTML = `
-                <div class="explorer-icon">${icon}</div>
-                <div class="explorer-name">${name}</div>
-            `;
-            
-            itemEl.addEventListener('dblclick', () => {
-                if (item.type === "dir") {
-                    systemState.currentDirectory = name;
-                    renderZebExplorer(containerElement);
-                } else {
-                    launchApplication('start-link-text-editor', name);
-                }
-            });
-            grid.appendChild(itemEl);
-        });
+async function renderZebExplorer(containerElement) {
+    try {
+        const module = await import('./programs/explorer.js');
+        const expInstance = new module.FileExplorerApp(
+            () => {},
+            (fileName) => launchApplication('start-link-text-editor', fileName),
+            () => saveFileSystem(),
+            (path) => {
+                if (!path || path === "") return systemState.fileSystem;
+                return systemState.fileSystem[path]?.content || systemState.fileSystem;
+            }
+        );
+        expInstance.open(containerElement);
+    } catch (err) {
+        logKernel(`Kernel Error: Failed to mount explorer.js (${err.message})`, "ERROR");
     }
-
-    btnUp.addEventListener('click', () => {
-        systemState.currentDirectory = "";
-        renderZebExplorer(containerElement);
-    });
-
-    btnMkdir.addEventListener('click', () => {
-        const folderName = prompt("Enter new folder name:");
-        if (folderName && folderName.trim() !== "") {
-            const context = getActiveFolderContext();
-            context[folderName.trim()] = { type: "dir", content: {} };
-            saveFileSystem();
-            refreshExplorerGrid();
-        }
-    });
-
-    refreshExplorerGrid();
 }
 
 // ==========================================================================
