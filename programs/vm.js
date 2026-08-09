@@ -1,4 +1,4 @@
-// programs/vm.js - ZebOS 2 Pro ZebVM Virtual Machine Manager
+// programs/vm.js - ZebOS 2 Pro ZebVM Virtual Machine Manager Engine
 import { getIcon } from '../icons.js';
 
 export class ZebVMManager {
@@ -7,13 +7,43 @@ export class ZebVMManager {
 
         this.bodyElement = null;
         this.vms = [
-            { id: 'vm1', name: 'ZebOS 1.0 (Alpha)', os: 'ZebOS v1.0', ram: 64, cpus: 1, status: 'stopped', log: [] },
-            { id: 'vm2', name: 'ZebLinux Core 2.4', os: 'ZebLinux 2.4', ram: 256, cpus: 2, status: 'stopped', log: [] }
+            {
+                id: 'vm-zebos-162',
+                name: 'ZebOS v1.6.2 SP1',
+                url: 'https://z3bos.github.io/ZebOS/',
+                os: 'ZebOS v1.6.2 SP1',
+                ram: 512,
+                cpus: 2,
+                status: 'stopped',
+                booting: false,
+                desc: 'Classic ZebOS v1.6.2 Service Pack 1 Virtual Workstation'
+            },
+            {
+                id: 'vm-hh-launcher',
+                name: 'Private H&H Launcher',
+                url: 'https://aduritetbh.github.io/homework/',
+                os: 'H&H Launcher OS 4.0',
+                ram: 1024,
+                cpus: 4,
+                status: 'stopped',
+                booting: false,
+                desc: 'Enterprise H&H Application Execution Environment'
+            },
+            {
+                id: 'vm-hh-ai',
+                name: 'Private H&H AI',
+                url: 'https://aduritetbh.github.io/H-H-AI/',
+                os: 'H-H AI Engine v3.0',
+                ram: 2048,
+                cpus: 4,
+                status: 'stopped',
+                booting: false,
+                desc: 'Advanced H&H Artificial Intelligence Machine'
+            }
         ];
 
-        this.selectedVmId = 'vm1';
-        this.bootIntervals = {};
-
+        this.selectedVmId = 'vm-zebos-162';
+        this.bootTimers = {};
         this.boundKeyDown = (e) => this.handleKeyDown(e);
     }
 
@@ -31,146 +61,189 @@ export class ZebVMManager {
         const activeVm = this.vms.find(v => v.id === this.selectedVmId) || this.vms[0];
 
         this.bodyElement.innerHTML = `
-            <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; font-family:Arial, sans-serif; box-sizing:border-box; user-select:none;">
+            <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; font-family:Arial, sans-serif; box-sizing:border-box; user-select:none; overflow:hidden;">
                 
                 <!-- Toolbar Header Strip -->
-                <div style="background:#c0c0c0; padding:6px 10px; border-bottom:2px solid #808080; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
-                    <div style="display:flex; gap:6px;">
-                        <button class="vm-toolbar-btn btn-new-vm" style="padding:3px 8px; font-size:12px; font-weight:bold; background:#c0c0c0; border:1px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; display:flex; align-items:center; gap:4px;">
-                            ${getIcon('newFolder')} New VM
+                <div style="background:#c0c0c0; padding:4px 8px; border-bottom:2px solid #808080; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; font-size:12px;">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="vm-tb-btn btn-new-vm" style="padding:3px 8px; font-weight:bold; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                            <span class="exp-icon-wrap">${getIcon('newFolder')}</span> New VM
                         </button>
-                        <button class="vm-toolbar-btn btn-power-on" style="padding:3px 8px; font-size:12px; font-weight:bold; background:#c0c0c0; border:1px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; display:flex; align-items:center; gap:4px; color:#008000;">
-                            ${getIcon('powerOn')} Start
+                        <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
+                        <button class="vm-tb-btn btn-start-vm" ${activeVm.status === 'running' || activeVm.booting ? 'disabled' : ''} style="padding:3px 8px; font-weight:bold; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; display:flex; align-items:center; gap:4px; color:${activeVm.status==='running'?'#888':'#008000'}; opacity:${activeVm.status==='running'?0.6:1};">
+                            <span class="exp-icon-wrap">${getIcon('powerOn')}</span> Power On
                         </button>
-                        <button class="vm-toolbar-btn btn-power-off" style="padding:3px 8px; font-size:12px; font-weight:bold; background:#c0c0c0; border:1px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; display:flex; align-items:center; gap:4px; color:#c62828;">
-                            ${getIcon('powerOff')} Stop
+                        <button class="vm-tb-btn btn-restart-vm" ${activeVm.status !== 'running' ? 'disabled' : ''} style="padding:3px 8px; font-weight:bold; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; display:flex; align-items:center; gap:4px; color:${activeVm.status==='running'?'#000080':'#888'}; opacity:${activeVm.status==='running'?1:0.6};">
+                            Restart
+                        </button>
+                        <button class="vm-tb-btn btn-stop-vm" ${activeVm.status !== 'running' ? 'disabled' : ''} style="padding:3px 8px; font-weight:bold; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; display:flex; align-items:center; gap:4px; color:${activeVm.status==='running'?'#c62828':'#888'}; opacity:${activeVm.status==='running'?1:0.6};">
+                            <span class="exp-icon-wrap">${getIcon('powerOff')}</span> Power Off
                         </button>
                     </div>
-                    <div style="font-size:12px; font-weight:bold; color:#000080;">ZebVM Manager v1.0</div>
+                    <div style="font-weight:bold; color:#000080; display:flex; align-items:center; gap:6px;">
+                        <span class="exp-icon-wrap">${getIcon('vm')}</span> ZebVM Hypervisor v2.1.3
+                    </div>
                 </div>
 
-                <!-- Main Grid Split: VM List (Left) + Console Screen (Right) -->
+                <!-- Main Workspace Split: VM Navigation Sidebar (Left) + Virtual Screen (Right) -->
                 <div style="flex-grow:1; display:flex; overflow:hidden;">
                     
-                    <!-- VM Instance Sidebar -->
-                    <div style="width:200px; background:#ffffff; border-right:2px solid #808080; padding:6px; display:flex; flex-direction:column; gap:4px; flex-shrink:0; overflow-y:auto;">
-                        <div style="font-size:11px; font-weight:bold; color:#666666; margin-bottom:4px;">VIRTUAL MACHINES</div>
+                    <!-- VM Sidebar List -->
+                    <div style="width:230px; background:#ffffff; border-right:2px solid #808080; padding:6px; display:flex; flex-direction:column; gap:6px; flex-shrink:0; overflow-y:auto;">
+                        <div style="font-size:11px; font-weight:bold; color:#000080; margin-bottom:2px; display:flex; align-items:center; justify-content:space-between;">
+                            <span>VIRTUAL MACHINES</span>
+                            <span style="font-weight:normal; color:#666;">(${this.vms.length})</span>
+                        </div>
                         ${this.vms.map(vm => `
-                            <div class="vm-list-item ${vm.id === this.selectedVmId ? 'selected-vm' : ''}" data-id="${vm.id}" style="padding:6px; border:1px solid ${vm.id === this.selectedVmId ? '#000080' : '#d0d0d0'}; background:${vm.id === this.selectedVmId ? '#000080' : '#f5f5f5'}; color:${vm.id === this.selectedVmId ? '#ffffff' : '#000000'}; cursor:pointer; border-radius:2px; font-size:12px; display:flex; align-items:center; justify-content:space-between;">
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <span style="width:16px; height:16px;">${getIcon('vm')}</span>
-                                    <span style="font-weight:bold;">${vm.name}</span>
+                            <div class="vm-card ${vm.id === this.selectedVmId ? 'selected-vm-card' : ''}" data-id="${vm.id}" style="padding:8px; border:1px solid ${vm.id === this.selectedVmId ? '#000080' : '#cccccc'}; background:${vm.id === this.selectedVmId ? '#000080' : '#f9f9f9'}; color:${vm.id === this.selectedVmId ? '#ffffff' : '#000000'}; cursor:pointer; border-radius:2px; font-size:12px; display:flex; flex-direction:column; gap:4px;">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <div style="font-weight:bold; display:flex; align-items:center; gap:6px;">
+                                        <span class="exp-icon-wrap">${getIcon('vm')}</span>
+                                        <span>${vm.name}</span>
+                                    </div>
+                                    <span style="font-size:9px; font-weight:bold; padding:2px 5px; background:${vm.status==='running'?'#2e7d32':(vm.booting?'#f57f17':'#757575')}; color:#ffffff; border-radius:2px;">${vm.booting?'BOOTING':vm.status.toUpperCase()}</span>
                                 </div>
-                                <span style="font-size:10px; font-weight:bold; padding:1px 4px; background:${vm.status==='running'?'#2e7d32':'#757575'}; color:#ffffff; border-radius:2px;">${vm.status.toUpperCase()}</span>
+                                <div style="font-size:10px; opacity:0.85;">RAM: ${vm.ram}MB | CPU: ${vm.cpus} Cores</div>
                             </div>
                         `).join('')}
                     </div>
 
-                    <!-- Virtual Display Screen / Terminal Output -->
-                    <div style="flex-grow:1; background:#0c0c0c; display:flex; flex-direction:column; padding:10px; box-sizing:border-box; color:#00ff00; font-family:'Consolas','Courier New',monospace; overflow:hidden;">
-                        
-                        <!-- VM Info Header Strip -->
-                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333333; padding-bottom:6px; margin-bottom:8px; font-size:12px; flex-shrink:0;">
-                            <div>
-                                <span style="color:#ffffff; font-weight:bold;">${activeVm.name}</span>
-                                <span style="color:#888888; margin-left:8px;">[OS: ${activeVm.os} | RAM: ${activeVm.ram}MB | CPU: ${activeVm.cpus} Core(s)]</span>
-                            </div>
-                            <div style="color:${activeVm.status==='running'?'#55ff55':'#ff5555'}; font-weight:bold;">
-                                Status: ${activeVm.status.toUpperCase()}
-                            </div>
-                        </div>
-
-                        <!-- Console Display Frame -->
-                        <div class="vm-console-output" style="flex-grow:1; overflow-y:auto; font-size:12px; line-height:1.5; white-space:pre-wrap; word-break:break-word;">
-                            ${activeVm.log.length > 0 ? activeVm.log.join('\n') : `<span style="color:#666666;">VM powered off. Click 'Start' to boot virtual machine BIOS.</span>`}
-                        </div>
+                    <!-- Virtual Machine Display Console Container -->
+                    <div style="flex-grow:1; background:#000000; display:flex; flex-direction:column; position:relative; overflow:hidden;">
+                        ${this.renderVirtualViewport(activeVm)}
                     </div>
                 </div>
 
-                <!-- Footer Status Bar -->
-                <div style="background:#c0c0c0; border-top:2px solid #ffffff; padding:4px 10px; font-size:11px; font-weight:bold; color:#404040; flex-shrink:0; display:flex; justify-content:space-between;">
-                    <span>Hypervisor: ZebVM Core v1.0.4 (Virtual CPU Engine)</span>
-                    <span>Active VMs: ${this.vms.filter(v => v.status==='running').length}/${this.vms.length}</span>
+                <!-- Footer System Status Bar -->
+                <div style="background:#c0c0c0; border-top:1px solid #ffffff; padding:3px 8px; font-size:11px; font-weight:bold; color:#333333; flex-shrink:0; display:flex; justify-content:space-between; align-items:center;">
+                    <div>Active Machine: <span style="color:#000080;">${activeVm.name}</span> (${activeVm.os})</div>
+                    <div>Running VMs: ${this.vms.filter(v => v.status === 'running').length}/${this.vms.length}</div>
                 </div>
             </div>
         `;
 
-        // Bind list selection
-        this.bodyElement.querySelectorAll('.vm-list-item').forEach(item => {
-            item.addEventListener('click', () => {
-                this.selectedVmId = item.dataset.id;
+        this.bindEvents(activeVm);
+    }
+
+    renderVirtualViewport(vm) {
+        if (vm.booting) {
+            return `
+                <div style="flex-grow:1; background:#0c0c0c; color:#00ff00; font-family:'Consolas','Courier New',monospace; padding:16px; font-size:12px; line-height:1.6; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                    <div style="width:50px; height:50px; margin-bottom:12px;">${getIcon('vm')}</div>
+                    <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.1.3 Post Diagnostic Check</div>
+                    <div style="color:#00ff00; margin-top:8px;">Initializing Virtual Hardware Layer...</div>
+                    <div style="color:#888888; margin-top:4px;">Probing ${vm.cpus} vCPU cores | Allocating ${vm.ram}MB Virtual RAM</div>
+                    <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${vm.name}]...</div>
+                </div>
+            `;
+        }
+
+        if (vm.status === 'running') {
+            return `
+                <div style="width:100%; height:100%; display:flex; flex-direction:column; position:relative; background:#ffffff;">
+                    <iframe src="${vm.url}" style="width:100%; height:100%; border:none; outline:none; display:block;" allow="fullscreen; autoplay; clipboard-write;"></iframe>
+                </div>
+            `;
+        }
+
+        // STOPPED State Display Screen
+        return `
+            <div style="flex-grow:1; background:#111827; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:Arial, sans-serif;">
+                <div style="width:64px; height:64px; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(59,130,246,0.5));">${getIcon('vm')}</div>
+                <div style="font-size:20px; font-weight:bold; color:#ffffff;">${vm.name}</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">${vm.desc}</div>
+                
+                <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px; background:#1f2937; padding:12px 18px; border-radius:6px; border:1px solid #374151; font-size:12px; text-align:left; min-width:280px;">
+                    <div><strong style="color:#60a5fa;">Guest OS:</strong> ${vm.os}</div>
+                    <div><strong style="color:#60a5fa;">Virtual RAM:</strong> ${vm.ram} MB</div>
+                    <div><strong style="color:#60a5fa;">vCPU Cores:</strong> ${vm.cpus} Cores</div>
+                    <div><strong style="color:#60a5fa;">Target URL:</strong> <a href="${vm.url}" target="_blank" style="color:#93c5fd; text-decoration:none;">Link ↗</a></div>
+                </div>
+
+                <button class="btn-power-on-center" style="margin-top:20px; padding:10px 24px; font-size:13px; font-weight:bold; background:linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color:#ffffff; border:1px solid #60a5fa; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+                    <span class="exp-icon-wrap">${getIcon('powerOn')}</span> Power On Virtual Machine
+                </button>
+            </div>
+        `;
+    }
+
+    bindEvents(activeVm) {
+        // List Card Click
+        this.bodyElement.querySelectorAll('.vm-card').forEach(card => {
+            card.addEventListener('click', () => {
+                this.selectedVmId = card.dataset.id;
                 this.render();
             });
         });
 
-        // Bind Start
-        this.bodyElement.querySelector('.btn-power-on').addEventListener('click', () => {
-            this.startVm(activeVm);
-        });
+        // Start VM Buttons
+        const startBtn = this.bodyElement.querySelector('.btn-start-vm');
+        const startCenterBtn = this.bodyElement.querySelector('.btn-power-on-center');
 
-        // Bind Stop
-        this.bodyElement.querySelector('.btn-power-off').addEventListener('click', () => {
-            this.stopVm(activeVm);
-        });
+        const doStart = () => this.startVm(activeVm);
+        if (startBtn) startBtn.addEventListener('click', doStart);
+        if (startCenterBtn) startCenterBtn.addEventListener('click', doStart);
 
-        // Bind New VM
-        this.bodyElement.querySelector('.btn-new-vm').addEventListener('click', () => {
-            const name = prompt("Enter Virtual Machine Name:", "MS-DOS 6.22");
-            if (!name) return;
-            const newId = `vm_${Date.now()}`;
-            this.vms.push({
-                id: newId,
-                name: name.trim(),
-                os: "ZebOS Compatible OS",
-                ram: 128,
-                cpus: 1,
-                status: 'stopped',
-                log: []
+        // Stop VM
+        const stopBtn = this.bodyElement.querySelector('.btn-stop-vm');
+        if (stopBtn) {
+            stopBtn.addEventListener('click', () => this.stopVm(activeVm));
+        }
+
+        // Restart VM
+        const restartBtn = this.bodyElement.querySelector('.btn-restart-vm');
+        if (restartBtn) {
+            restartBtn.addEventListener('click', () => {
+                this.stopVm(activeVm);
+                setTimeout(() => this.startVm(activeVm), 300);
             });
-            this.selectedVmId = newId;
-            this.render();
-        });
+        }
+
+        // New VM Wizard
+        const newBtn = this.bodyElement.querySelector('.btn-new-vm');
+        if (newBtn) {
+            newBtn.addEventListener('click', () => {
+                const name = prompt("Enter Virtual Machine Name:", "Custom Web VM");
+                if (!name) return;
+                const url = prompt("Enter Target Embed Web URL:", "https://example.com");
+                if (!url) return;
+                
+                const newId = `vm_${Date.now()}`;
+                this.vms.push({
+                    id: newId,
+                    name: name.trim(),
+                    url: url.trim(),
+                    os: "Web Application OS",
+                    ram: 1024,
+                    cpus: 2,
+                    status: 'stopped',
+                    booting: false,
+                    desc: "Custom Web Embed Virtual Machine Instance"
+                });
+                this.selectedVmId = newId;
+                this.render();
+            });
+        }
     }
 
     startVm(vm) {
-        if (vm.status === 'running') return;
-        vm.status = 'running';
-        vm.log = [
-            `ZebVM BIOS v2.4 (C) 2026 ZebOS Foundation`,
-            `Probing virtual CPU: 0x00000001 [${vm.cpus} Cores OK]`,
-            `Allocating ${vm.ram}MB system memory RAM... OK`,
-            `Mounting virtual disk image hda1... OK`,
-            `Booting kernel image [${vm.os}]...`
-        ];
-
+        if (vm.status === 'running' || vm.booting) return;
+        vm.booting = true;
         this.render();
 
-        // Boot sequence simulation ticker
-        let step = 0;
-        const bootMessages = [
-            "KERN: Initializing device drivers...",
-            "MISC: Probing virtual PCI bus...",
-            "NET: Virtual Ethernet adapter eth0 online.",
-            "SYSTEM: Shell ready. Type commands in ZebOS host shell."
-        ];
-
-        if (this.bootIntervals[vm.id]) clearInterval(this.bootIntervals[vm.id]);
-        this.bootIntervals[vm.id] = setInterval(() => {
-            if (step < bootMessages.length && vm.status === 'running') {
-                vm.log.push(bootMessages[step]);
-                step++;
-                this.render();
-            } else {
-                clearInterval(this.bootIntervals[vm.id]);
-            }
-        }, 800);
+        if (this.bootTimers[vm.id]) clearTimeout(this.bootTimers[vm.id]);
+        this.bootTimers[vm.id] = setTimeout(() => {
+            vm.booting = false;
+            vm.status = 'running';
+            this.render();
+        }, 1200);
     }
 
     stopVm(vm) {
-        if (vm.status === 'stopped') return;
+        if (vm.status === 'stopped' && !vm.booting) return;
+        vm.booting = false;
         vm.status = 'stopped';
-        if (this.bootIntervals[vm.id]) clearInterval(this.bootIntervals[vm.id]);
-        vm.log.push("ACPI: Power down signal received. System halted.");
+        if (this.bootTimers[vm.id]) clearTimeout(this.bootTimers[vm.id]);
         this.render();
     }
 
@@ -182,7 +255,7 @@ export class ZebVMManager {
     }
 
     cleanup() {
-        Object.keys(this.bootIntervals).forEach(id => clearInterval(this.bootIntervals[id]));
+        Object.keys(this.bootTimers).forEach(id => clearTimeout(this.bootTimers[id]));
         window.removeEventListener('keydown', this.boundKeyDown);
     }
 }

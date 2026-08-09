@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.1.2 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.1.3 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.1.2", 
+    version: "2.1.3", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -90,7 +90,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.1.2! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.1.3! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -149,7 +149,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.2 Pro...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.3 Pro...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -270,8 +270,8 @@ export function createWindow(title, iconName, uniqueId) {
     win.style.zIndex = ++topZIndex;
 
     const currentWindows = document.querySelectorAll('.window-frame').length;
-    const winWidth = 440; 
-    const winHeight = 320;
+    const winWidth = 760; 
+    const winHeight = 500;
     const centerX = Math.max(20, Math.floor((window.innerWidth - winWidth) / 2) + (currentWindows * 20));
     const centerY = Math.max(20, Math.floor((window.innerHeight - 40 - winHeight) / 2) + (currentWindows * 20));
     
@@ -593,6 +593,11 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/vm.js');
                 const vmBody = createWindow("ZebVM Manager", "vm", winId);
                 if (vmBody) {
+                    const winFrame = vmBody.closest('.window-frame');
+                    if (winFrame) {
+                        winFrame.style.width = '880px';
+                        winFrame.style.height = '560px';
+                    }
                     const vmInstance = new module.ZebVMManager(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => vmInstance.cleanup());
                     vmInstance.open(vmBody);
