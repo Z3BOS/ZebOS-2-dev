@@ -797,13 +797,18 @@ function renderDesktopIcons() {
 function setupStartMenuController() {
     const startBtn = document.getElementById('start-button');
     const startMenu = document.getElementById('start-menu');
+    const systemTray = document.getElementById('system-tray');
+    const trayMenu = document.getElementById('tray-menu');
 
-    // Render Start logo & User icon
+    // Render official Z logo on Start button logo container (same as logon)
     const startLogoEl = document.querySelector('.start-logo');
-    if (startLogoEl) startLogoEl.innerHTML = getIcon('startLogo');
+    if (startLogoEl) startLogoEl.innerHTML = getIcon('officialZLogo');
 
     const userTagEl = document.getElementById('current-user-tag');
     if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${systemState.currentUser}</span>`;
+
+    const trayVolIcon = document.getElementById('tray-vol-icon');
+    if (trayVolIcon) trayVolIcon.innerHTML = `<span style="display:inline-flex; align-items:center;">${getIcon('volume')}</span>`;
 
     // Populate start menu SVG icons
     const menuItems = document.querySelectorAll('.start-menu-item');
@@ -821,13 +826,67 @@ function setupStartMenuController() {
     startBtn.addEventListener('click', (e) => {
         e.stopPropagation(); 
         startMenu.classList.toggle('hidden-view');
+        if (trayMenu) trayMenu.classList.add('hidden-view');
     });
 
+    if (systemTray && trayMenu) {
+        systemTray.addEventListener('click', (e) => {
+            e.stopPropagation();
+            trayMenu.classList.toggle('hidden-view');
+            if (startMenu) startMenu.classList.add('hidden-view');
+
+            // Update tray info dynamically
+            const trayUser = document.getElementById('tray-user-name');
+            if (trayUser) trayUser.textContent = `User: ${systemState.currentUser}`;
+
+            const trayDate = document.getElementById('tray-date-text');
+            if (trayDate) {
+                const now = new Date();
+                trayDate.textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+            }
+        });
+    }
+
     document.addEventListener('click', (e) => {
-        if (!startMenu.classList.contains('hidden-view')) {
+        if (startMenu && !startMenu.classList.contains('hidden-view')) {
             startMenu.classList.add('hidden-view');
         }
+        if (trayMenu && !trayMenu.classList.contains('hidden-view') && !trayMenu.contains(e.target)) {
+            trayMenu.classList.add('hidden-view');
+        }
     });
+
+    // Tray Menu Actions
+    const trayCourgette = document.getElementById('tray-action-courgette');
+    if (trayCourgette) {
+        trayCourgette.addEventListener('click', () => launchApplication('start-link-courgette'));
+    }
+
+    const traySignout = document.getElementById('tray-action-signout');
+    if (traySignout) {
+        traySignout.addEventListener('click', async () => {
+            if (trayMenu) trayMenu.classList.add('hidden-view');
+            const desktopCanvas = document.getElementById('desktop-canvas');
+            const taskbar = document.getElementById('system-taskbar');
+            if (desktopCanvas) desktopCanvas.style.display = 'none';
+            if (taskbar) taskbar.style.display = 'none';
+
+            try {
+                const module = await import('./logon/logon.js');
+                module.showLogonScreen((username) => {
+                    systemState.currentUser = username;
+                    if (desktopCanvas) desktopCanvas.style.display = 'block';
+                    if (taskbar) taskbar.style.display = 'flex';
+                    if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
+                    logKernel(`Session: User '${username}' signed in.`);
+                });
+            } catch (err) {
+                logKernel(`Logon Error: (${err.message})`, "ERROR");
+                if (desktopCanvas) desktopCanvas.style.display = 'block';
+                if (taskbar) taskbar.style.display = 'flex';
+            }
+        });
+    }
 }
 
 // ==========================================================================

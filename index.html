@@ -88,14 +88,41 @@
     <!-- LAYER 2: Bottom Fixed Windows-95 Style Gray System Taskbar Strip Panel -->
     <div id="system-taskbar">
         <button id="start-button">
-            <span class="start-logo"></span> Start
+            <span class="start-logo"></span>
+            <span class="start-text">Start</span>
         </button>
 
         <div id="taskbar-tabs-zone"></div>
 
-        <div id="system-tray">
+        <div id="system-tray" title="Click for System Control Tray">
             <span id="current-user-tag">guest</span>
+            <span id="tray-vol-icon"></span>
             <span id="live-clock">12:00 PM</span>
+        </div>
+
+        <!-- System Tray Pop-Up Quick Control Panel -->
+        <div id="tray-menu" class="hidden-view">
+            <div id="tray-menu-header">
+                <span>ZebOS 2 Pro System Control</span>
+            </div>
+            <div class="tray-menu-content">
+                <div class="tray-section">
+                    <div style="font-weight:bold; color:#000080; font-size:13px;" id="tray-user-name">User: guest</div>
+                    <div style="font-size:11px; color:#555555; margin-top:2px;" id="tray-date-text">System Time Daemon</div>
+                </div>
+                <hr class="start-menu-divider">
+                <div class="tray-section" style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:11px; font-weight:bold;">Vol:</span>
+                    <input type="range" id="tray-master-vol" value="80" min="0" max="100" style="flex-grow:1; height:4px; accent-color:#000080; cursor:pointer;">
+                </div>
+                <hr class="start-menu-divider">
+                <div class="start-menu-item" id="tray-action-courgette">
+                    <span class="menu-icon" data-icon="courgette"></span> System Info
+                </div>
+                <div class="start-menu-item" id="tray-action-signout">
+                    <span class="menu-icon" data-icon="shutdown"></span> Sign Out...
+                </div>
+            </div>
         </div>
     </div>
 
