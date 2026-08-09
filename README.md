@@ -1,10 +1,25 @@
 # ZebOS 2 Pro
-ZebOS is a Open-Source JavaScript Operating System!
 
-This is an Unofficial Variant of ZebOS 2 and Features you see here and evolution of design may not come to the Official ZebOS 2 However 7Zeb may sometimes take some features from here and put in the Official Version.
+> An experimental, feature-rich unofficial variant of the open-source **ZebOS 2** JavaScript operating system.
 
-///////
+---
 
-This Unofficial Verision is Developed By Adurite / Adurite Designs.
+## 📌 Overview
 
-Adurite Designs also made ZebOS 2 Preview which was a Preview build that isnt released to the Public that you may have seen on the 7Zeb Youtube Channel, and if you liked how that looked, then expect much better in ZebOS 2 Pro The Unofficial Variant Of ZebOS.
+**ZebOS 2 Pro** is an evolved, community-driven variant of ZebOS 2. Developed by **Adurite / Adurite Designs**, this version pushes the design and functionality of the original web OS further with modern UI aesthetics, refined features, and performance enhancements.
+
+If you caught a glimpse of the *ZebOS 2 Preview* build featured on the 7Zeb YouTube channel, ZebOS 2 Pro takes those early visual concepts and turns them into a far more complete and polished experience.
+
+---
+
+## ⚠️ Upstream & Official Status
+
+* **Unofficial Release:** ZebOS 2 Pro is an independent project created by Adurite Designs and is not directly managed by 7Zeb.
+* **Feature Adoption:** The experimental designs and features introduced in this project are unique to the Pro variant. While they may not all appear in the official ZebOS 2 release, select features from this build may occasionally be incorporated into the official upstream version by 7Zeb.
+
+---
+
+## 🛠️ Credits & Authorship
+
+* **ZebOS 2 Pro Developer:** Adurite / Adurite Designs
+* **Original ZebOS Project:** 7Zeb
