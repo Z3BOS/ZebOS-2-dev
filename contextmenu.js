@@ -65,7 +65,34 @@ function getContextMenuForElement(target, callbacks) {
             { label: 'Delete', icon: 'winClose', action: () => callbacks.onDeleteFile?.(itemName) },
             { label: 'Rename', icon: 'editor', action: () => callbacks.onRenameFile?.(itemName) },
             { type: 'separator' },
-            { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog(itemName, itemType === 'dir' ? 'File Folder' : 'Document File', 'ZebOS System Volume (Z:\\)') }
+        ];
+    }
+
+    // 2.5 Explorer Workspace / Empty Space
+    const explorerBg = target.closest('#body-explorer-root, .explorer-grid, .explorer-table, [id^="body-explorer"]');
+    if (explorerBg && !target.closest('.explorer-item, .explorer-table-row')) {
+        return [
+            { 
+                label: 'View', icon: 'explorer', hasSubmenu: true,
+                submenu: [
+                    { label: 'Large Icons', icon: 'explorer', action: () => callbacks.onChangeExplorerView?.('large') },
+                    { label: 'Small Icons', icon: 'file', action: () => callbacks.onChangeExplorerView?.('small') },
+                    { label: 'List', icon: 'editor', action: () => callbacks.onChangeExplorerView?.('list') },
+                    { label: 'Details', icon: 'settings', action: () => callbacks.onChangeExplorerView?.('details') }
+                ]
+            },
+            { label: 'Refresh', icon: 'startLogo', action: () => callbacks.onRefreshExplorer?.() },
+            { type: 'separator' },
+            { 
+                label: 'New', icon: 'newFolder', hasSubmenu: true,
+                submenu: [
+                    { label: 'Folder', icon: 'folder', action: () => callbacks.onCreateNewFolder?.() },
+                    { label: 'Text Document', icon: 'editor', action: () => callbacks.onCreateNewFile?.('Text Document', 'txt') },
+                    { label: 'Bitmap Image', icon: 'paint', action: () => callbacks.onCreateNewFile?.('Bitmap Image', 'png') }
+                ]
+            },
+            { type: 'separator' },
+            { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog('ZebRoot (Z:)', 'System Volume (VFS)', 'Zeb Machine') }
         ];
     }
 
@@ -300,7 +327,7 @@ function showPropertiesDialog(name, type, location) {
                 </div>
             </div>
             <div><strong>Location:</strong> ${location}</div>
-            <div><strong>System:</strong> ZebOS 2 Kernel v2.1.8 (Pre-Alpha)</div>
+            <div><strong>System:</strong> ZebOS 2 Kernel v2.1.9 (Pre-Alpha)</div>
             <div><strong>Status:</strong> Read/Write Accessible</div>
             <button id="prop-ok" style="align-self:flex-end; padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; margin-top:8px;">OK</button>
         </div>

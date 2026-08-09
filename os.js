@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.1.8 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.1.9 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.1.8", 
+    version: "2.1.9", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -90,7 +90,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.1.8! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.1.9! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -149,7 +149,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.8 Pre-Alpha...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.9 Pre-Alpha...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -270,6 +270,11 @@ export function createWindow(title, iconName, uniqueId) {
     win.style.zIndex = ++topZIndex;
 
     const currentWindows = document.querySelectorAll('.window-frame').length;
+    const winWidth = 760;
+    const winHeight = 500;
+    const centerX = Math.max(20, Math.floor((window.innerWidth - winWidth) / 2) + (currentWindows * 20));
+    const centerY = Math.max(20, Math.floor((window.innerHeight - 40 - winHeight) / 2) + (currentWindows * 20));
+    
     win.style.width = `${winWidth}px`;
     win.style.height = `${winHeight}px`;
     win.style.left = `${centerX}px`;
@@ -783,15 +788,20 @@ export function showOsPrompt(title, message, defaultValue = "", onConfirm = null
     `;
 
     const dialog = document.createElement('div');
-    dialog.className = 'window-frame active-window';
+    dialog.className = 'os-prompt-modal active-window';
     dialog.style.cssText = `
-        width: 330px;
+        position: relative !important;
+        left: auto !important; top: auto !important;
+        width: 340px !important;
+        height: auto !important;
+        min-height: 140px !important;
         background-color: #c0c0c0;
         border: 2px solid #ffffff;
         border-right-color: #000000;
         border-bottom-color: #000000;
-        box-shadow: 4px 4px 16px rgba(0,0,0,0.5);
+        box-shadow: 4px 4px 18px rgba(0,0,0,0.6);
         font-family: Arial, sans-serif;
+        box-sizing: border-box;
     `;
 
     dialog.innerHTML = `
@@ -1047,12 +1057,24 @@ initContextMenuSystem({
             }
         });
     },
+    onRefreshExplorer: () => {
+        refreshOpenExplorer();
+        logKernel("Explorer view refreshed.");
+    },
     onCreateNewFolder: () => {
         showOsPrompt("New Folder", "Type a name for the new folder:", "New Folder", (folderName) => {
             const context = getActiveFolderContext();
             context[folderName] = { type: "dir", content: {} };
+            
+            if (systemState.currentDirectory === "") {
+                if (!DESKTOP_SHORTCUTS.some(s => s.label === folderName)) {
+                    DESKTOP_SHORTCUTS.push({ id: 'start-link-files', icon: 'folder', label: folderName });
+                }
+            }
+
             saveFileSystem();
             refreshOpenExplorer();
+            renderDesktopIcons();
             logKernel(`VFS: Created new folder '${folderName}'`);
         });
     },
@@ -1061,8 +1083,23 @@ initContextMenuSystem({
         showOsPrompt(`New ${typeLabel}`, `Type a name for the new ${typeLabel.toLowerCase()}:`, defaultFileName, (fileName) => {
             const context = getActiveFolderContext();
             context[fileName] = { type: "file", content: ext === 'png' ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' : '' };
+            
+            if (systemState.currentDirectory === "") {
+                if (!DESKTOP_SHORTCUTS.some(s => s.label === fileName)) {
+                    DESKTOP_SHORTCUTS.push({
+                        id: ext === 'png' ? 'start-link-paint' : 'start-link-text-editor',
+                        icon: ext === 'png' ? 'paint' : 'editor',
+                        label: fileName,
+                        isCustomVfs: true,
+                        vfsName: fileName,
+                        itemType: 'file'
+                    });
+                }
+            }
+
             saveFileSystem();
             refreshOpenExplorer();
+            renderDesktopIcons();
             logKernel(`VFS: Created new file '${fileName}'`);
             if (ext === 'png') {
                 launchApplication('start-link-paint');
