@@ -37,10 +37,10 @@ export class FileExplorerApp {
                 <!-- 2. Standard Toolbar -->
                 <div class="explorer-toolbar" style="display:flex; align-items:center; gap:4px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:nowrap; overflow-x:auto;">
                     <button class="exp-tb-btn" id="exp-tb-back" title="Back" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span style="width:14px; height:14px;">${getIcon('up')}</span> Back
+                        <span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('back')}</span> Back
                     </button>
                     <button class="exp-tb-btn" id="exp-tb-up" title="Up One Level" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span style="width:14px; height:14px;">${getIcon('newFolder')}</span> Up
+                        <span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('up')}</span> Up
                     </button>
                     <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
                     <button class="exp-tb-btn" id="exp-tb-cut" title="Cut" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cut</button>
@@ -63,8 +63,8 @@ export class FileExplorerApp {
                 <div class="explorer-addressbar" style="display:flex; align-items:center; gap:6px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080;">
                     <span style="font-weight:bold; font-size:11px;">Address:</span>
                     <div style="display:flex; align-items:center; flex-grow:1; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:1px 4px;">
-                        <span style="width:16px; height:16px; margin-right:4px;">${getIcon('explorer')}</span>
-                        <input type="text" id="exp-address-input" value="C:\\" style="flex-grow:1; border:none; outline:none; font-family:Arial, sans-serif; font-size:12px;">
+                        <span style="width:16px; height:16px; margin-right:4px; display:inline-flex; align-items:center;">${getIcon('drive')}</span>
+                        <input type="text" id="exp-address-input" value="Z:\\" style="flex-grow:1; border:none; outline:none; font-family:Arial, sans-serif; font-size:12px;">
                     </div>
                 </div>
 
@@ -75,9 +75,9 @@ export class FileExplorerApp {
                     <div class="explorer-sidebar" style="width:190px; min-width:160px; background:#c0c0c0; border-right:2px solid #808080; display:flex; flex-direction:column; padding:8px; box-sizing:border-box; overflow-y:auto;">
                         <!-- Selected / Active Folder Info Card -->
                         <div id="exp-sidebar-info" style="display:flex; flex-direction:column; gap:6px; border-bottom:1px solid #808080; padding-bottom:12px; margin-bottom:8px;">
-                            <div style="width:48px; height:48px;" id="exp-info-icon">${getIcon('explorer')}</div>
-                            <div style="font-size:16px; font-weight:bold; color:#000080; word-break:break-all;" id="exp-info-title">Local Disk (C:)</div>
-                            <div style="font-size:11px; color:#555;" id="exp-info-type">System Drive</div>
+                            <div style="width:48px; height:48px;" id="exp-info-icon">${getIcon('drive')}</div>
+                            <div style="font-size:16px; font-weight:bold; color:#000080; word-break:break-all;" id="exp-info-title">ZebRoot (Z:)</div>
+                            <div style="font-size:11px; color:#555;" id="exp-info-type">ZebOS System Volume</div>
                             <div style="font-size:11px; color:#333; margin-top:4px;" id="exp-info-desc">Select an item to view its description.</div>
                             <div style="margin-top:8px; font-size:11px; color:#000080;" id="exp-info-stats">
                                 <div>Capacity: 2.00 GB</div>
@@ -101,7 +101,7 @@ export class FileExplorerApp {
                     <div id="exp-status-left">0 object(s)</div>
                     <div id="exp-status-mid">Disk Free: 819 MB</div>
                     <div style="display:flex; align-items:center; gap:4px;">
-                        <span style="width:14px; height:14px;">${getIcon('explorer')}</span> My Computer
+                        <span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('computer')}</span> Zeb Machine
                     </div>
                 </div>
             </div>
@@ -195,7 +195,7 @@ export class FileExplorerApp {
     refreshView() {
         const addressInput = this.container.querySelector('#exp-address-input');
         if (addressInput) {
-            addressInput.value = this.currentPath === "" ? "C:\\" : `C:\\${this.currentPath.replace(/\//g, '\\')}`;
+            addressInput.value = this.currentPath === "" ? "Z:\\" : `Z:\\${this.currentPath.replace(/\//g, '\\')}`;
         }
 
         const context = this.getVfsContext(this.currentPath);
@@ -214,9 +214,18 @@ export class FileExplorerApp {
         // Render Left Sidebar Tree Navigation & Info Card
         this.renderSidebar(context, items);
 
+        // Calculate dynamic VFS storage stats
+        const rootFs = this.getVfsContext("");
+        const usedBytes = new Blob([JSON.stringify(rootFs)]).size;
+        const usedStr = usedBytes < 1024 ? `${usedBytes} B` : `${(usedBytes / 1024).toFixed(1)} KB`;
+        const freeMbStr = (2048 - (usedBytes / (1024 * 1024))).toFixed(0);
+
         // Update Bottom Statusbar
         const statusLeft = this.container.querySelector('#exp-status-left');
         if (statusLeft) statusLeft.textContent = `${items.length} object(s)`;
+
+        const statusMid = this.container.querySelector('#exp-status-mid');
+        if (statusMid) statusMid.textContent = `Disk Free: ${freeMbStr} MB (Used: ${usedStr})`;
     }
 
     renderGridView(container, context, items) {
@@ -388,20 +397,34 @@ export class FileExplorerApp {
             const item = context[this.selectedItem];
             titleEl.textContent = this.selectedItem;
             typeEl.textContent = item.type === "dir" ? "File Folder" : "Document File";
-            descEl.textContent = `Selected object in C:\\${this.currentPath}. Double-click to open.`;
+            descEl.textContent = `Selected object in Z:\\${this.currentPath}. Double-click to open.`;
             iconEl.innerHTML = item.type === "dir" ? getIcon('folder') : getIcon('file');
         } else {
-            titleEl.textContent = this.currentPath === "" ? "Local Disk (C:)" : this.currentPath.split('/').pop();
-            typeEl.textContent = this.currentPath === "" ? "System Drive" : "Folder";
+            titleEl.textContent = this.currentPath === "" ? "ZebRoot (Z:)" : this.currentPath.split('/').pop();
+            typeEl.textContent = this.currentPath === "" ? "ZebOS System Volume" : "Folder";
             descEl.textContent = "Select an item to view its description.";
-            iconEl.innerHTML = getIcon('explorer');
+            iconEl.innerHTML = getIcon('drive');
+        }
+
+        const rootFs = this.getVfsContext("");
+        const usedBytes = new Blob([JSON.stringify(rootFs)]).size;
+        const usedStr = usedBytes < 1024 ? `${usedBytes} B` : `${(usedBytes / 1024).toFixed(1)} KB`;
+        const freeMbStr = (2048 - (usedBytes / (1024 * 1024))).toFixed(0);
+
+        const statsEl = this.container.querySelector('#exp-info-stats');
+        if (statsEl) {
+            statsEl.innerHTML = `
+                <div>Capacity: 2.00 GB</div>
+                <div>Used Space: ${usedStr}</div>
+                <div>Free Space: ${freeMbStr} MB</div>
+            `;
         }
 
         // Render Tree Navigation
         const treeContainer = this.container.querySelector('#exp-folder-tree');
         treeContainer.innerHTML = `
             <div class="tree-node" style="cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:${this.currentPath===''?'bold':'normal'}; color:${this.currentPath===''?'#000080':'#000'};">
-                <span style="width:14px; height:14px;">${getIcon('explorer')}</span> (C:) Root
+                <span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('drive')}</span> ZebRoot (Z:)
             </div>
         `;
 

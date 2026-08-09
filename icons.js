@@ -139,9 +139,31 @@ const SVGS = {
     winMin: `<svg viewBox="0 0 10 10" style="width:10px; height:10px; display:block;"><line x1="1" y1="8" x2="9" y2="8" stroke="#000000" stroke-width="2" stroke-linecap="square"/></svg>`,
     winMax: `<svg viewBox="0 0 10 10" style="width:10px; height:10px; display:block;"><rect x="1" y="1" width="8" height="8" fill="none" stroke="#000000" stroke-width="1.5"/></svg>`,
     winClose: `<svg viewBox="0 0 10 10" style="width:10px; height:10px; display:block;"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`,
+    back: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    `,
     up: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4L4 14H9V20H15V14H20L12 4Z" fill="#000000"/>
+        </svg>
+    `,
+    drive: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="6" width="20" height="12" rx="2" fill="#d0d0d0" stroke="#000000" stroke-width="1.5"/>
+            <line x1="2" y1="14" x2="22" y2="14" stroke="#808080" stroke-width="1"/>
+            <circle cx="18" cy="10" r="1" fill="#00e676"/>
+            <rect x="5" y="9" width="8" height="2" fill="#555555"/>
+        </svg>
+    `,
+    computer: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="3" width="16" height="11" rx="1" fill="#e0e0e0" stroke="#000000" stroke-width="1.5"/>
+            <rect x="6" y="5" width="12" height="7" fill="#008080"/>
+            <path d="M10 14V17H14V14" stroke="#000000" stroke-width="1.5" fill="none"/>
+            <rect x="2" y="17" width="20" height="4" rx="1" fill="#c0c0c0" stroke="#000000" stroke-width="1.5"/>
+            <circle cx="18" cy="19" r="0.8" fill="#00e676"/>
         </svg>
     `,
     file: `

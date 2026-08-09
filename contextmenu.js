@@ -72,7 +72,7 @@ function buildMenuConfigForTarget(target, callbacks) {
             { label: 'Delete', icon: 'winClose', action: () => callbacks.onDeleteFile?.(itemName) },
             { label: 'Rename', icon: 'editor', action: () => callbacks.onRenameFile?.(itemName) },
             { type: 'separator' },
-            { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog(itemName, itemType === 'dir' ? 'File Folder' : 'Document File', 'Virtual Disk C:\\') }
+            { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog(itemName, itemType === 'dir' ? 'File Folder' : 'Document File', 'ZebOS System Volume (Z:\\)') }
         ];
     }
 

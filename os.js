@@ -437,7 +437,7 @@ async function launchApplication(appId, customFileName = null) {
             const winId = 'explorer-root';
             try {
                 const module = await import('./programs/explorer.js');
-                const explorerBody = createWindow("Exploring - Local Disk (C:)", "explorer", winId);
+                const explorerBody = createWindow("Exploring - ZebRoot (Z:)", "explorer", winId);
                 if (explorerBody) {
                     const expInstance = new module.FileExplorerApp(
                         () => closeWindow(winId),
