@@ -62,25 +62,36 @@ export class PaintApp {
                 </div>
 
                 <!-- Bottom Control Strip: Color Swatches + Size Selector -->
-                <div style="background:#c0c0c0; border-top:2px solid #ffffff; padding:6px 10px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; height:36px; box-sizing:border-box;">
+                <div style="background:#c0c0c0; border-top:2px solid #ffffff; padding:4px 10px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; min-height:38px; box-sizing:border-box;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-size:11px; font-weight:bold;">Color:</span>
-                        <div class="color-palette" style="display:flex; gap:3px;">
-                            ${['#000000','#ffffff','#d32f2f','#1976d2','#388e3c','#fbc02d','#f57c00','#7b1fa2','#008080','#795548']
-                                .map(c => `<div class="color-swatch ${c==='#000000'?'active-swatch':''}" data-color="${c}" style="width:16px; height:16px; background:${c}; border:1px solid #000000; cursor:pointer;"></div>`).join('')}
+                        <!-- Active color preview + native picker trigger -->
+                        <div style="position:relative; width:22px; height:22px; flex-shrink:0;">
+                            <div class="paint-color-preview" style="width:22px;height:22px;background:#000000;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;cursor:pointer;box-sizing:border-box;" title="Click to pick custom color"></div>
+                            <input type="color" class="color-picker-input" value="#000000" style="position:absolute;top:0;left:0;width:22px;height:22px;opacity:0;cursor:pointer;" title="Custom Color">
                         </div>
-                        <input type="color" class="color-picker-input" value="#000000" style="width:22px; height:22px; border:none; padding:0; background:transparent; cursor:pointer;" title="Custom Color">
+                        <div class="color-palette" style="display:flex; gap:2px;">
+                            ${['#000000','#ffffff','#d32f2f','#1976d2','#388e3c','#fbc02d','#f57c00','#7b1fa2','#008080','#795548','#607d8b','#e91e63']
+                                .map(c => `<div class="color-swatch" data-color="${c}" style="width:14px;height:14px;background:${c};border:2px solid ${c==='#000000'?'#000080':'#808080'};border-right-color:${c==='#000000'?'#000080':'#fff'};border-bottom-color:${c==='#000000'?'#000080':'#fff'};cursor:pointer;box-sizing:border-box;" title="${c}"></div>`).join('')}
+                        </div>
                     </div>
 
+                    <!-- Size: Win95 custom dropdown -->
                     <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:bold;">
                         <span>Size:</span>
-                        <select class="paint-size-select" style="font-size:11px; padding:2px; background:#ffffff; border:1px solid #808080;">
-                            <option value="1">1px (Thin)</option>
-                            <option value="3" selected>3px (Medium)</option>
-                            <option value="6">6px (Thick)</option>
-                            <option value="12">12px (Bold)</option>
-                            <option value="24">24px (Huge)</option>
-                        </select>
+                        <div class="w95-dropdown paint-size-drop" id="paint-size-drop" data-value="3" style="position:relative;width:130px;z-index:10;">
+                          <div class="w95-drop-display" style="display:flex;align-items:center;justify-content:space-between;background:#c0c0c0;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;padding:2px 4px;cursor:pointer;font-size:11px;font-family:Arial,sans-serif;min-height:20px;box-sizing:border-box;">
+                            <span class="w95-drop-label" style="flex-grow:1;">3px (Medium)</span>
+                            <span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;flex-shrink:0;background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;font-size:7px;">▼</span>
+                          </div>
+                          <div class="w95-drop-list" style="display:none;position:absolute;bottom:100%;left:0;width:100%;background:#c0c0c0;border:1px solid #000;box-shadow:2px 2px 4px rgba(0,0,0,.4);z-index:9999;">
+                            <div class="w95-drop-item" data-value="1"  style="padding:2px 6px;font-size:11px;font-family:Arial,sans-serif;cursor:pointer;background:#c0c0c0;color:#000;">1px (Thin)</div>
+                            <div class="w95-drop-item" data-value="3"  style="padding:2px 6px;font-size:11px;font-family:Arial,sans-serif;cursor:pointer;background:#000080;color:#fff;">3px (Medium)</div>
+                            <div class="w95-drop-item" data-value="6"  style="padding:2px 6px;font-size:11px;font-family:Arial,sans-serif;cursor:pointer;background:#c0c0c0;color:#000;">6px (Thick)</div>
+                            <div class="w95-drop-item" data-value="12" style="padding:2px 6px;font-size:11px;font-family:Arial,sans-serif;cursor:pointer;background:#c0c0c0;color:#000;">12px (Bold)</div>
+                            <div class="w95-drop-item" data-value="24" style="padding:2px 6px;font-size:11px;font-family:Arial,sans-serif;cursor:pointer;background:#c0c0c0;color:#000;">24px (Huge)</div>
+                          </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -101,26 +112,57 @@ export class PaintApp {
             });
         });
 
-        // Bind color swatches
+        // Bind color swatches + preview swatch + color picker
         const swatches = this.bodyElement.querySelectorAll('.color-swatch');
-        const picker = this.bodyElement.querySelector('.color-picker-input');
+        const picker   = this.bodyElement.querySelector('.color-picker-input');
+        const preview  = this.bodyElement.querySelector('.paint-color-preview');
+        const syncColor = (hex) => {
+            this.currentColor = hex;
+            if (preview) preview.style.background = hex;
+            swatches.forEach(sw => {
+                const sel = sw.dataset.color === hex;
+                sw.style.borderColor       = sel ? '#000080' : '#808080';
+                sw.style.borderRightColor  = sel ? '#000080' : '#fff';
+                sw.style.borderBottomColor = sel ? '#000080' : '#fff';
+            });
+        };
         swatches.forEach(s => {
             s.addEventListener('click', () => {
-                swatches.forEach(sw => sw.style.outline = 'none');
-                s.style.outline = '2px solid #000080';
-                this.currentColor = s.dataset.color;
-                picker.value = this.currentColor;
+                syncColor(s.dataset.color);
+                if (picker) picker.value = s.dataset.color;
             });
         });
-        picker.addEventListener('input', (e) => {
-            this.currentColor = e.target.value;
-        });
+        if (picker) picker.addEventListener('input', (e) => syncColor(e.target.value));
 
-        // Size selector
-        const sizeSelect = this.bodyElement.querySelector('.paint-size-select');
-        sizeSelect.addEventListener('change', (e) => {
-            this.currentSize = parseInt(e.target.value, 10);
+        // Win95 Size dropdown
+        const sizeDropWrap  = this.bodyElement.querySelector('#paint-size-drop');
+        const sizeDropDisp  = sizeDropWrap.querySelector('.w95-drop-display');
+        const sizeDropList  = sizeDropWrap.querySelector('.w95-drop-list');
+        const sizeDropLabel = sizeDropWrap.querySelector('.w95-drop-label');
+        sizeDropDisp.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const open = sizeDropList.style.display !== 'none';
+            sizeDropList.style.display = open ? 'none' : 'block';
         });
+        sizeDropList.querySelectorAll('.w95-drop-item').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                sizeDropList.querySelectorAll('.w95-drop-item').forEach(i => { i.style.background='#c0c0c0'; i.style.color='#000'; });
+                item.style.background='#000080'; item.style.color='#fff';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.background = item.dataset.value===sizeDropWrap.dataset.value?'#000080':'#c0c0c0';
+                item.style.color      = item.dataset.value===sizeDropWrap.dataset.value?'#fff':'#000';
+            });
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sizeDropWrap.dataset.value = item.dataset.value;
+                sizeDropLabel.textContent  = item.textContent.trim();
+                sizeDropList.querySelectorAll('.w95-drop-item').forEach(i => { i.style.background=i.dataset.value===item.dataset.value?'#000080':'#c0c0c0'; i.style.color=i.dataset.value===item.dataset.value?'#fff':'#000'; });
+                sizeDropList.style.display = 'none';
+                this.currentSize = parseInt(item.dataset.value, 10);
+            });
+        });
+        document.addEventListener('click', () => { sizeDropList.style.display = 'none'; });
 
         // Save & Clear
         this.bodyElement.querySelector('.opt-clear').addEventListener('click', () => {

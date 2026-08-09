@@ -171,6 +171,56 @@ function applyOsSettings(settings) {
     if (settings.roundedCorners !== undefined) systemState.roundedCorners = settings.roundedCorners;
 }
 
+// Apply taskbar layout properties from Taskbar Properties dialog
+function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
+    const tb = document.getElementById('system-taskbar');
+    const desktop = document.getElementById('desktop-canvas');
+    if (!tb) return;
+
+    const sz = parseInt(size, 10) || 40;
+    tb.dataset.position = pos;
+    tb.dataset.size     = String(sz);
+
+    // Reset position styles
+    tb.style.bottom = ''; tb.style.top = ''; tb.style.left = ''; tb.style.right = '';
+    tb.style.width  = ''; tb.style.height = '';
+    tb.style.flexDirection = 'row';
+
+    if (pos === 'bottom') {
+        tb.style.bottom = '0'; tb.style.left = '0';
+        tb.style.width = '100vw'; tb.style.height = sz + 'px';
+        if (desktop) desktop.style.height = `calc(100vh - ${sz}px)`;
+    } else if (pos === 'top') {
+        tb.style.top = '0'; tb.style.left = '0';
+        tb.style.width = '100vw'; tb.style.height = sz + 'px';
+        if (desktop) { desktop.style.top = sz + 'px'; desktop.style.height = `calc(100vh - ${sz}px)`; }
+    } else if (pos === 'left') {
+        tb.style.top = '0'; tb.style.left = '0';
+        tb.style.width = sz + 'px'; tb.style.height = '100vh';
+        tb.style.flexDirection = 'column';
+        if (desktop) { desktop.style.left = sz + 'px'; desktop.style.width = `calc(100vw - ${sz}px)`; desktop.style.height = '100vh'; }
+    } else if (pos === 'right') {
+        tb.style.top = '0'; tb.style.right = '0';
+        tb.style.width = sz + 'px'; tb.style.height = '100vh';
+        tb.style.flexDirection = 'column';
+        if (desktop) { desktop.style.width = `calc(100vw - ${sz}px)`; desktop.style.height = '100vh'; }
+    }
+
+    tb.style.zIndex = alwaysTop ? '90000' : '1000';
+    if (autoHide) {
+        tb.style.opacity = '0'; tb.style.transition = 'opacity 0.2s';
+        tb.addEventListener('mouseenter', () => { tb.style.opacity = '1'; });
+        tb.addEventListener('mouseleave', () => { tb.style.opacity = '0'; });
+    } else {
+        tb.style.opacity = '1';
+    }
+    const clockEl = document.getElementById('live-clock');
+    if (clockEl) clockEl.closest('#system-tray') && (clockEl.closest('#system-tray').style.display = showClock ? 'flex' : 'none');
+
+    logKernel(`Taskbar: Applied props — pos:${pos} size:${sz}px autohide:${autoHide} ontop:${alwaysTop}`);
+}
+
+
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
         "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.0! Persistent storage disk saving is active." },
@@ -789,7 +839,7 @@ async function launchApplication(appId, customFileName = null) {
                         systemState.desktopScheme     || 'standard',
                         systemState.roundedCorners    || false
                     );
-                    registerWindowCleanup(winId, () => {});
+                    registerWindowCleanup(winId, () => pInstance.cleanup());
                     pInstance.open(pBody);
                 }
             } catch (err) {
@@ -1289,6 +1339,9 @@ initContextMenuSystem({
     onShowDesktop: () => {
         const wins = document.querySelectorAll('.window-frame');
         wins.forEach(win => win.classList.add('hidden-view'));
+    },
+    onApplyTaskbarProps: ({ pos, size, autoHide, alwaysTop, showClock }) => {
+        applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock });
     }
 });
 

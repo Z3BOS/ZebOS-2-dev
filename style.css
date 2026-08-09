@@ -795,3 +795,50 @@ body.rounded-corners .retro-context-menu {
 .explorer-icon { font-size: 2.3em; margin-bottom: 4px; }
 .explorer-name { font-size: 0.9em; color: #000000; word-break: break-all; }
 .explorer-item:hover .explorer-name { background-color: #000080; color: #ffffff; }
+
+/* ==========================================================================
+   WIN95 PERSONALIZE: RADIO BUTTON + SCROLLBAR OVERRIDES
+   ========================================================================== */
+/* Custom Win95-style radio dot */
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 2px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    margin: 0;
+    display: inline-block;
+}
+input[type="radio"]:checked::after {
+    content: '';
+    display: block;
+    width: 5px; height: 5px;
+    background: #000000;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Win95 custom dropdown scrollbar */
+.w95-drop-list::-webkit-scrollbar { width: 16px; }
+.w95-drop-list::-webkit-scrollbar-track { background: #c0c0c0; }
+.w95-drop-list::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+}
+.w95-drop-list::-webkit-scrollbar-button {
+    background: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    height: 16px;
+}
