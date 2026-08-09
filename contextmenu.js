@@ -111,27 +111,30 @@ function getContextMenuForElement(target, callbacks) {
     // 6. Default Desktop Background Canvas
     return [
         { 
-            label: 'View', icon: 'folder', hasSubmenu: true,
+            label: 'View', icon: 'explorer', hasSubmenu: true,
             submenu: [
                 { label: 'Large Icons', icon: 'explorer', action: () => callbacks.onChangeDesktopView?.('large') },
-                { label: 'Small Icons', icon: 'file', action: () => callbacks.onChangeDesktopView?.('small') }
+                { label: 'Small Icons', icon: 'file', action: () => callbacks.onChangeDesktopView?.('small') },
+                { label: 'Auto Arrange', icon: 'settings', action: () => callbacks.onArrangeIcons?.('auto') }
             ]
         },
         { 
             label: 'Arrange Icons', icon: 'file', hasSubmenu: true,
             submenu: [
                 { label: 'By Name', icon: 'editor', action: () => callbacks.onArrangeIcons?.('name') },
-                { label: 'By Type', icon: 'folder', action: () => callbacks.onArrangeIcons?.('type') }
+                { label: 'By Type', icon: 'folder', action: () => callbacks.onArrangeIcons?.('type') },
+                { label: 'By Size', icon: 'calc', action: () => callbacks.onArrangeIcons?.('size') }
             ]
         },
-        { label: 'Refresh', icon: 'startLogo', action: () => location.reload() },
+        { label: 'Refresh', icon: 'startLogo', action: () => callbacks.onRefreshDesktop?.() },
         { type: 'separator' },
         { 
             label: 'New', icon: 'newFolder', hasSubmenu: true,
             submenu: [
                 { label: 'Folder', icon: 'folder', action: () => callbacks.onCreateNewFolder?.() },
-                { label: 'Text Document', icon: 'editor', action: () => callbacks.onCreateNewFile?.('New Document.txt') },
-                { label: 'Bitmap Image', icon: 'paint', action: () => callbacks.onCreateNewFile?.('New Image.png') }
+                { label: 'Text Document', icon: 'editor', action: () => callbacks.onCreateNewFile?.('Text Document', 'txt') },
+                { label: 'Bitmap Image', icon: 'paint', action: () => callbacks.onCreateNewFile?.('Bitmap Image', 'png') },
+                { label: 'Shortcut', icon: 'startLogo', action: () => callbacks.onCreateNewShortcut?.() }
             ]
         },
         { type: 'separator' },
@@ -297,7 +300,7 @@ function showPropertiesDialog(name, type, location) {
                 </div>
             </div>
             <div><strong>Location:</strong> ${location}</div>
-            <div><strong>System:</strong> ZebOS 2 Kernel v2.1.7 (Pre-Alpha)</div>
+            <div><strong>System:</strong> ZebOS 2 Kernel v2.1.8 (Pre-Alpha)</div>
             <div><strong>Status:</strong> Read/Write Accessible</div>
             <button id="prop-ok" style="align-self:flex-end; padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; margin-top:8px;">OK</button>
         </div>

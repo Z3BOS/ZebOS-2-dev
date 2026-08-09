@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.1.7 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.1.8 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.1.7", 
+    version: "2.1.8", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -90,7 +90,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.1.7! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.1.8! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -149,7 +149,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.7 Pre-Alpha...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.8 Pre-Alpha...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -771,23 +771,113 @@ const DESKTOP_SHORTCUTS = [
     { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette Info' }
 ];
 
+export function showOsPrompt(title, message, defaultValue = "", onConfirm = null) {
+    const overlay = document.createElement('div');
+    overlay.className = 'os-modal-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.3);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100005;
+    `;
+
+    const dialog = document.createElement('div');
+    dialog.className = 'window-frame active-window';
+    dialog.style.cssText = `
+        width: 330px;
+        background-color: #c0c0c0;
+        border: 2px solid #ffffff;
+        border-right-color: #000000;
+        border-bottom-color: #000000;
+        box-shadow: 4px 4px 16px rgba(0,0,0,0.5);
+        font-family: Arial, sans-serif;
+    `;
+
+    dialog.innerHTML = `
+        <div class="window-header">
+            <div class="window-title">${title}</div>
+            <div class="window-controls">
+                <button class="win-btn" id="prompt-close">${getIcon('winClose')}</button>
+            </div>
+        </div>
+        <div style="padding:14px; font-size:12px; display:flex; flex-direction:column; gap:10px;">
+            <div style="font-weight:bold; color:#000080;">${message}</div>
+            <input type="text" id="prompt-input" value="${defaultValue}" autocomplete="off" spellcheck="false" style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:12px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff; outline:none;">
+            <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px;">
+                <button id="prompt-ok" style="padding:4px 18px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold;">OK</button>
+                <button id="prompt-cancel" style="padding:4px 12px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const input = dialog.querySelector('#prompt-input');
+    const okBtn = dialog.querySelector('#prompt-ok');
+    const cancelBtn = dialog.querySelector('#prompt-cancel');
+    const closeBtn = dialog.querySelector('#prompt-close');
+
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 50);
+
+    const cleanup = () => overlay.remove();
+
+    const submit = () => {
+        const val = input.value.trim();
+        cleanup();
+        if (val && onConfirm) onConfirm(val);
+    };
+
+    okBtn.addEventListener('click', submit);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submit();
+        if (e.key === 'Escape') cleanup();
+    });
+    cancelBtn.addEventListener('click', cleanup);
+    closeBtn.addEventListener('click', cleanup);
+}
+
+let currentDesktopViewMode = 'large'; // 'large' or 'small'
+
 function renderDesktopIcons() {
     const zone = document.getElementById('desktop-icons-zone');
     if (!zone) return;
     zone.innerHTML = '';
 
-    DESKTOP_SHORTCUTS.forEach(shortcut => {
+    const shortcuts = [...DESKTOP_SHORTCUTS];
+    if (systemState.desktopSortBy === 'name') {
+        shortcuts.sort((a, b) => a.label.localeCompare(b.label));
+    } else if (systemState.desktopSortBy === 'type') {
+        shortcuts.sort((a, b) => a.icon.localeCompare(b.icon));
+    }
+
+    shortcuts.forEach(shortcut => {
         const iconEl = document.createElement('div');
         iconEl.className = 'desktop-icon';
-        iconEl.innerHTML = `
-            <div class="desktop-icon-glyph">${getIcon(shortcut.icon)}</div>
-            <div class="desktop-icon-label">${shortcut.label}</div>
-        `;
+        iconEl.dataset.appId = shortcut.id;
+        
+        if (currentDesktopViewMode === 'small') {
+            iconEl.style.cssText = "display:flex; align-items:center; gap:6px; width:140px; padding:3px 6px;";
+            iconEl.innerHTML = `
+                <div class="sys-icon" style="width:20px; height:20px; flex-shrink:0;">${getIcon(shortcut.icon)}</div>
+                <div class="desktop-icon-label" style="font-size:11px; text-align:left;">${shortcut.label}</div>
+            `;
+        } else {
+            iconEl.innerHTML = `
+                <div class="desktop-icon-glyph">${getIcon(shortcut.icon)}</div>
+                <div class="desktop-icon-label">${shortcut.label}</div>
+            `;
+        }
+
         iconEl.addEventListener('dblclick', () => launchApplication(shortcut.id));
         zone.appendChild(iconEl);
     });
 
-    logKernel(`Desktop: Rendered ${DESKTOP_SHORTCUTS.length} application shortcuts.`);
+    logKernel(`Desktop: Rendered ${shortcuts.length} shortcuts (${currentDesktopViewMode} view mode).`);
 }
 
 // ==========================================================================
@@ -913,11 +1003,12 @@ initContextMenuSystem({
     onOpenApp: (appId) => launchApplication(appId),
     onDeleteAppShortcut: (el) => el.remove(),
     onRenameAppShortcut: (el) => {
-        const newName = prompt("Enter new shortcut name:");
-        if (newName) {
-            const label = el.querySelector('.desktop-shortcut-label, .desktop-name');
+        const label = el.querySelector('.desktop-icon-label, .desktop-shortcut-label');
+        const currentName = label ? label.textContent.trim() : "Shortcut";
+        showOsPrompt("Rename Shortcut", "Enter new name for desktop shortcut:", currentName, (newName) => {
             if (label) label.textContent = newName;
-        }
+            logKernel(`Desktop: Renamed shortcut to '${newName}'`);
+        });
     },
     onRestoreWindow: (winId) => {
         const win = document.getElementById(`win-${winId}`);
@@ -943,35 +1034,68 @@ initContextMenuSystem({
         const context = getActiveFolderContext();
         delete context[itemName];
         saveFileSystem();
-        launchApplication('start-link-files');
+        refreshOpenExplorer();
     },
     onRenameFile: (itemName) => {
-        const newName = prompt("Rename item to:", itemName);
-        if (newName && newName !== itemName) {
-            const context = getActiveFolderContext();
-            context[newName] = context[itemName];
-            delete context[itemName];
-            saveFileSystem();
-            launchApplication('start-link-files');
-        }
+        showOsPrompt("Rename File", "Enter new filename:", itemName, (newName) => {
+            if (newName && newName !== itemName) {
+                const context = getActiveFolderContext();
+                context[newName] = context[itemName];
+                delete context[itemName];
+                saveFileSystem();
+                refreshOpenExplorer();
+            }
+        });
     },
     onCreateNewFolder: () => {
-        const folderName = prompt("Enter new folder name:", "New Folder");
-        if (folderName) {
+        showOsPrompt("New Folder", "Type a name for the new folder:", "New Folder", (folderName) => {
             const context = getActiveFolderContext();
             context[folderName] = { type: "dir", content: {} };
             saveFileSystem();
-            launchApplication('start-link-files');
-        }
+            refreshOpenExplorer();
+            logKernel(`VFS: Created new folder '${folderName}'`);
+        });
     },
-    onCreateNewFile: (defaultName) => {
-        const fileName = prompt("Enter file name:", defaultName);
-        if (fileName) {
+    onCreateNewFile: (typeLabel, ext) => {
+        const defaultFileName = `New ${typeLabel}.${ext}`;
+        showOsPrompt(`New ${typeLabel}`, `Type a name for the new ${typeLabel.toLowerCase()}:`, defaultFileName, (fileName) => {
             const context = getActiveFolderContext();
-            context[fileName] = { type: "file", content: "" };
+            context[fileName] = { type: "file", content: ext === 'png' ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' : '' };
             saveFileSystem();
-            launchApplication('start-link-files');
+            refreshOpenExplorer();
+            logKernel(`VFS: Created new file '${fileName}'`);
+            if (ext === 'png') {
+                launchApplication('start-link-paint');
+            } else {
+                launchApplication('start-link-text-editor', fileName);
+            }
+        });
+    },
+    onCreateNewShortcut: () => {
+        showOsPrompt("New Shortcut", "Enter target application or item name:", "Paint Studio", (shortcutName) => {
+            DESKTOP_SHORTCUTS.push({ id: 'start-link-paint', icon: 'paint', label: shortcutName });
+            renderDesktopIcons();
+            logKernel(`Desktop: Added new shortcut '${shortcutName}'`);
+        });
+    },
+    onRefreshDesktop: () => {
+        const zone = document.getElementById('desktop-icons-zone');
+        if (zone) {
+            zone.style.opacity = '0.5';
+            setTimeout(() => {
+                zone.style.opacity = '1';
+                renderDesktopIcons();
+            }, 100);
         }
+        logKernel("Desktop refreshed.");
+    },
+    onChangeDesktopView: (mode) => {
+        currentDesktopViewMode = mode;
+        renderDesktopIcons();
+    },
+    onArrangeIcons: (sortBy) => {
+        systemState.desktopSortBy = sortBy;
+        renderDesktopIcons();
     },
     onCascadeWindows: () => {
         const wins = document.querySelectorAll('.window-frame:not(.hidden-view)');

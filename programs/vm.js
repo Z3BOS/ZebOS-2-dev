@@ -1,5 +1,6 @@
 // programs/vm.js - ZebOS 2 ZebVM Virtual Machine Manager Engine
 import { getIcon } from '../icons.js';
+import { showOsPrompt } from '../os.js';
 
 export class ZebVMManager {
     constructor(onCloseRequest) {
@@ -50,9 +51,9 @@ export class ZebVMManager {
     open(windowBodyElement) {
         this.bodyElement = windowBodyElement;
         this.bodyElement.style.height = "100%";
+        window.addEventListener('keydown', this.boundKeyDown);
 
         this.render();
-        window.addEventListener('keydown', this.boundKeyDown);
     }
 
     render() {
@@ -81,7 +82,7 @@ export class ZebVMManager {
                         </button>
                     </div>
                     <div style="font-weight:bold; color:#000080; display:flex; align-items:center; gap:6px;">
-                        <span class="exp-icon-wrap">${getIcon('vm')}</span> ZebVM Hypervisor v2.1.7
+                        <span class="exp-icon-wrap">${getIcon('vm')}</span> ZebVM Hypervisor v2.1.8
                     </div>
                 </div>
 
@@ -130,7 +131,7 @@ export class ZebVMManager {
             return `
                 <div style="flex-grow:1; background:#0c0c0c; color:#00ff00; font-family:'Consolas','Courier New',monospace; padding:16px; font-size:12px; line-height:1.6; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
                     <div style="width:50px; height:50px; margin-bottom:12px;">${getIcon('vm')}</div>
-                    <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.1.7 Post Diagnostic Check</div>
+                    <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.1.8 Post Diagnostic Check</div>
                     <div style="color:#00ff00; margin-top:8px;">Initializing Virtual Hardware Layer...</div>
                     <div style="color:#888888; margin-top:4px;">Probing ${vm.cpus} vCPU cores | Allocating ${vm.ram}MB Virtual RAM</div>
                     <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${vm.name}]...</div>
@@ -203,25 +204,24 @@ export class ZebVMManager {
         const newBtn = this.bodyElement.querySelector('.btn-new-vm');
         if (newBtn) {
             newBtn.addEventListener('click', () => {
-                const name = prompt("Enter Virtual Machine Name:", "Custom Web VM");
-                if (!name) return;
-                const url = prompt("Enter Target Embed Web URL:", "https://example.com");
-                if (!url) return;
-
-                const newId = `vm_${Date.now()}`;
-                this.vms.push({
-                    id: newId,
-                    name: name.trim(),
-                    url: url.trim(),
-                    os: "Web Application OS",
-                    ram: 1024,
-                    cpus: 2,
-                    status: 'stopped',
-                    booting: false,
-                    desc: "Custom Web Embed Virtual Machine Instance"
+                showOsPrompt("New Virtual Machine", "Enter Virtual Machine Name:", "Custom Web VM", (name) => {
+                    showOsPrompt("New Virtual Machine", "Enter Target Embed Web URL:", "https://example.com", (url) => {
+                        const newId = `vm_${Date.now()}`;
+                        this.vms.push({
+                            id: newId,
+                            name: name.trim(),
+                            url: url.trim(),
+                            os: "Web Application OS",
+                            ram: 1024,
+                            cpus: 2,
+                            status: 'stopped',
+                            booting: false,
+                            desc: "Custom Web Embed Virtual Machine Instance"
+                        });
+                        this.selectedVmId = newId;
+                        this.render();
+                    });
                 });
-                this.selectedVmId = newId;
-                this.render();
             });
         }
     }

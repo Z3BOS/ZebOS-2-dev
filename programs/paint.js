@@ -1,5 +1,6 @@
 // programs/paint.js - ZebOS 2 Pro Retro Paint Application
 import { getIcon } from '../icons.js';
+import { showOsPrompt } from '../os.js';
 
 export class PaintApp {
     constructor(onCloseRequest, saveToVFS) {
@@ -128,17 +129,16 @@ export class PaintApp {
         });
 
         this.bodyElement.querySelector('.opt-save').addEventListener('click', () => {
-            const filename = prompt("Enter artwork name to save:", "artwork.png");
-            if (!filename) return;
-            const dataUrl = this.canvas.toDataURL("image/png");
-            if (this.saveToVFS) {
-                this.saveToVFS(filename, dataUrl);
-            }
-            // Also trigger download
-            const a = document.createElement('a');
-            a.href = dataUrl;
-            a.download = filename;
-            a.click();
+            showOsPrompt("Save Artwork", "Enter filename to save image:", "artwork.png", (filename) => {
+                const dataUrl = this.canvas.toDataURL("image/png");
+                if (this.saveToVFS) {
+                    this.saveToVFS(filename, dataUrl);
+                }
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = filename;
+                a.click();
+            });
         });
 
         // Canvas events

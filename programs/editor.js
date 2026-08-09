@@ -1,4 +1,6 @@
 // programs/editor.js
+import { showOsPrompt } from '../os.js';
+
 export class TextEditor {
     constructor(fileName, fileContent, onExitCallback, onCloseRequest) {
         this.fileName = fileName;
@@ -98,22 +100,17 @@ export class TextEditor {
 
     saveAsFile() {
         this.hideMenu();
-        const newName = prompt("Enter new filename:", this.fileName);
-        if (newName === null || newName.trim() === "") {
+        showOsPrompt("Save As", "Enter new filename to save as:", this.fileName, (newName) => {
+            this.fileName = newName.trim();
+            this.content = this.textarea.value;
+            
+            const titleEl = this.bodyElement.querySelector('.app-editor-filename');
+            if (titleEl) titleEl.textContent = this.fileName;
+            
+            this.onExit(this.fileName, this.content);
+            this.flashFooterFeedback(`Saved as: ${this.fileName}`);
             this.textarea.focus();
-            return;
-        }
-        
-        this.fileName = newName.trim();
-        this.content = this.textarea.value;
-        
-        this.bodyElement.querySelector('.app-editor-filename').textContent = this.fileName;
-        
-        // FIX: Notify kernel configuration to add the newly titled file into the storage allocations map
-        this.onExit(this.fileName, this.content);
-        
-        this.flashFooterFeedback(`Saved As: ${this.fileName}`);
-        this.textarea.focus();
+        });
     }
 
     hideMenu() {

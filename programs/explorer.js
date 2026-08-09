@@ -1,4 +1,5 @@
 import { getIcon } from '../icons.js';
+import { showOsPrompt } from '../os.js';
 
 export class FileExplorerApp {
     constructor(closeCallback, launchFileCallback, saveVfsCallback, getVfsContext) {
@@ -134,13 +135,12 @@ export class FileExplorerApp {
         });
 
         btnNewFolder.addEventListener('click', () => {
-            const name = prompt("Enter folder name:");
-            if (name && name.trim() !== "") {
+            showOsPrompt("New Folder", "Type a name for the new folder:", "New Folder", (name) => {
                 const context = this.getVfsContext(this.currentPath);
                 context[name.trim()] = { type: "dir", content: {} };
                 this.saveVfsCallback();
                 this.refreshView();
-            }
+            });
         });
 
         btnDelete.addEventListener('click', () => {
