@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.1.5 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.1.7 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.1.5", 
+    version: "2.1.7", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -90,7 +90,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.1.5! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.1.7! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -149,7 +149,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.5 Pre-Alpha...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.7 Pre-Alpha...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -270,11 +270,8 @@ export function createWindow(title, iconName, uniqueId) {
     win.style.zIndex = ++topZIndex;
 
     const currentWindows = document.querySelectorAll('.window-frame').length;
-    const winWidth = 760; 
-    const winHeight = 500;
-    const centerX = Math.max(20, Math.floor((window.innerWidth - winWidth) / 2) + (currentWindows * 20));
-    const centerY = Math.max(20, Math.floor((window.innerHeight - 40 - winHeight) / 2) + (currentWindows * 20));
-    
+    win.style.width = `${winWidth}px`;
+    win.style.height = `${winHeight}px`;
     win.style.left = `${centerX}px`;
     win.style.top = `${centerY}px`;
 
@@ -427,8 +424,20 @@ function countFilesystemEntries(node) {
     return { files, dirs };
 }
 
-// Overwrite this specific switch block section inside your launchApplication(appId) in os.js:
-// We add an optional second parameter to dynamically handle targeted file names
+function setWindowBounds(bodyElement, width, height) {
+    if (!bodyElement) return;
+    const winFrame = bodyElement.closest('.window-frame');
+    if (winFrame) {
+        winFrame.style.width = `${width}px`;
+        winFrame.style.height = `${height}px`;
+        const currentWindows = document.querySelectorAll('.window-frame').length - 1;
+        const left = Math.max(20, Math.floor((window.innerWidth - width) / 2) + (currentWindows * 20));
+        const top = Math.max(20, Math.floor((window.innerHeight - 40 - height) / 2) + (currentWindows * 20));
+        winFrame.style.left = `${left}px`;
+        winFrame.style.top = `${top}px`;
+    }
+}
+
 async function launchApplication(appId, customFileName = null) {
     const currentContext = getActiveFolderContext();
 
@@ -439,11 +448,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/explorer.js');
                 const explorerBody = createWindow("Exploring - ZebRoot (Z:)", "explorer", winId);
                 if (explorerBody) {
-                    const winFrame = explorerBody.closest('.window-frame');
-                    if (winFrame) {
-                        winFrame.style.width = '640px';
-                        winFrame.style.height = '440px';
-                    }
+                    setWindowBounds(explorerBody, 760, 480);
                     const expInstance = new module.FileExplorerApp(
                         () => closeWindow(winId),
                         (fileName) => launchApplication('start-link-text-editor', fileName),
@@ -468,6 +473,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/terminal.js');
                 const termBody = createWindow("Zeb Terminal", "terminal", winId);
                 if (termBody) {
+                    setWindowBounds(termBody, 700, 440);
                     const shellApi = {
                         getContext: () => getActiveFolderContext(),
                         getPath: () => systemState.currentDirectory === "" ? "/" : `/${systemState.currentDirectory}`,
@@ -499,6 +505,7 @@ async function launchApplication(appId, customFileName = null) {
                 const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "editor", winId);
 
                 if (appBodyElement) {
+                    setWindowBounds(appBodyElement, 700, 460);
                     const editorInstance = new module.TextEditor(
                         targetEditFile,
                         existingContent,
@@ -530,6 +537,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/paint.js');
                 const paintBody = createWindow("Paint", "paint", winId);
                 if (paintBody) {
+                    setWindowBounds(paintBody, 820, 560);
                     const paintInstance = new module.PaintApp(
                         () => closeWindow(winId),
                         (filename, dataUrl) => {
@@ -555,6 +563,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/mines.js');
                 const minesBody = createWindow("Minesweeper", "mines", winId);
                 if (minesBody) {
+                    setWindowBounds(minesBody, 360, 420);
                     const minesInstance = new module.MinesweeperGame(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => minesInstance.cleanup());
                     minesInstance.open(minesBody);
@@ -571,6 +580,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/media.js');
                 const mediaBody = createWindow("Media Player", "media", winId);
                 if (mediaBody) {
+                    setWindowBounds(mediaBody, 720, 480);
                     const mediaInstance = new module.MediaPlayer(
                         () => closeWindow(winId),
                         (filename) => {
@@ -593,11 +603,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/vm.js');
                 const vmBody = createWindow("ZebVM Manager", "vm", winId);
                 if (vmBody) {
-                    const winFrame = vmBody.closest('.window-frame');
-                    if (winFrame) {
-                        winFrame.style.width = '880px';
-                        winFrame.style.height = '560px';
-                    }
+                    setWindowBounds(vmBody, 880, 560);
                     const vmInstance = new module.ZebVMManager(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => vmInstance.cleanup());
                     vmInstance.open(vmBody);
@@ -614,6 +620,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/calc.js');
                 const calcBody = createWindow("Calculator", "calc", winId);
                 if (calcBody) {
+                    setWindowBounds(calcBody, 320, 400);
                     const calcInstance = new module.RetroCalculator(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => calcInstance.cleanup());
                     calcInstance.open(calcBody);
@@ -630,6 +637,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./programs/snake.js');
                 const snakeBody = createWindow("Snake", "snake", winId);
                 if (snakeBody) {
+                    setWindowBounds(snakeBody, 420, 460);
                     const snakeInstance = new module.SnakeGame(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => snakeInstance.cleanup());
                     snakeInstance.open(snakeBody);
@@ -646,6 +654,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import('./courgette/courgette.js');
                 const cgBody = createWindow("Courgette Info", "courgette", winId);
                 if (cgBody) {
+                    setWindowBounds(cgBody, 660, 440);
                     const counts = countFilesystemEntries(systemState.fileSystem);
                     const diskBytes = new Blob([JSON.stringify(systemState.fileSystem)]).size;
                     const cgInstance = new module.CourgetteInfo(() => closeWindow(winId), {

@@ -81,7 +81,7 @@ export class ZebVMManager {
                         </button>
                     </div>
                     <div style="font-weight:bold; color:#000080; display:flex; align-items:center; gap:6px;">
-                        <span class="exp-icon-wrap">${getIcon('vm')}</span> ZebVM Hypervisor v2.1.5
+                        <span class="exp-icon-wrap">${getIcon('vm')}</span> ZebVM Hypervisor v2.1.7
                     </div>
                 </div>
 
@@ -130,7 +130,7 @@ export class ZebVMManager {
             return `
                 <div style="flex-grow:1; background:#0c0c0c; color:#00ff00; font-family:'Consolas','Courier New',monospace; padding:16px; font-size:12px; line-height:1.6; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
                     <div style="width:50px; height:50px; margin-bottom:12px;">${getIcon('vm')}</div>
-                    <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.1.5 Post Diagnostic Check</div>
+                    <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.1.7 Post Diagnostic Check</div>
                     <div style="color:#00ff00; margin-top:8px;">Initializing Virtual Hardware Layer...</div>
                     <div style="color:#888888; margin-top:4px;">Probing ${vm.cpus} vCPU cores | Allocating ${vm.ram}MB Virtual RAM</div>
                     <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${vm.name}]...</div>

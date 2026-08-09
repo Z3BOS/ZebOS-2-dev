@@ -1,61 +1,54 @@
+// Centralized Dynamic Context Menu System Engine (ZebOS 2)
 import { getIcon } from './icons.js';
 
-// Centralized Dynamic Context Menu System for ZebOS 2 Pro
 let activeContextMenu = null;
+let activeSubmenu = null;
 
 export function initContextMenuSystem(callbacks = {}) {
     document.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        e.stopPropagation();
-
-        // Close any open menu
-        closeContextMenu();
-
-        const x = e.clientX;
-        const y = e.clientY;
-
-        const target = e.target;
-        const menuConfig = buildMenuConfigForTarget(target, callbacks);
-
-        if (menuConfig && menuConfig.length > 0) {
-            renderContextMenu(x, y, menuConfig);
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (activeContextMenu && !activeContextMenu.contains(e.target)) {
+        
+        const items = getContextMenuForElement(e.target, callbacks);
+        if (items && items.length > 0) {
+            renderContextMenu(e.clientX, e.clientY, items);
+        } else {
             closeContextMenu();
         }
     });
 
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
+    document.addEventListener('click', (e) => {
+        if (activeContextMenu && !activeContextMenu.contains(e.target) && (!activeSubmenu || !activeSubmenu.contains(e.target))) {
             closeContextMenu();
         }
     });
 }
 
 export function closeContextMenu() {
+    closeSubmenu();
     if (activeContextMenu) {
         activeContextMenu.remove();
         activeContextMenu = null;
     }
 }
 
-function buildMenuConfigForTarget(target, callbacks) {
-    // 1. Desktop Icon / Shortcut
-    const desktopIcon = target.closest('.desktop-shortcut, .desktop-icon');
-    if (desktopIcon) {
-        const appId = desktopIcon.dataset.appId || desktopIcon.id;
-        const title = desktopIcon.querySelector('.desktop-shortcut-label, .desktop-name')?.textContent || 'Shortcut';
+function closeSubmenu() {
+    if (activeSubmenu) {
+        activeSubmenu.remove();
+        activeSubmenu = null;
+    }
+}
+
+function getContextMenuForElement(target, callbacks) {
+    // 1. Taskbar Tab
+    const taskbarTab = target.closest('.taskbar-tab');
+    if (taskbarTab) {
+        const uniqueId = taskbarTab.id.replace('tab-', '');
         return [
-            { label: 'Open', icon: 'startLogo', bold: true, action: () => callbacks.onOpenApp?.(appId) },
+            { label: 'Restore', icon: 'winMax', action: () => callbacks.onRestoreWindow?.(uniqueId) },
+            { label: 'Minimize', icon: 'winMin', action: () => callbacks.onMinimizeWindow?.(uniqueId) },
+            { label: 'Maximize', icon: 'winMax', action: () => callbacks.onMaximizeWindow?.(uniqueId) },
             { type: 'separator' },
-            { label: 'Create Shortcut', icon: 'file', action: () => callbacks.onNotify?.('Shortcut created.') },
-            { label: 'Delete', icon: 'winClose', action: () => callbacks.onDeleteAppShortcut?.(desktopIcon) },
-            { label: 'Rename', icon: 'editor', action: () => callbacks.onRenameAppShortcut?.(desktopIcon) },
-            { type: 'separator' },
-            { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog(title, 'Desktop Shortcut', 'System Application') }
+            { label: 'Close', icon: 'winClose', bold: true, action: () => callbacks.onCloseWindow?.(uniqueId) }
         ];
     }
 
@@ -76,61 +69,59 @@ function buildMenuConfigForTarget(target, callbacks) {
         ];
     }
 
-    // 3. Window Header / Frame
-    const winFrame = target.closest('.window-frame');
-    if (winFrame && (target.closest('.window-header') || target.closest('.window-title'))) {
-        const winId = winFrame.id.replace('win-', '');
+    // 3. Window Titlebar / Frame Header
+    const windowHeader = target.closest('.window-header');
+    if (windowHeader) {
+        const frame = windowHeader.closest('.window-frame');
+        const uniqueId = frame ? frame.id.replace('win-', '') : '';
         return [
-            { label: 'Restore', icon: 'winMax', action: () => callbacks.onRestoreWindow?.(winId) },
-            { label: 'Move', icon: 'up', action: () => {} },
-            { label: 'Size', icon: 'winMax', action: () => {} },
-            { label: 'Minimize', icon: 'winMin', action: () => callbacks.onMinimizeWindow?.(winId) },
-            { label: 'Maximize', icon: 'winMax', action: () => callbacks.onMaximizeWindow?.(winId) },
+            { label: 'Restore', icon: 'winMax', action: () => callbacks.onRestoreWindow?.(uniqueId) },
+            { label: 'Minimize', icon: 'winMin', action: () => callbacks.onMinimizeWindow?.(uniqueId) },
+            { label: 'Maximize', icon: 'winMax', action: () => callbacks.onMaximizeWindow?.(uniqueId) },
             { type: 'separator' },
-            { label: 'Close', icon: 'winClose', bold: true, action: () => callbacks.onCloseWindow?.(winId) }
+            { label: 'Close', icon: 'winClose', bold: true, action: () => callbacks.onCloseWindow?.(uniqueId) }
         ];
     }
 
-    // 4. Taskbar Tab
-    const taskbarTab = target.closest('.taskbar-tab');
-    if (taskbarTab) {
-        const tabId = taskbarTab.id.replace('tab-', '');
+    // 4. Desktop Shortcut Icon
+    const shortcutIcon = target.closest('.desktop-icon');
+    if (shortcutIcon) {
+        const appId = shortcutIcon.dataset.appId || shortcutIcon.id;
         return [
-            { label: 'Restore', icon: 'winMax', action: () => callbacks.onRestoreWindow?.(tabId) },
-            { label: 'Minimize', icon: 'winMin', action: () => callbacks.onMinimizeWindow?.(tabId) },
-            { label: 'Maximize', icon: 'winMax', action: () => callbacks.onMaximizeWindow?.(tabId) },
+            { label: 'Open', icon: 'startLogo', bold: true, action: () => callbacks.onOpenApp?.(appId) },
             { type: 'separator' },
-            { label: 'Close', icon: 'winClose', bold: true, action: () => callbacks.onCloseWindow?.(tabId) }
+            { label: 'Delete Shortcut', icon: 'winClose', action: () => callbacks.onDeleteAppShortcut?.(shortcutIcon) },
+            { label: 'Rename Shortcut', icon: 'editor', action: () => callbacks.onRenameAppShortcut?.(shortcutIcon) },
+            { type: 'separator' },
+            { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog(shortcutIcon.innerText.trim(), 'Application Shortcut', 'ZebOS 2 Desktop') }
         ];
     }
 
-    // 5. System Taskbar Background
+    // 5. System Taskbar Strip
     const taskbar = target.closest('#system-taskbar');
     if (taskbar) {
         return [
-            { label: 'Cascade Windows', icon: 'explorer', action: () => callbacks.onCascadeWindows?.() },
-            { label: 'Tile Windows Horizontally', icon: 'explorer', action: () => callbacks.onTileWindows?.() },
-            { label: 'Show Desktop', icon: 'startLogo', action: () => callbacks.onShowDesktop?.() },
+            { label: 'Cascade Windows', icon: 'winMax', action: () => callbacks.onCascadeWindows?.() },
+            { label: 'Show Desktop', icon: 'explorer', action: () => callbacks.onShowDesktop?.() },
             { type: 'separator' },
-            { label: 'Task Manager', icon: 'vm', action: () => callbacks.onOpenApp?.('start-link-courgette') },
-            { label: 'Taskbar Properties', icon: 'settings', action: () => showPropertiesDialog('Taskbar & Start Menu', 'System Component', 'ZebOS Desktop Shell') }
+            { label: 'Taskbar Properties', icon: 'settings', action: () => showPropertiesDialog('System Taskbar', 'System Component', 'ZebOS Taskbar Panel') }
         ];
     }
 
-    // 6. Default Desktop Canvas Context Menu
+    // 6. Default Desktop Background Canvas
     return [
         { 
-            label: 'View', icon: 'explorer', hasSubmenu: true, 
+            label: 'View', icon: 'folder', hasSubmenu: true,
             submenu: [
-                { label: 'Large Icons', action: () => callbacks.onChangeDesktopView?.('large') },
-                { label: 'Small Icons', action: () => callbacks.onChangeDesktopView?.('small') }
+                { label: 'Large Icons', icon: 'explorer', action: () => callbacks.onChangeDesktopView?.('large') },
+                { label: 'Small Icons', icon: 'file', action: () => callbacks.onChangeDesktopView?.('small') }
             ]
         },
         { 
             label: 'Arrange Icons', icon: 'file', hasSubmenu: true,
             submenu: [
-                { label: 'By Name', action: () => callbacks.onArrangeIcons?.('name') },
-                { label: 'By Type', action: () => callbacks.onArrangeIcons?.('type') }
+                { label: 'By Name', icon: 'editor', action: () => callbacks.onArrangeIcons?.('name') },
+                { label: 'By Type', icon: 'folder', action: () => callbacks.onArrangeIcons?.('type') }
             ]
         },
         { label: 'Refresh', icon: 'startLogo', action: () => location.reload() },
@@ -144,11 +135,18 @@ function buildMenuConfigForTarget(target, callbacks) {
             ]
         },
         { type: 'separator' },
-        { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog('Display Properties', 'Control Panel Applet', 'ZebOS 2 Pro Desktop') }
+        { label: 'Properties', icon: 'settings', action: () => showPropertiesDialog('Display Properties', 'Control Panel Applet', 'ZebOS 2 Desktop') }
     ];
 }
 
-function renderContextMenu(x, y, items) {
+function renderContextMenu(x, y, items, parentRow = null) {
+    const isSub = !!parentRow;
+    if (isSub) {
+        closeSubmenu();
+    } else {
+        closeContextMenu();
+    }
+
     const menu = document.createElement('div');
     menu.className = 'retro-context-menu';
     menu.style.cssText = `
@@ -161,12 +159,14 @@ function renderContextMenu(x, y, items) {
         border-bottom-color: #000000;
         box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
         padding: 2px;
-        z-index: 99999;
-        min-width: 160px;
+        z-index: ${isSub ? 100000 : 99999};
+        min-width: 155px;
         font-family: Arial, Helvetica, sans-serif;
         font-size: 12px;
         user-select: none;
     `;
+
+    let activeHoverRow = null;
 
     items.forEach(item => {
         if (item.type === 'separator') {
@@ -194,27 +194,47 @@ function renderContextMenu(x, y, items) {
         `;
 
         const iconSvg = item.icon ? `<span style="width:16px; height:16px; display:inline-flex; align-items:center; margin-right:8px;">${getIcon(item.icon)}</span>` : '<span style="width:16px; margin-right:8px;"></span>';
+        const hasSub = item.hasSubmenu || (item.submenu && item.submenu.length > 0);
         
         row.innerHTML = `
             <div style="display:flex; align-items:center;">
                 ${iconSvg}
                 <span>${item.label}</span>
             </div>
-            ${item.hasSubmenu ? '<span style="font-size:10px;">▶</span>' : ''}
+            ${hasSub ? '<span style="font-size:10px; margin-left:12px;">▶</span>' : ''}
         `;
 
         row.addEventListener('mouseenter', () => {
+            if (activeHoverRow && activeHoverRow !== row && !activeHoverRow.contains(row)) {
+                activeHoverRow.style.backgroundColor = 'transparent';
+                activeHoverRow.style.color = '#000000';
+            }
             row.style.backgroundColor = '#000080';
             row.style.color = '#ffffff';
+            activeHoverRow = row;
+
+            if (hasSub) {
+                const rect = row.getBoundingClientRect();
+                renderContextMenu(rect.right - 2, rect.top, item.submenu, row);
+            } else if (!isSub) {
+                closeSubmenu();
+            }
         });
 
-        row.addEventListener('mouseleave', () => {
-            row.style.backgroundColor = 'transparent';
-            row.style.color = '#000000';
+        row.addEventListener('mouseleave', (e) => {
+            if (!hasSub) {
+                row.style.backgroundColor = 'transparent';
+                row.style.color = '#000000';
+            }
         });
 
         row.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (hasSub) {
+                const rect = row.getBoundingClientRect();
+                renderContextMenu(rect.right - 2, rect.top, item.submenu, row);
+                return;
+            }
             closeContextMenu();
             if (item.action) item.action();
         });
@@ -223,12 +243,21 @@ function renderContextMenu(x, y, items) {
     });
 
     document.body.appendChild(menu);
-    activeContextMenu = menu;
+    if (isSub) {
+        activeSubmenu = menu;
+    } else {
+        activeContextMenu = menu;
+    }
 
-    // Adjust positioning if menu exceeds viewport edges
+    // Screen bounds adjustment
     const rect = menu.getBoundingClientRect();
     if (rect.right > window.innerWidth) {
-        menu.style.left = `${window.innerWidth - rect.width - 4}px`;
+        if (isSub && parentRow) {
+            const parentRect = parentRow.getBoundingClientRect();
+            menu.style.left = `${parentRect.left - rect.width + 2}px`;
+        } else {
+            menu.style.left = `${window.innerWidth - rect.width - 4}px`;
+        }
     }
     if (rect.bottom > window.innerHeight) {
         menu.style.top = `${window.innerHeight - rect.height - 4}px`;
@@ -248,7 +277,7 @@ function showPropertiesDialog(name, type, location) {
         border-right-color: #000000;
         border-bottom-color: #000000;
         box-shadow: 4px 4px 16px rgba(0,0,0,0.5);
-        z-index: 99999;
+        z-index: 100001;
         font-family: Arial, sans-serif;
     `;
 
@@ -268,7 +297,7 @@ function showPropertiesDialog(name, type, location) {
                 </div>
             </div>
             <div><strong>Location:</strong> ${location}</div>
-            <div><strong>System:</strong> ZebOS 2 Kernel v2.1.5 (Pre-Alpha)</div>
+            <div><strong>System:</strong> ZebOS 2 Kernel v2.1.7 (Pre-Alpha)</div>
             <div><strong>Status:</strong> Read/Write Accessible</div>
             <button id="prop-ok" style="align-self:flex-end; padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; margin-top:8px;">OK</button>
         </div>
