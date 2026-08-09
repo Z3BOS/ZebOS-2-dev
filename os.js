@@ -1,11 +1,13 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 Alpha v1.8.0 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.1.5 Core)
+import { getIcon } from './icons.js';
+import { initContextMenuSystem } from './contextmenu.js';
 
 // No build pipeline generates this — it's the short commit hash as of the
 // last time this file was edited, updated by hand alongside version bumps.
-const BUILD_GIT_HASH = "cf604bd";
+const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "1.8.0", 
+    version: "2.1.5", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -88,7 +90,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 1.8.0! Persistent storage disk saving is now active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pre-Alpha Build v2.1.5! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -147,7 +149,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v1.8.0...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.5 Pre-Alpha...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -165,12 +167,26 @@ function initializeBootSequence() {
                     const module = await import('./logon/logon.js');
                     module.showLogonScreen((username) => {
                         systemState.currentUser = username;
+                        const desktopCanvas = document.getElementById('desktop-canvas');
+                        const taskbar = document.getElementById('system-taskbar');
+                        if (desktopCanvas) {
+                            desktopCanvas.style.display = 'block';
+                            requestAnimationFrame(() => { desktopCanvas.style.opacity = '1'; });
+                        }
+                        if (taskbar) {
+                            taskbar.style.display = 'flex';
+                            requestAnimationFrame(() => { taskbar.style.opacity = '1'; });
+                        }
                         const userTag = document.getElementById('current-user-tag');
-                        if (userTag) userTag.textContent = `👤 ${username}`;
+                        if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
                         logKernel(`Session: User '${username}' signed in.`);
                     });
                 } catch (err) {
                     logKernel(`Kernel Error: Failed to mount logon/logon.js (${err.message})`, "ERROR");
+                    const desktopCanvas = document.getElementById('desktop-canvas');
+                    const taskbar = document.getElementById('system-taskbar');
+                    if (desktopCanvas) { desktopCanvas.style.display = 'block'; desktopCanvas.style.opacity = '1'; }
+                    if (taskbar) { taskbar.style.display = 'flex'; taskbar.style.opacity = '1'; }
                 }
             }, 800);
         }
@@ -234,7 +250,7 @@ export function closeWindow(uniqueId) {
     logKernel(`Window closed: ${uniqueId}`);
 }
 
-export function createWindow(title, icon, uniqueId) {
+export function createWindow(title, iconName, uniqueId) {
     const workspace = document.getElementById('window-workspace');
     const tabsZone = document.getElementById('taskbar-tabs-zone');
     
@@ -242,7 +258,7 @@ export function createWindow(title, icon, uniqueId) {
     if (existingWin) {
         if (existingWin.classList.contains('hidden-view')) {
             existingWin.classList.remove('hidden-view');
-            document.getElementById(`tab-${uniqueId}`).classList.add('active-tab');
+            document.getElementById(`tab-${uniqueId}`)?.classList.add('active-tab');
         }
         bringToFront(existingWin);
         return null;
@@ -254,16 +270,23 @@ export function createWindow(title, icon, uniqueId) {
     win.style.zIndex = ++topZIndex;
 
     const currentWindows = document.querySelectorAll('.window-frame').length;
-    win.style.top = `${60 + (currentWindows * 25)}px`;
-    win.style.left = `${60 + (currentWindows * 25)}px`;
+    const winWidth = 760; 
+    const winHeight = 500;
+    const centerX = Math.max(20, Math.floor((window.innerWidth - winWidth) / 2) + (currentWindows * 20));
+    const centerY = Math.max(20, Math.floor((window.innerHeight - 40 - winHeight) / 2) + (currentWindows * 20));
+    
+    win.style.left = `${centerX}px`;
+    win.style.top = `${centerY}px`;
+
+    const iconSvg = iconName.includes('<svg') ? iconName : getIcon(iconName);
 
     win.innerHTML = `
         <div class="window-header" style="cursor: move;">
-            <div class="window-title"><span>${icon}</span> ${title}</div>
+            <div class="window-title"><span class="win-title-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${title}</div>
             <div class="window-controls">
-                <button class="win-btn" id="win-min-${uniqueId}">_</button>
-                <button class="win-btn" id="win-max-${uniqueId}">⤏</button>
-                <button class="win-btn" id="win-close-${uniqueId}">X</button>
+                <button class="win-btn" id="win-min-${uniqueId}">${getIcon('winMin')}</button>
+                <button class="win-btn" id="win-max-${uniqueId}">${getIcon('winMax')}</button>
+                <button class="win-btn" id="win-close-${uniqueId}">${getIcon('winClose')}</button>
             </div>
         </div>
         <div class="window-body" id="body-${uniqueId}"></div>
@@ -276,7 +299,7 @@ export function createWindow(title, icon, uniqueId) {
     const tab = document.createElement('div');
     tab.className = 'taskbar-tab active-tab';
     tab.id = `tab-${uniqueId}`;
-    tab.innerHTML = `<span>${icon}</span> ${title}`;
+    tab.innerHTML = `<span class="taskbar-tab-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${title}`;
     tabsZone.appendChild(tab);
 
     tab.addEventListener('click', () => {
@@ -410,18 +433,40 @@ async function launchApplication(appId, customFileName = null) {
     const currentContext = getActiveFolderContext();
 
     switch (appId) {
-        case 'start-link-files':
-            const explorerBody = createWindow("Zeb Explorer", "📁", "explorer-root");
-            if (explorerBody) {
-                renderZebExplorer(explorerBody);
+        case 'start-link-files': {
+            const winId = 'explorer-root';
+            try {
+                const module = await import('./programs/explorer.js');
+                const explorerBody = createWindow("Exploring - ZebRoot (Z:)", "explorer", winId);
+                if (explorerBody) {
+                    const winFrame = explorerBody.closest('.window-frame');
+                    if (winFrame) {
+                        winFrame.style.width = '640px';
+                        winFrame.style.height = '440px';
+                    }
+                    const expInstance = new module.FileExplorerApp(
+                        () => closeWindow(winId),
+                        (fileName) => launchApplication('start-link-text-editor', fileName),
+                        () => saveFileSystem(),
+                        (path) => {
+                            if (!path || path === "") return systemState.fileSystem;
+                            return systemState.fileSystem[path]?.content || systemState.fileSystem;
+                        }
+                    );
+                    registerWindowCleanup(winId, () => {});
+                    expInstance.open(explorerBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount explorer.js (${err.message})`, "ERROR");
             }
             break;
+        }
 
         case 'start-link-prompt': {
             const winId = 'app-terminal';
             try {
                 const module = await import('./programs/terminal.js');
-                const termBody = createWindow("Zeb Terminal", "🐚", winId);
+                const termBody = createWindow("Zeb Terminal", "terminal", winId);
                 if (termBody) {
                     const shellApi = {
                         getContext: () => getActiveFolderContext(),
@@ -445,18 +490,13 @@ async function launchApplication(appId, customFileName = null) {
         }
 
         case 'start-link-text-editor':
-            // FIX: If a filename is passed by Explorer, use it. Otherwise fallback to untitled.txt
             const targetEditFile = customFileName || "untitled.txt";
             try {
                 const module = await import('./programs/editor.js');
-                
-                // Read content from the context based on the correct filename variable
                 const existingContent = currentContext[targetEditFile] ? currentContext[targetEditFile].content : "";
-                
-                // Generate a unique window ID using the file name string to avoid frame conflicts
                 const cleanId = targetEditFile.replace(/[^a-zA-Z0-9]/g, '');
                 const winId = `edit-${cleanId}`;
-                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "📝", winId);
+                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "editor", winId);
 
                 if (appBodyElement) {
                     const editorInstance = new module.TextEditor(
@@ -466,11 +506,7 @@ async function launchApplication(appId, customFileName = null) {
                             if (savedName) {
                                 const saveContext = getActiveFolderContext();
                                 saveContext[savedName] = { type: "file", content: savedData };
-
-                                // Call your localStorage persistent write system
                                 saveFileSystem();
-
-                                // Repaint open Explorer grids immediately to list the fresh document row
                                 const activeExp = document.querySelector('.explorer-grid');
                                 if (activeExp) renderZebExplorer(activeExp.parentElement);
                             }
@@ -488,11 +524,95 @@ async function launchApplication(appId, customFileName = null) {
             }
             break;
 
+        case 'start-link-paint': {
+            const winId = 'app-paint';
+            try {
+                const module = await import('./programs/paint.js');
+                const paintBody = createWindow("Paint", "paint", winId);
+                if (paintBody) {
+                    const paintInstance = new module.PaintApp(
+                        () => closeWindow(winId),
+                        (filename, dataUrl) => {
+                            const saveContext = getActiveFolderContext();
+                            saveContext[filename] = { type: "file", content: dataUrl };
+                            saveFileSystem();
+                            const activeExp = document.querySelector('.explorer-grid');
+                            if (activeExp) renderZebExplorer(activeExp.parentElement);
+                        }
+                    );
+                    registerWindowCleanup(winId, () => paintInstance.cleanup());
+                    paintInstance.open(paintBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount paint.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-mines': {
+            const winId = 'app-mines';
+            try {
+                const module = await import('./programs/mines.js');
+                const minesBody = createWindow("Minesweeper", "mines", winId);
+                if (minesBody) {
+                    const minesInstance = new module.MinesweeperGame(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => minesInstance.cleanup());
+                    minesInstance.open(minesBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount mines.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-media': {
+            const winId = 'app-media';
+            try {
+                const module = await import('./programs/media.js');
+                const mediaBody = createWindow("Media Player", "media", winId);
+                if (mediaBody) {
+                    const mediaInstance = new module.MediaPlayer(
+                        () => closeWindow(winId),
+                        (filename) => {
+                            const saveContext = getActiveFolderContext();
+                            return saveContext[filename] ? saveContext[filename].content : null;
+                        }
+                    );
+                    registerWindowCleanup(winId, () => mediaInstance.cleanup());
+                    mediaInstance.open(mediaBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount media.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-vm': {
+            const winId = 'app-vm';
+            try {
+                const module = await import('./programs/vm.js');
+                const vmBody = createWindow("ZebVM Manager", "vm", winId);
+                if (vmBody) {
+                    const winFrame = vmBody.closest('.window-frame');
+                    if (winFrame) {
+                        winFrame.style.width = '880px';
+                        winFrame.style.height = '560px';
+                    }
+                    const vmInstance = new module.ZebVMManager(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => vmInstance.cleanup());
+                    vmInstance.open(vmBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount vm.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
         case 'start-link-calc': {
             const winId = 'app-calc';
             try {
                 const module = await import('./programs/calc.js');
-                const calcBody = createWindow("Calculator", "🧮", winId);
+                const calcBody = createWindow("Calculator", "calc", winId);
                 if (calcBody) {
                     const calcInstance = new module.RetroCalculator(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => calcInstance.cleanup());
@@ -508,7 +628,7 @@ async function launchApplication(appId, customFileName = null) {
             const winId = 'app-snake';
             try {
                 const module = await import('./programs/snake.js');
-                const snakeBody = createWindow("Snake", "🐍", winId);
+                const snakeBody = createWindow("Snake", "snake", winId);
                 if (snakeBody) {
                     const snakeInstance = new module.SnakeGame(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => snakeInstance.cleanup());
@@ -524,7 +644,7 @@ async function launchApplication(appId, customFileName = null) {
             const winId = 'app-courgette';
             try {
                 const module = await import('./courgette/courgette.js');
-                const cgBody = createWindow("Courgette Info", "🥒", winId);
+                const cgBody = createWindow("Courgette Info", "courgette", winId);
                 if (cgBody) {
                     const counts = countFilesystemEntries(systemState.fileSystem);
                     const diskBytes = new Blob([JSON.stringify(systemState.fileSystem)]).size;
@@ -547,93 +667,28 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
             break;
-
-        default:
-            const fallbackTitles = {
-                'start-link-paint': { name: "Paint", icon: "🎨" },
-                'start-link-mines': { name: "Minesweeper", icon: "💣" },
-                'start-link-media': { name: "Media Player", icon: "🎬" },
-                'start-link-vm': { name: "ZebVM Manager", icon: "🎛️" }
-            };
-
-            if (fallbackTitles[appId]) {
-                const app = fallbackTitles[appId];
-                const placeholderBody = createWindow(app.name, app.icon, appId);
-                if (placeholderBody) {
-                    placeholderBody.innerHTML = `
-                        <div style="padding:20px; font-size:14px; color:#000000; font-family:sans-serif;">
-                            <strong>${app.name}</strong> core architecture coming soon in Phase 4!
-                        </div>
-                    `;
-                }
-            }
-            break;
     }
 }
 
 // ==========================================================================
 // DYNAMIC ZEB EXPLORER APP MODULE RENDERING ENGINE
 // ==========================================================================
-function renderZebExplorer(containerElement) {
-    containerElement.innerHTML = `
-        <div class="explorer-container">
-            <div class="explorer-toolbar">
-                <button class="explorer-btn" id="exp-btn-up">🔼 Up to Root</button>
-                <button class="explorer-btn" id="exp-btn-mkdir">📁 New Folder</button>
-            </div>
-            <div class="explorer-grid"></div>
-        </div>
-    `;
-
-    const grid = containerElement.querySelector('.explorer-grid');
-    const btnUp = containerElement.querySelector('#exp-btn-up');
-    const btnMkdir = containerElement.querySelector('#exp-btn-mkdir');
-
-    btnUp.disabled = (systemState.currentDirectory === "");
-
-    function refreshExplorerGrid() {
-        grid.innerHTML = "";
-        const context = getActiveFolderContext();
-        
-        Object.keys(context).forEach(name => {
-            const item = context[name];
-            const icon = item.type === "dir" ? "📁" : "📄";
-            
-            const itemEl = document.createElement('div');
-            itemEl.className = 'explorer-item';
-            itemEl.innerHTML = `
-                <div class="explorer-icon">${icon}</div>
-                <div class="explorer-name">${name}</div>
-            `;
-            
-            itemEl.addEventListener('dblclick', () => {
-                if (item.type === "dir") {
-                    systemState.currentDirectory = name;
-                    renderZebExplorer(containerElement);
-                } else {
-                    launchApplication('start-link-text-editor', name);
-                }
-            });
-            grid.appendChild(itemEl);
-        });
+async function renderZebExplorer(containerElement) {
+    try {
+        const module = await import('./programs/explorer.js');
+        const expInstance = new module.FileExplorerApp(
+            () => {},
+            (fileName) => launchApplication('start-link-text-editor', fileName),
+            () => saveFileSystem(),
+            (path) => {
+                if (!path || path === "") return systemState.fileSystem;
+                return systemState.fileSystem[path]?.content || systemState.fileSystem;
+            }
+        );
+        expInstance.open(containerElement);
+    } catch (err) {
+        logKernel(`Kernel Error: Failed to mount explorer.js (${err.message})`, "ERROR");
     }
-
-    btnUp.addEventListener('click', () => {
-        systemState.currentDirectory = "";
-        renderZebExplorer(containerElement);
-    });
-
-    btnMkdir.addEventListener('click', () => {
-        const folderName = prompt("Enter new folder name:");
-        if (folderName && folderName.trim() !== "") {
-            const context = getActiveFolderContext();
-            context[folderName.trim()] = { type: "dir", content: {} };
-            saveFileSystem(); // Save changes permanently to disk
-            refreshExplorerGrid();
-        }
-    });
-
-    refreshExplorerGrid();
 }
 
 // ==========================================================================
@@ -695,23 +750,28 @@ function shellRemove(name) {
 // DESKTOP SHORTCUT ICONS
 // ==========================================================================
 const DESKTOP_SHORTCUTS = [
-    { id: 'start-link-files', icon: '📁', label: 'Zeb Explorer' },
-    { id: 'start-link-text-editor', icon: '📝', label: 'Text Editor' },
-    { id: 'start-link-prompt', icon: '🐚', label: 'Zeb Terminal' },
-    { id: 'start-link-calc', icon: '🧮', label: 'Calculator' },
-    { id: 'start-link-snake', icon: '🐍', label: 'Snake' },
-    { id: 'start-link-courgette', icon: '🥒', label: 'Courgette Info' }
+    { id: 'start-link-files', icon: 'explorer', label: 'Zeb Explorer' },
+    { id: 'start-link-text-editor', icon: 'editor', label: 'Text Editor' },
+    { id: 'start-link-prompt', icon: 'terminal', label: 'Zeb Terminal' },
+    { id: 'start-link-paint', icon: 'paint', label: 'Paint' },
+    { id: 'start-link-mines', icon: 'mines', label: 'Minesweeper' },
+    { id: 'start-link-calc', icon: 'calc', label: 'Calculator' },
+    { id: 'start-link-snake', icon: 'snake', label: 'Snake' },
+    { id: 'start-link-media', icon: 'media', label: 'Media Player' },
+    { id: 'start-link-vm', icon: 'vm', label: 'ZebVM Manager' },
+    { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette Info' }
 ];
 
 function renderDesktopIcons() {
     const zone = document.getElementById('desktop-icons-zone');
     if (!zone) return;
+    zone.innerHTML = '';
 
     DESKTOP_SHORTCUTS.forEach(shortcut => {
         const iconEl = document.createElement('div');
         iconEl.className = 'desktop-icon';
         iconEl.innerHTML = `
-            <div class="desktop-icon-glyph">${shortcut.icon}</div>
+            <div class="desktop-icon-glyph">${getIcon(shortcut.icon)}</div>
             <div class="desktop-icon-label">${shortcut.label}</div>
         `;
         iconEl.addEventListener('dblclick', () => launchApplication(shortcut.id));
@@ -727,24 +787,108 @@ function renderDesktopIcons() {
 function setupStartMenuController() {
     const startBtn = document.getElementById('start-button');
     const startMenu = document.getElementById('start-menu');
+    const systemTray = document.getElementById('system-tray');
+    const trayMenu = document.getElementById('tray-menu');
 
-    startBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        startMenu.classList.toggle('hidden-view');
-    });
+    // Render official Z logo on Start button logo container (same as logon)
+    const startLogoEl = document.querySelector('.start-logo');
+    if (startLogoEl) startLogoEl.innerHTML = `<img src="assets/system/z_logo.png" style="width:20px; height:20px; object-fit:contain; display:block;" alt="Z">`;
 
-    document.addEventListener('click', (e) => {
-        if (!startMenu.classList.contains('hidden-view')) {
-            startMenu.classList.add('hidden-view');
-        }
-    });
+    const userTagEl = document.getElementById('current-user-tag');
+    if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${systemState.currentUser}</span>`;
 
+    const trayVolIcon = document.getElementById('tray-vol-icon');
+    if (trayVolIcon) trayVolIcon.innerHTML = `<span style="display:inline-flex; align-items:center;">${getIcon('volume')}</span>`;
+
+    // Populate start menu SVG icons
     const menuItems = document.querySelectorAll('.start-menu-item');
     menuItems.forEach(item => {
+        const iconName = item.dataset.icon;
+        const iconSpan = item.querySelector('.menu-icon');
+        if (iconName && iconSpan) {
+            iconSpan.innerHTML = getIcon(iconName);
+        }
         item.addEventListener('click', () => {
             launchApplication(item.id);
         });
     });
+
+    startBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); 
+        startMenu.classList.toggle('hidden-view');
+        if (trayMenu) trayMenu.classList.add('hidden-view');
+    });
+
+    if (systemTray && trayMenu) {
+        systemTray.addEventListener('click', (e) => {
+            e.stopPropagation();
+            trayMenu.classList.toggle('hidden-view');
+            if (startMenu) startMenu.classList.add('hidden-view');
+
+            // Update tray info dynamically
+            const trayUser = document.getElementById('tray-user-name');
+            if (trayUser) trayUser.textContent = `User: ${systemState.currentUser}`;
+
+            const trayDate = document.getElementById('tray-date-text');
+            if (trayDate) {
+                const now = new Date();
+                trayDate.textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+            }
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (startMenu && !startMenu.classList.contains('hidden-view')) {
+            startMenu.classList.add('hidden-view');
+        }
+        if (trayMenu && !trayMenu.classList.contains('hidden-view') && !trayMenu.contains(e.target)) {
+            trayMenu.classList.add('hidden-view');
+        }
+    });
+
+    // Tray Menu Actions
+    const trayCourgette = document.getElementById('tray-action-courgette');
+    if (trayCourgette) {
+        trayCourgette.addEventListener('click', () => launchApplication('start-link-courgette'));
+    }
+
+    const traySignout = document.getElementById('tray-action-signout');
+    if (traySignout) {
+        traySignout.addEventListener('click', async () => {
+            if (trayMenu) trayMenu.classList.add('hidden-view');
+            const desktopCanvas = document.getElementById('desktop-canvas');
+            const taskbar = document.getElementById('system-taskbar');
+            
+            if (desktopCanvas) desktopCanvas.style.opacity = '0';
+            if (taskbar) taskbar.style.opacity = '0';
+
+            setTimeout(async () => {
+                if (desktopCanvas) desktopCanvas.style.display = 'none';
+                if (taskbar) taskbar.style.display = 'none';
+
+                try {
+                    const module = await import('./logon/logon.js');
+                    module.showLogonScreen((username) => {
+                        systemState.currentUser = username;
+                        if (desktopCanvas) {
+                            desktopCanvas.style.display = 'block';
+                            requestAnimationFrame(() => { desktopCanvas.style.opacity = '1'; });
+                        }
+                        if (taskbar) {
+                            taskbar.style.display = 'flex';
+                            requestAnimationFrame(() => { taskbar.style.opacity = '1'; });
+                        }
+                        if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
+                        logKernel(`Session: User '${username}' signed in.`);
+                    });
+                } catch (err) {
+                    logKernel(`Logon Error: (${err.message})`, "ERROR");
+                    if (desktopCanvas) { desktopCanvas.style.display = 'block'; desktopCanvas.style.opacity = '1'; }
+                    if (taskbar) { taskbar.style.display = 'flex'; taskbar.style.opacity = '1'; }
+                }
+            }, 400);
+        });
+    }
 }
 
 // ==========================================================================
@@ -755,6 +899,83 @@ initializeBootSequence();
 startSystemClock();
 setupStartMenuController();
 renderDesktopIcons();
+
+initContextMenuSystem({
+    onOpenApp: (appId) => launchApplication(appId),
+    onDeleteAppShortcut: (el) => el.remove(),
+    onRenameAppShortcut: (el) => {
+        const newName = prompt("Enter new shortcut name:");
+        if (newName) {
+            const label = el.querySelector('.desktop-shortcut-label, .desktop-name');
+            if (label) label.textContent = newName;
+        }
+    },
+    onRestoreWindow: (winId) => {
+        const win = document.getElementById(`win-${winId}`);
+        if (win) { win.classList.remove('hidden-view'); bringToFront(win); }
+    },
+    onMinimizeWindow: (winId) => {
+        const win = document.getElementById(`win-${winId}`);
+        if (win) win.classList.add('hidden-view');
+    },
+    onMaximizeWindow: (winId) => {
+        const win = document.getElementById(`win-${winId}`);
+        if (win) toggleMaximize(win);
+    },
+    onCloseWindow: (winId) => closeWindow(winId),
+    onOpenExplorerItem: (itemName, itemType) => {
+        if (itemType === 'dir') {
+            launchApplication('start-link-files');
+        } else {
+            launchApplication('start-link-text-editor', itemName);
+        }
+    },
+    onDeleteFile: (itemName) => {
+        const context = getActiveFolderContext();
+        delete context[itemName];
+        saveFileSystem();
+        launchApplication('start-link-files');
+    },
+    onRenameFile: (itemName) => {
+        const newName = prompt("Rename item to:", itemName);
+        if (newName && newName !== itemName) {
+            const context = getActiveFolderContext();
+            context[newName] = context[itemName];
+            delete context[itemName];
+            saveFileSystem();
+            launchApplication('start-link-files');
+        }
+    },
+    onCreateNewFolder: () => {
+        const folderName = prompt("Enter new folder name:", "New Folder");
+        if (folderName) {
+            const context = getActiveFolderContext();
+            context[folderName] = { type: "dir", content: {} };
+            saveFileSystem();
+            launchApplication('start-link-files');
+        }
+    },
+    onCreateNewFile: (defaultName) => {
+        const fileName = prompt("Enter file name:", defaultName);
+        if (fileName) {
+            const context = getActiveFolderContext();
+            context[fileName] = { type: "file", content: "" };
+            saveFileSystem();
+            launchApplication('start-link-files');
+        }
+    },
+    onCascadeWindows: () => {
+        const wins = document.querySelectorAll('.window-frame:not(.hidden-view)');
+        wins.forEach((win, idx) => {
+            win.style.left = `${40 + (idx * 30)}px`;
+            win.style.top = `${40 + (idx * 30)}px`;
+        });
+    },
+    onShowDesktop: () => {
+        const wins = document.querySelectorAll('.window-frame');
+        wins.forEach(win => win.classList.add('hidden-view'));
+    }
+});
 
 const buildHashTag = document.getElementById('build-git-hash');
 if (buildHashTag) buildHashTag.textContent = `git-${BUILD_GIT_HASH}`;

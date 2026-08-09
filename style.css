@@ -173,6 +173,9 @@ body, html {
     background-size: cover;
     background-position: center;
     overflow: hidden;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
 }
 
 #desktop-icons-zone {
@@ -202,6 +205,77 @@ body, html {
 .desktop-icon-glyph {
     font-size: 32px;
     filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.6));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   SYSTEM SVG ICON SUBSYSTEM (CODE-BASED RETRO ICONS)
+   ========================================================================== */
+.sys-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.desktop-icon .sys-icon {
+    width: 38px;
+    height: 38px;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.start-menu-item .sys-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.window-title .sys-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.taskbar-tab .sys-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.paint-tool-btn {
+    width: 34px;
+    height: 34px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    box-sizing: border-box;
+}
+
+.paint-tool-btn.active-tool {
+    background-color: #e0e0e0;
+    border: 2px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+
+.paint-btn {
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .desktop-icon-label {
@@ -324,11 +398,13 @@ body, html {
     width: 100vw; height: 40px;
     background-color: #c0c0c0; 
     border-top: 2px solid #ffffff; 
-    display: flex;
+    display: none;
     align-items: center;
     padding: 0 4px;
     box-sizing: border-box;
     z-index: 90000;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
 }
 
 #taskbar-tabs-zone {
@@ -360,11 +436,122 @@ body, html {
     background-color: #e0e0e0;
 }
 
+#start-button {
+    height: 30px;
+    padding: 2px 10px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+#start-button:active,
+#start-button.active-start {
+    border: 2px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    background-color: #b0b0b0;
+    padding-top: 3px;
+    padding-left: 11px;
+}
+
+.start-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.start-logo .sys-official-logo {
+    width: 22px !important;
+    height: 22px !important;
+    filter: none !important;
+}
+
 #system-tray {
-    height: 28px; background-color: #c0c0c0;
+    height: 30px;
+    background-color: #c0c0c0;
     border: 2px solid #808080;
-    border-right-color: #ffffff; border-bottom-color: #ffffff;
-    display: flex; align-items: center; gap: 10px; padding: 0 12px; box-sizing: border-box;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+#tray-vol-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#tray-vol-icon svg, #current-user-tag svg {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+    display: block;
+}
+
+#system-tray:hover {
+    background-color: #d4d4d4;
+}
+
+#system-tray:active {
+    border: 2px solid #ffffff;
+    border-right-color: #808080;
+    border-bottom-color: #808080;
+}
+
+#tray-menu {
+    position: absolute;
+    bottom: 44px; right: 4px;
+    width: 230px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    z-index: 95000;
+}
+
+#tray-menu-header {
+    background: linear-gradient(90deg, #000080 0%, #008080 100%);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tray-menu-content {
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+}
+
+.tray-section {
+    padding: 4px 6px;
 }
 
 #current-user-tag {
@@ -373,6 +560,51 @@ body, html {
 
 #live-clock {
     font-family: monospace; font-size: 13px; font-weight: bold; color: #000000;
+}
+
+/* ==========================================================================
+   EXPLORER & DYNAMIC CONTEXT MENU STYLING
+   ========================================================================== */
+.exp-menu-link {
+    cursor: pointer;
+    padding: 1px 4px;
+}
+.exp-menu-link:hover {
+    background-color: #000080;
+    color: #ffffff;
+}
+
+.exp-tb-btn:active {
+    border: 1px solid #000000 !important;
+    border-right-color: #ffffff !important;
+    border-bottom-color: #ffffff !important;
+    padding-top: 3px !important;
+    padding-left: 7px !important;
+}
+
+.retro-context-menu {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.sys-icon {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.exp-icon-wrap {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.context-menu-item:hover {
+    background-color: #000080 !important;
+    color: #ffffff !important;
 }
 
 /* ==========================================================================
@@ -409,6 +641,34 @@ body, html {
 
 .window-controls {
     display: flex; gap: 2px;
+}
+
+.win-btn {
+    width: 16px;
+    height: 14px;
+    background-color: #c0c0c0;
+    border: 1px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.win-btn:active {
+    border: 1px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    padding-top: 1px;
+    padding-left: 1px;
+}
+
+.win-btn svg {
+    width: 10px;
+    height: 10px;
 }
 
 .window-body {
