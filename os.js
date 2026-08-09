@@ -166,12 +166,20 @@ function initializeBootSequence() {
                     const module = await import('./logon/logon.js');
                     module.showLogonScreen((username) => {
                         systemState.currentUser = username;
+                        const desktopCanvas = document.getElementById('desktop-canvas');
+                        const taskbar = document.getElementById('system-taskbar');
+                        if (desktopCanvas) desktopCanvas.style.display = 'block';
+                        if (taskbar) taskbar.style.display = 'flex';
                         const userTag = document.getElementById('current-user-tag');
                         if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
                         logKernel(`Session: User '${username}' signed in.`);
                     });
                 } catch (err) {
                     logKernel(`Kernel Error: Failed to mount logon/logon.js (${err.message})`, "ERROR");
+                    const desktopCanvas = document.getElementById('desktop-canvas');
+                    const taskbar = document.getElementById('system-taskbar');
+                    if (desktopCanvas) desktopCanvas.style.display = 'block';
+                    if (taskbar) taskbar.style.display = 'flex';
                 }
             }, 800);
         }
@@ -255,8 +263,13 @@ export function createWindow(title, iconName, uniqueId) {
     win.style.zIndex = ++topZIndex;
 
     const currentWindows = document.querySelectorAll('.window-frame').length;
-    win.style.top = `${60 + (currentWindows * 25)}px`;
-    win.style.left = `${60 + (currentWindows * 25)}px`;
+    const winWidth = 440; 
+    const winHeight = 320;
+    const centerX = Math.max(20, Math.floor((window.innerWidth - winWidth) / 2) + (currentWindows * 20));
+    const centerY = Math.max(20, Math.floor((window.innerHeight - 40 - winHeight) / 2) + (currentWindows * 20));
+    
+    win.style.left = `${centerX}px`;
+    win.style.top = `${centerY}px`;
 
     const iconSvg = iconName.includes('<svg') ? iconName : getIcon(iconName);
 
@@ -264,9 +277,9 @@ export function createWindow(title, iconName, uniqueId) {
         <div class="window-header" style="cursor: move;">
             <div class="window-title"><span class="win-title-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${title}</div>
             <div class="window-controls">
-                <button class="win-btn" id="win-min-${uniqueId}">_</button>
-                <button class="win-btn" id="win-max-${uniqueId}">□</button>
-                <button class="win-btn" id="win-close-${uniqueId}">X</button>
+                <button class="win-btn" id="win-min-${uniqueId}">${getIcon('winMin')}</button>
+                <button class="win-btn" id="win-max-${uniqueId}">${getIcon('winMax')}</button>
+                <button class="win-btn" id="win-close-${uniqueId}">${getIcon('winClose')}</button>
             </div>
         </div>
         <div class="window-body" id="body-${uniqueId}"></div>

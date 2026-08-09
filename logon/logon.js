@@ -16,9 +16,9 @@ export function showLogonScreen(onSignedIn) {
     `;
 
     screen.innerHTML = `
-        <div style="width:280px; background-color:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 16px rgba(0,0,0,0.5); padding:24px 20px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:8px; font-family:Arial, sans-serif;">
-            <div style="width:48px; height:48px;">${getIcon('vm')}</div>
-            <div style="font-size:18px; font-weight:bold; color:#000080;">ZebOS 2 Pro</div>
+        <div style="width:300px; background-color:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 16px rgba(0,0,0,0.5); padding:24px 20px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:8px; font-family:Arial, sans-serif;">
+            <div style="width:72px; height:72px; display:flex; align-items:center; justify-content:center;">${getIcon('officialZLogo')}</div>
+            <div style="font-size:20px; font-weight:bold; color:#000080; letter-spacing:0.5px;">ZebOS 2 Pro</div>
             <div style="font-size:12px; color:#404040; margin-bottom:10px;">Welcome back</div>
             <input class="logon-username" type="text" value="guest" autocomplete="off" spellcheck="false" style="width:100%; box-sizing:border-box; padding:6px 8px; font-size:13px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff; font-family:Arial, sans-serif;">
             <input class="logon-password" type="password" placeholder="Password (optional)" autocomplete="off" style="width:100%; box-sizing:border-box; padding:6px 8px; font-size:13px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff; font-family:Arial, sans-serif;">

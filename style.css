@@ -173,6 +173,7 @@ body, html {
     background-size: cover;
     background-position: center;
     overflow: hidden;
+    display: none;
 }
 
 #desktop-icons-zone {
@@ -395,7 +396,7 @@ body, html {
     width: 100vw; height: 40px;
     background-color: #c0c0c0; 
     border-top: 2px solid #ffffff; 
-    display: flex;
+    display: none;
     align-items: center;
     padding: 0 4px;
     box-sizing: border-box;
@@ -480,6 +481,34 @@ body, html {
 
 .window-controls {
     display: flex; gap: 2px;
+}
+
+.win-btn {
+    width: 16px;
+    height: 14px;
+    background-color: #c0c0c0;
+    border: 1px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.win-btn:active {
+    border: 1px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    padding-top: 1px;
+    padding-left: 1px;
+}
+
+.win-btn svg {
+    width: 10px;
+    height: 10px;
 }
 
 .window-body {

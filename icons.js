@@ -113,12 +113,32 @@ const SVGS = {
     `,
     startLogo: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="3" width="8" height="8" fill="#f44336"/>
-            <rect x="13" y="3" width="8" height="8" fill="#4caf50"/>
-            <rect x="3" y="13" width="8" height="8" fill="#2196f3"/>
-            <rect x="13" y="13" width="8" height="8" fill="#ffeb3b"/>
+            <rect x="2" y="2" width="20" height="20" rx="3" fill="url(#startZGrad)" stroke="#003380" stroke-width="1"/>
+            <path d="M6 7.5H18L8.5 16.5H18" stroke="#ffffff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>
+            <defs>
+                <linearGradient id="startZGrad" x1="0" y1="0" x2="24" y2="24">
+                    <stop offset="0%" stop-color="#0080ff"/>
+                    <stop offset="100%" stop-color="#003399"/>
+                </linearGradient>
+            </defs>
         </svg>
     `,
+    officialZLogo: `
+        <svg class="sys-official-logo" viewBox="0 0 260 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:240px; height:auto; filter:drop-shadow(0 0 16px rgba(54,209,220,0.4));">
+            <defs>
+                <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#20b2aa" />
+                    <stop offset="50%" stop-color="#008080" />
+                    <stop offset="100%" stop-color="#003366" />
+                </linearGradient>
+            </defs>
+            <polygon points="130,10 215,55 215,155 130,200 45,155 45,55" fill="url(#hexGrad)" stroke="#55ffff" stroke-width="3.5"/>
+            <path d="M85 65 H175 L95 145 H175" stroke="#ffffff" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter"/>
+        </svg>
+    `,
+    winMin: `<svg viewBox="0 0 10 10" style="width:10px; height:10px; display:block;"><line x1="1" y1="8" x2="9" y2="8" stroke="#000000" stroke-width="2" stroke-linecap="square"/></svg>`,
+    winMax: `<svg viewBox="0 0 10 10" style="width:10px; height:10px; display:block;"><rect x="1" y="1" width="8" height="8" fill="none" stroke="#000000" stroke-width="1.5"/></svg>`,
+    winClose: `<svg viewBox="0 0 10 10" style="width:10px; height:10px; display:block;"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`,
     up: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4L4 14H9V20H15V14H20L12 4Z" fill="#000000"/>
