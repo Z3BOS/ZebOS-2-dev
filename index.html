@@ -19,18 +19,7 @@
         <div id="boot-dev-hint">Press Ctrl+Alt to enter Developer Mode</div>
     </div>
 
-    <!-- LAYER 3.5: Windows-style Sign-In Screen, shown after boot completes -->
-    <div id="signin-screen" class="hidden-view">
-        <div id="signin-card">
-            <div id="signin-icon">🖥️</div>
-            <div id="signin-title">ZebOS 2</div>
-            <div id="signin-subtitle">Welcome back</div>
-            <input id="signin-username" type="text" value="guest" autocomplete="off" spellcheck="false">
-            <input id="signin-password" type="password" placeholder="Password (optional)" autocomplete="off">
-            <button id="signin-btn">Sign In &rarr;</button>
-            <div id="signin-hint">Any username works — this is a local guest session.</div>
-        </div>
-    </div>
+    <!-- Sign-in screen is built entirely by logon/logon.js and mounted after boot -->
 
     <!-- LAYER 1: Fullscreen Desktop Wallpaper Grid Canvas -->
     <div id="desktop-canvas">
