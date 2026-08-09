@@ -1,12 +1,13 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.0.0 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 Pro v2.1.0 Core)
 import { getIcon } from './icons.js';
+import { initContextMenuSystem } from './contextmenu.js';
 
 // No build pipeline generates this — it's the short commit hash as of the
 // last time this file was edited, updated by hand alongside version bumps.
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.0.0", 
+    version: "2.1.0", 
     currentUser: "guest", 
     uptime: 0,
     activeApp: null,
@@ -89,7 +90,7 @@ export function saveFileSystem() {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.0.0! Persistent storage disk saving is active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Pro v2.1.0! Persistent storage disk saving is active." },
         "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
         "documents": { type: "dir", content: {
             "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
@@ -148,7 +149,7 @@ const BOOT_LOG_SEQUENCE = [
 ];
 
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.0.0 Pro...");
+    logKernel("SYSTEM START: Initializing Zeb Kernel v2.1.0 Pro...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -432,12 +433,29 @@ async function launchApplication(appId, customFileName = null) {
     const currentContext = getActiveFolderContext();
 
     switch (appId) {
-        case 'start-link-files':
-            const explorerBody = createWindow("Zeb Explorer", "explorer", "explorer-root");
-            if (explorerBody) {
-                renderZebExplorer(explorerBody);
+        case 'start-link-files': {
+            const winId = 'explorer-root';
+            try {
+                const module = await import('./programs/explorer.js');
+                const explorerBody = createWindow("Exploring - Local Disk (C:)", "explorer", winId);
+                if (explorerBody) {
+                    const expInstance = new module.FileExplorerApp(
+                        () => closeWindow(winId),
+                        (fileName) => launchApplication('start-link-text-editor', fileName),
+                        () => saveFileSystem(),
+                        (path) => {
+                            if (!path || path === "") return systemState.fileSystem;
+                            return systemState.fileSystem[path]?.content || systemState.fileSystem;
+                        }
+                    );
+                    registerWindowCleanup(winId, () => {});
+                    expInstance.open(explorerBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount explorer.js (${err.message})`, "ERROR");
             }
             break;
+        }
 
         case 'start-link-prompt': {
             const winId = 'app-terminal';
@@ -915,6 +933,83 @@ initializeBootSequence();
 startSystemClock();
 setupStartMenuController();
 renderDesktopIcons();
+
+initContextMenuSystem({
+    onOpenApp: (appId) => launchApplication(appId),
+    onDeleteAppShortcut: (el) => el.remove(),
+    onRenameAppShortcut: (el) => {
+        const newName = prompt("Enter new shortcut name:");
+        if (newName) {
+            const label = el.querySelector('.desktop-shortcut-label, .desktop-name');
+            if (label) label.textContent = newName;
+        }
+    },
+    onRestoreWindow: (winId) => {
+        const win = document.getElementById(`win-${winId}`);
+        if (win) { win.classList.remove('hidden-view'); bringToFront(win); }
+    },
+    onMinimizeWindow: (winId) => {
+        const win = document.getElementById(`win-${winId}`);
+        if (win) win.classList.add('hidden-view');
+    },
+    onMaximizeWindow: (winId) => {
+        const win = document.getElementById(`win-${winId}`);
+        if (win) toggleMaximize(win);
+    },
+    onCloseWindow: (winId) => closeWindow(winId),
+    onOpenExplorerItem: (itemName, itemType) => {
+        if (itemType === 'dir') {
+            launchApplication('start-link-files');
+        } else {
+            launchApplication('start-link-text-editor', itemName);
+        }
+    },
+    onDeleteFile: (itemName) => {
+        const context = getActiveFolderContext();
+        delete context[itemName];
+        saveFileSystem();
+        launchApplication('start-link-files');
+    },
+    onRenameFile: (itemName) => {
+        const newName = prompt("Rename item to:", itemName);
+        if (newName && newName !== itemName) {
+            const context = getActiveFolderContext();
+            context[newName] = context[itemName];
+            delete context[itemName];
+            saveFileSystem();
+            launchApplication('start-link-files');
+        }
+    },
+    onCreateNewFolder: () => {
+        const folderName = prompt("Enter new folder name:", "New Folder");
+        if (folderName) {
+            const context = getActiveFolderContext();
+            context[folderName] = { type: "dir", content: {} };
+            saveFileSystem();
+            launchApplication('start-link-files');
+        }
+    },
+    onCreateNewFile: (defaultName) => {
+        const fileName = prompt("Enter file name:", defaultName);
+        if (fileName) {
+            const context = getActiveFolderContext();
+            context[fileName] = { type: "file", content: "" };
+            saveFileSystem();
+            launchApplication('start-link-files');
+        }
+    },
+    onCascadeWindows: () => {
+        const wins = document.querySelectorAll('.window-frame:not(.hidden-view)');
+        wins.forEach((win, idx) => {
+            win.style.left = `${40 + (idx * 30)}px`;
+            win.style.top = `${40 + (idx * 30)}px`;
+        });
+    },
+    onShowDesktop: () => {
+        const wins = document.querySelectorAll('.window-frame');
+        wins.forEach(win => win.classList.add('hidden-view'));
+    }
+});
 
 const buildHashTag = document.getElementById('build-git-hash');
 if (buildHashTag) buildHashTag.textContent = `git-${BUILD_GIT_HASH}`;

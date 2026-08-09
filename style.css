@@ -546,6 +546,36 @@ body, html {
 }
 
 /* ==========================================================================
+   EXPLORER & DYNAMIC CONTEXT MENU STYLING
+   ========================================================================== */
+.exp-menu-link {
+    cursor: pointer;
+    padding: 1px 4px;
+}
+.exp-menu-link:hover {
+    background-color: #000080;
+    color: #ffffff;
+}
+
+.exp-tb-btn:active {
+    border: 1px solid #000000 !important;
+    border-right-color: #ffffff !important;
+    border-bottom-color: #ffffff !important;
+    padding-top: 3px !important;
+    padding-left: 7px !important;
+}
+
+.retro-context-menu {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.context-menu-item:hover {
+    background-color: #000080 !important;
+    color: #ffffff !important;
+}
+
+/* ==========================================================================
    PHASE 2: RESIZABLE WINDOW GRAPHICS DESIGN
    ========================================================================== */
 .window-frame {
