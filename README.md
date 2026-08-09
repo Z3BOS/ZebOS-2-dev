@@ -6,3 +6,5 @@ This is an Unofficial Variant of ZebOS 2 and Features you see here and evolution
 ///////
 
 This Unofficial Verision is Developed By Adurite / Adurite Designs.
+
+Adurite Designs also made ZebOS 2 Preview which was a Preview build that isnt released to the Public that you may have seen on the 7Zeb Youtube Channel, and if you liked how that looked, then expect much better in ZebOS 2 Pro The Unofficial Variant Of ZebOS.
