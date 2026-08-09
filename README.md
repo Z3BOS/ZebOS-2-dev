@@ -1,3 +1,3 @@
 # ZebOS 2 
 
-> An open-source, unofficial variant of **ZebOS 2** built directly on top of 7Zeb's official Pre-Alpha release.
+> An open-source, Javascript Operating System named **ZebOS 2** built on Pure Javascript and CSS and Html Code.
