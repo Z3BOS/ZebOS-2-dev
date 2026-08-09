@@ -333,7 +333,7 @@ function showPropertiesDialog(name, type, location) {
                 </div>
             </div>
             <div><strong>Location:</strong> ${location}</div>
-            <div><strong>System:</strong> ZebOS 2 Kernel v2.3.0 (Pre-Alpha)</div>
+            <div><strong>System:</strong> ZebOS 2 Kernel v2.4.0 (Alpha)</div>
             <div><strong>Status:</strong> Read/Write Accessible</div>
             <button id="prop-ok" style="align-self:flex-end; padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; margin-top:8px;">OK</button>
         </div>
