@@ -374,12 +374,15 @@ function w95EditField(label, value, id) {
     </div>`;
 }
 
+const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;
+
 function w95Checkbox(id, label, checked) {
-    const mark = checked ? `<span style="position:absolute;top:-2px;left:1px;font-size:11px;line-height:1;color:#000;font-weight:bold;">✓</span>` : '';
+    const mark = checked ? W95_CHECKMARK_SVG : '';
     return `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;user-select:none;margin-bottom:6px;">
         <span id="${id}-wrap" data-checked="${checked?'1':'0'}" style="
-            position:relative;display:inline-block;width:13px;height:13px;flex-shrink:0;
-            background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;cursor:pointer;">
+            display:inline-flex;align-items:center;justify-content:center;
+            width:13px;height:13px;flex-shrink:0;box-sizing:border-box;
+            background:#ffffff;border:2px solid #808080;border-right-color:#ffffff;border-bottom-color:#ffffff;cursor:pointer;">
             ${mark}
         </span>
         <span>${label}</span>
@@ -392,19 +395,19 @@ function w95Separator() {
 
 function w95Select(id, options, selectedValue) {
     return `
-    <div class="w95-dropdown" id="${id}" data-value="${selectedValue}" style="position:relative;width:100%;z-index:10;">
+    <div class="w95-dropdown" id="${id}" data-value="${selectedValue}" style="position:relative;width:100%;z-index:1;">
       <div class="w95-drop-display" style="
         display:flex;align-items:center;justify-content:space-between;
         background:#c0c0c0;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;
         padding:2px 4px;cursor:pointer;font-size:12px;font-family:Arial,sans-serif;min-height:22px;box-sizing:border-box;">
-        <span class="w95-drop-label" style="flex-grow:1;">${(options.find(o=>o.value===selectedValue)||options[0]||{}).label||''}</span>
+        <span class="w95-drop-label" style="flex-grow:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(options.find(o=>o.value===selectedValue)||options[0]||{}).label||''}</span>
         <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;
           background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;font-size:8px;">▼</span>
       </div>
       <div class="w95-drop-list" style="
         display:none;position:absolute;top:100%;left:0;width:100%;
         background:#c0c0c0;border:1px solid #000;box-shadow:2px 2px 4px rgba(0,0,0,0.4);
-        z-index:9999;max-height:140px;overflow-y:auto;">
+        z-index:9999;max-height:140px;overflow-y:auto;box-sizing:border-box;">
         ${options.map(o=>`
         <div class="w95-drop-item" data-value="${o.value}" style="
           padding:2px 6px;font-size:12px;font-family:Arial,sans-serif;cursor:pointer;
@@ -415,6 +418,19 @@ function w95Select(id, options, selectedValue) {
 }
 
 function bindDropdownsInEl(el) {
+    const closeAll = () => {
+        el.querySelectorAll('.w95-dropdown').forEach(w => {
+            w.style.zIndex = '1';
+            if (w.parentElement && w.parentElement !== el) {
+                w.parentElement.style.zIndex = '';
+            }
+            const fs = w.closest('fieldset');
+            if (fs) fs.style.zIndex = '';
+            const l = w.querySelector('.w95-drop-list');
+            if (l) l.style.display = 'none';
+        });
+    };
+
     el.querySelectorAll('.w95-dropdown').forEach(wrap => {
         const display = wrap.querySelector('.w95-drop-display');
         const list    = wrap.querySelector('.w95-drop-list');
@@ -422,8 +438,20 @@ function bindDropdownsInEl(el) {
         display.addEventListener('click', (e) => {
             e.stopPropagation();
             const open = list.style.display !== 'none';
-            el.querySelectorAll('.w95-drop-list').forEach(l => l.style.display = 'none');
-            list.style.display = open ? 'none' : 'block';
+            closeAll();
+            if (!open) {
+                wrap.style.zIndex = '99999';
+                if (wrap.parentElement && wrap.parentElement !== el) {
+                    wrap.parentElement.style.position = 'relative';
+                    wrap.parentElement.style.zIndex = '99998';
+                }
+                const fs = wrap.closest('fieldset');
+                if (fs) {
+                    fs.style.position = 'relative';
+                    fs.style.zIndex = '99997';
+                }
+                list.style.display = 'block';
+            }
         });
         list.querySelectorAll('.w95-drop-item').forEach(item => {
             item.addEventListener('mouseenter', () => {
@@ -439,12 +467,16 @@ function bindDropdownsInEl(el) {
                 wrap.dataset.value = item.dataset.value;
                 lbl.textContent = item.textContent.trim();
                 list.querySelectorAll('.w95-drop-item').forEach(i => { i.style.background=i.dataset.value===item.dataset.value?'#000080':'#c0c0c0'; i.style.color=i.dataset.value===item.dataset.value?'#fff':'#000'; });
-                list.style.display = 'none';
+                closeAll();
                 wrap.dispatchEvent(new CustomEvent('w95-change', { detail: { value: item.dataset.value } }));
             });
         });
     });
-    document.addEventListener('click', () => el.querySelectorAll('.w95-drop-list').forEach(l => l.style.display='none'), { once: false });
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.w95-dropdown')) {
+            closeAll();
+        }
+    });
 }
 
 function bindCheckboxesInEl(el) {
@@ -452,7 +484,7 @@ function bindCheckboxesInEl(el) {
         wrap.addEventListener('click', () => {
             const cur = wrap.dataset.checked === '1';
             wrap.dataset.checked = cur ? '0' : '1';
-            wrap.innerHTML = cur ? '' : `<span style="position:absolute;top:-2px;left:1px;font-size:11px;line-height:1;color:#000;font-weight:bold;">✓</span>`;
+            wrap.innerHTML = cur ? '' : W95_CHECKMARK_SVG;
         });
     });
 }

@@ -193,7 +193,7 @@ body.rounded-corners .retro-context-menu {
     position: absolute;
     top: 0; left: 0;
     width: 100vw;
-    height: calc(100vh - 40px); 
+    height: 100vh; 
     background-color: #008080; 
     background-size: cover;
     background-position: center;
@@ -207,7 +207,7 @@ body.rounded-corners .retro-context-menu {
     position: absolute;
     top: 0; left: 0;
     width: 100vw;
-    height: calc(100vh - 40px);
+    height: 100vh;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;

@@ -142,7 +142,13 @@ export class PaintApp {
         sizeDropDisp.addEventListener('click', (e) => {
             e.stopPropagation();
             const open = sizeDropList.style.display !== 'none';
-            sizeDropList.style.display = open ? 'none' : 'block';
+            if (!open) {
+                sizeDropWrap.style.zIndex = '99999';
+                sizeDropList.style.display = 'block';
+            } else {
+                sizeDropWrap.style.zIndex = '10';
+                sizeDropList.style.display = 'none';
+            }
         });
         sizeDropList.querySelectorAll('.w95-drop-item').forEach(item => {
             item.addEventListener('mouseenter', () => {
@@ -159,10 +165,14 @@ export class PaintApp {
                 sizeDropLabel.textContent  = item.textContent.trim();
                 sizeDropList.querySelectorAll('.w95-drop-item').forEach(i => { i.style.background=i.dataset.value===item.dataset.value?'#000080':'#c0c0c0'; i.style.color=i.dataset.value===item.dataset.value?'#fff':'#000'; });
                 sizeDropList.style.display = 'none';
+                sizeDropWrap.style.zIndex = '10';
                 this.currentSize = parseInt(item.dataset.value, 10);
             });
         });
-        document.addEventListener('click', () => { sizeDropList.style.display = 'none'; });
+        document.addEventListener('click', () => {
+            sizeDropList.style.display = 'none';
+            sizeDropWrap.style.zIndex = '10';
+        });
 
         // Save & Clear
         this.bodyElement.querySelector('.opt-clear').addEventListener('click', () => {

@@ -17,10 +17,77 @@ let systemState = {
     desktopBackground: '#008080',
     desktopPattern: 'solid',
     desktopScheme: 'standard',
-    uiFontSize: '12',
+    soundScheme: 'classic',
+    taskbarAutoHide: false,
     roundedCorners: false,
     fileSystem: {}
 };
+
+// Sound Engine (Web Audio API Synthesizer)
+let audioCtx = null;
+export function playSystemSound(type) {
+    if (systemState.soundScheme === 'muted') return;
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const now = audioCtx.currentTime;
+
+        if (type === 'click') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(150, now + 0.03);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.03);
+        } else if (type === 'open') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.setValueAtTime(880, now + 0.04);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } else if (type === 'close') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.setValueAtTime(440, now + 0.04);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } else if (type === 'error') {
+            [300, 450].forEach(freq => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, now);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.18);
+            });
+        }
+    } catch(e) { /* ignore audio context policy restrictions */ }
+}
 
 let topZIndex = 100; // Track screen depth layers globally across desktop workspace
 
@@ -78,7 +145,7 @@ function loadFileSystem() {
             if (s.color)          systemState.desktopBackground = s.color;
             if (s.pattern)        systemState.desktopPattern    = s.pattern;
             if (s.scheme)         systemState.desktopScheme     = s.scheme;
-            if (s.fontSize)       systemState.uiFontSize        = s.fontSize;
+            if (s.soundScheme)    systemState.soundScheme       = s.soundScheme;
             if (s.roundedCorners !== undefined) systemState.roundedCorners = s.roundedCorners;
         } catch(e) { /* ignore */ }
     }
@@ -106,7 +173,7 @@ export function saveFileSystem() {
             color:          systemState.desktopBackground,
             pattern:        systemState.desktopPattern,
             scheme:         systemState.desktopScheme,
-            fontSize:       systemState.uiFontSize,
+            soundScheme:    systemState.soundScheme,
             roundedCorners: systemState.roundedCorners,
         };
         localStorage.setItem('ZEBOS_V2_SETTINGS', JSON.stringify(settings));
@@ -150,12 +217,6 @@ function applyOsSettings(settings) {
     const scheme = schemes[settings.scheme] || schemes['standard'];
     Object.entries(scheme).forEach(([prop, val]) => document.documentElement.style.setProperty(prop, val));
 
-    // Font size
-    if (settings.fontSize) {
-        document.documentElement.style.setProperty('--os-font-size', settings.fontSize + 'px');
-        document.body.style.fontSize = settings.fontSize + 'px';
-    }
-
     // Rounded corners
     if (settings.roundedCorners) {
         document.body.classList.add('rounded-corners');
@@ -167,14 +228,46 @@ function applyOsSettings(settings) {
     systemState.desktopBackground = color;
     systemState.desktopPattern    = pattern;
     if (settings.scheme)         systemState.desktopScheme   = settings.scheme;
-    if (settings.fontSize)       systemState.uiFontSize      = settings.fontSize;
+    if (settings.soundScheme)    systemState.soundScheme     = settings.soundScheme;
     if (settings.roundedCorners !== undefined) systemState.roundedCorners = settings.roundedCorners;
+}
+
+let taskbarEventsInitialized = false;
+
+function setupTaskbarEvents() {
+    if (taskbarEventsInitialized) return;
+    taskbarEventsInitialized = true;
+    const tb = document.getElementById('system-taskbar');
+    if (!tb) return;
+
+    tb.addEventListener('mouseenter', () => {
+        if (systemState.taskbarAutoHide) {
+            tb.style.opacity = '1';
+        }
+    });
+    tb.addEventListener('mouseleave', () => {
+        if (systemState.taskbarAutoHide) {
+            tb.style.opacity = '0';
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!systemState.taskbarAutoHide) return;
+        const pos = tb.dataset.position || 'bottom';
+        let nearEdge = false;
+        if (pos === 'bottom' && e.clientY >= window.innerHeight - 8) nearEdge = true;
+        if (pos === 'top'    && e.clientY <= 8) nearEdge = true;
+        if (pos === 'left'   && e.clientX <= 8) nearEdge = true;
+        if (pos === 'right'  && e.clientX >= window.innerWidth - 8) nearEdge = true;
+        if (nearEdge) {
+            tb.style.opacity = '1';
+        }
+    });
 }
 
 // Apply taskbar layout properties from Taskbar Properties dialog
 function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
     const tb = document.getElementById('system-taskbar');
-    const desktop = document.getElementById('desktop-canvas');
     if (!tb) return;
 
     const sz = parseInt(size, 10) || 40;
@@ -189,33 +282,37 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
     if (pos === 'bottom') {
         tb.style.bottom = '0'; tb.style.left = '0';
         tb.style.width = '100vw'; tb.style.height = sz + 'px';
-        if (desktop) desktop.style.height = `calc(100vh - ${sz}px)`;
     } else if (pos === 'top') {
         tb.style.top = '0'; tb.style.left = '0';
         tb.style.width = '100vw'; tb.style.height = sz + 'px';
-        if (desktop) { desktop.style.top = sz + 'px'; desktop.style.height = `calc(100vh - ${sz}px)`; }
     } else if (pos === 'left') {
         tb.style.top = '0'; tb.style.left = '0';
         tb.style.width = sz + 'px'; tb.style.height = '100vh';
         tb.style.flexDirection = 'column';
-        if (desktop) { desktop.style.left = sz + 'px'; desktop.style.width = `calc(100vw - ${sz}px)`; desktop.style.height = '100vh'; }
     } else if (pos === 'right') {
         tb.style.top = '0'; tb.style.right = '0';
         tb.style.width = sz + 'px'; tb.style.height = '100vh';
         tb.style.flexDirection = 'column';
-        if (desktop) { desktop.style.width = `calc(100vw - ${sz}px)`; desktop.style.height = '100vh'; }
     }
 
     tb.style.zIndex = alwaysTop ? '90000' : '1000';
+
+    systemState.taskbarAutoHide = !!autoHide;
+    setupTaskbarEvents();
+
     if (autoHide) {
-        tb.style.opacity = '0'; tb.style.transition = 'opacity 0.2s';
-        tb.addEventListener('mouseenter', () => { tb.style.opacity = '1'; });
-        tb.addEventListener('mouseleave', () => { tb.style.opacity = '0'; });
+        tb.style.opacity = '0';
+        tb.style.transition = 'opacity 0.2s';
     } else {
         tb.style.opacity = '1';
+        tb.style.transition = 'opacity 0.2s';
     }
+
     const clockEl = document.getElementById('live-clock');
-    if (clockEl) clockEl.closest('#system-tray') && (clockEl.closest('#system-tray').style.display = showClock ? 'flex' : 'none');
+    if (clockEl) {
+        const tray = clockEl.closest('#system-tray');
+        if (tray) tray.style.display = showClock ? 'flex' : 'none';
+    }
 
     logKernel(`Taskbar: Applied props — pos:${pos} size:${sz}px autohide:${autoHide} ontop:${alwaysTop}`);
 }
@@ -310,7 +407,7 @@ function initializeBootSequence() {
                                 color:          systemState.desktopBackground,
                                 pattern:        systemState.desktopPattern,
                                 scheme:         systemState.desktopScheme,
-                                fontSize:       systemState.uiFontSize,
+                                soundScheme:    systemState.soundScheme,
                                 roundedCorners: systemState.roundedCorners,
                             });
                         }
@@ -379,6 +476,7 @@ export function registerWindowCleanup(uniqueId, cleanupFn) {
 }
 
 export function closeWindow(uniqueId) {
+    playSystemSound('close');
     const cleanup = windowCleanupHandlers.get(uniqueId);
     if (cleanup) {
         cleanup();
@@ -392,6 +490,7 @@ export function closeWindow(uniqueId) {
 }
 
 export function createWindow(title, iconName, uniqueId) {
+    playSystemSound('open');
     const workspace = document.getElementById('window-workspace');
     const tabsZone = document.getElementById('taskbar-tabs-zone');
     
@@ -829,14 +928,15 @@ async function launchApplication(appId, customFileName = null) {
                     const pInstance = new module.PersonalizeApp(
                         () => closeWindow(winId),
                         (settings) => {
-                            // settings = { color, pattern, scheme, fontSize, roundedCorners }
+                            // settings = { color, pattern, scheme, soundScheme, roundedCorners }
                             applyOsSettings(settings);
                             saveFileSystem();
-                            logKernel(`Personalize: Applied settings — color:${settings.color} pattern:${settings.pattern} scheme:${settings.scheme}`);
+                            logKernel(`Personalize: Applied settings — color:${settings.color} pattern:${settings.pattern} scheme:${settings.scheme} sound:${settings.soundScheme}`);
                         },
                         systemState.desktopBackground || '#008080',
                         systemState.desktopPattern    || 'solid',
                         systemState.desktopScheme     || 'standard',
+                        systemState.soundScheme       || 'classic',
                         systemState.roundedCorners    || false
                     );
                     registerWindowCleanup(winId, () => pInstance.cleanup());

@@ -1,20 +1,18 @@
 // programs/personalize.js - ZebOS 2 Alpha Display Properties Applet v2.5.0
 // All settings actually apply to the live OS. No browser page reloads.
 
+const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;
+
 export class PersonalizeApp {
-    constructor(onCloseRequest, onApplyCallback, currentBg, currentPattern, currentScheme, currentRoundedCorners) {
+    constructor(onCloseRequest, onApplyCallback, currentBg, currentPattern, currentScheme, currentSoundScheme, currentRoundedCorners) {
         this.onCloseRequest = onCloseRequest;
         this.onApplyCallback = onApplyCallback;
 
-        // Strip "px" suffix if present on stored font size
-        const rawFs = document.documentElement.style.getPropertyValue('--os-font-size') || '12';
-        const cleanFs = rawFs.replace('px', '') || '12';
-
         this.initialState = {
-            color:          currentBg        || '#008080',
-            pattern:        currentPattern   || 'solid',
-            scheme:         currentScheme    || 'standard',
-            fontSize:       cleanFs,
+            color:          currentBg            || '#008080',
+            pattern:        currentPattern       || 'solid',
+            scheme:         currentScheme        || 'standard',
+            soundScheme:    currentSoundScheme   || 'classic',
             roundedCorners: currentRoundedCorners || false,
         };
 
@@ -22,7 +20,7 @@ export class PersonalizeApp {
         this.activeTab       = 'background';
         this.isDirty         = false;
         this.container       = null;
-        this._openDropdown   = null; // track which custom dropdown is open
+        this._openDropdown   = null;
 
         this.colorPresets = [
             { name: 'Classic Teal',   hex: '#008080' },
@@ -41,11 +39,9 @@ export class PersonalizeApp {
             'midnight':      { name: 'Midnight Blue',         titlebarBg: '#1a237e', titlebarFg: '#ffffff' },
         };
 
-        this.fontSizes = [
-            { value: '11', label: 'Small (11px)' },
-            { value: '12', label: 'Normal (12px)' },
-            { value: '14', label: 'Large (14px)' },
-            { value: '16', label: 'Extra Large (16px)' },
+        this.soundSchemes = [
+            { value: 'classic', label: 'Classic Win95 Synthesizer' },
+            { value: 'muted',   label: 'Muted (No Audio)' },
         ];
     }
 
@@ -55,41 +51,29 @@ export class PersonalizeApp {
         this.render();
     }
 
-    // ==========================================================================
-    // HELPERS: Windows 95-style UI COMPONENT BUILDERS (no browser defaults)
-    // ==========================================================================
-
-    // Win95 raised button border (outer highlight + shadow)
     _btnStyle(extra = '') {
         return `background:#c0c0c0;border:2px solid #ffffff;border-right-color:#000000;border-bottom-color:#000000;padding:3px 10px;cursor:pointer;font-family:Arial,sans-serif;font-size:11px;outline:none;${extra}`;
     }
 
-    // Win95 sunken input border
     _sunkenBorder() {
         return 'border:2px solid #808080;border-right-color:#ffffff;border-bottom-color:#ffffff;';
     }
 
-    // Custom Win95 Checkbox HTML (no browser native)
     _checkboxHtml(id, checked, label) {
-        const mark = checked
-            ? `<span style="position:absolute;top:-2px;left:1px;font-size:11px;line-height:1;color:#000;font-weight:bold;">✓</span>`
-            : '';
+        const mark = checked ? W95_CHECKMARK_SVG : '';
         return `
         <label for="${id}" style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;color:#000;user-select:none;">
-          <span id="${id}-wrap" data-checked="${checked?'1':'0'}" style="position:relative;display:inline-block;width:13px;height:13px;flex-shrink:0;background:#ffffff;${this._sunkenBorder()}cursor:pointer;">
+          <span id="${id}-wrap" data-checked="${checked?'1':'0'}" style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;flex-shrink:0;background:#ffffff;${this._sunkenBorder()}cursor:pointer;box-sizing:border-box;">
             ${mark}
           </span>
           <span>${label}</span>
         </label>`;
     }
 
-    // Custom Win95 Dropdown HTML
-    // options: [{value, label}], selectedValue, dropId
     _dropdownHtml(dropId, options, selectedValue, width = '100%') {
         const sel = options.find(o => o.value === selectedValue) || options[0];
         return `
-        <div class="w95-dropdown" id="${dropId}" data-value="${selectedValue}" style="position:relative;width:${width};z-index:10;">
-          <!-- Display button -->
+        <div class="w95-dropdown" id="${dropId}" data-value="${selectedValue}" style="position:relative;width:${width};z-index:1;">
           <div class="w95-drop-display" style="
             display:flex;align-items:center;justify-content:space-between;
             background:#c0c0c0;${this._sunkenBorder()}
@@ -103,13 +87,12 @@ export class PersonalizeApp {
               border:2px solid #ffffff;border-right-color:#000;border-bottom-color:#000;
               font-size:8px;line-height:1;">▼</span>
           </div>
-          <!-- Dropdown list (hidden by default) -->
           <div class="w95-drop-list" style="
             display:none;position:absolute;top:100%;left:0;width:100%;
             background:#c0c0c0;
             border:1px solid #000000;
             box-shadow:2px 2px 4px rgba(0,0,0,0.4);
-            z-index:9999;max-height:140px;overflow-y:auto;">
+            z-index:9999;max-height:140px;overflow-y:auto;box-sizing:border-box;">
             ${options.map(o => `
             <div class="w95-drop-item" data-value="${o.value}" style="
               padding:2px 6px;font-size:11px;font-family:Arial,sans-serif;cursor:pointer;
@@ -122,9 +105,6 @@ export class PersonalizeApp {
         </div>`;
     }
 
-    // ==========================================================================
-    // FULL RENDER — only called on tab switch or initial open
-    // ==========================================================================
     render() {
         if (!this.container) return;
 
@@ -135,7 +115,6 @@ export class PersonalizeApp {
   font-family:Arial,Helvetica,sans-serif;font-size:11px;
   padding:6px;box-sizing:border-box;user-select:none;overflow:hidden;">
 
-  <!-- Tab strip -->
   <div style="display:flex;border-bottom:2px solid #ffffff;gap:2px;flex-shrink:0;padding-left:4px;">
     ${['background','appearance','settings'].map(tab => `
       <button class="p-tab-btn" data-tab="${tab}" style="
@@ -149,13 +128,11 @@ export class PersonalizeApp {
         font-family:Arial,sans-serif;font-size:11px;">${tab.charAt(0).toUpperCase()+tab.slice(1)}</button>`).join('')}
   </div>
 
-  <!-- Main content panel -->
   <div style="flex-grow:1;background:#c0c0c0;border:2px solid #ffffff;border-right-color:#808080;border-bottom-color:#808080;padding:10px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;overflow-y:auto;">
     ${this.renderPreview()}
     ${this.renderTabContent()}
   </div>
 
-  <!-- OK | Cancel | Apply -->
   <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;flex-shrink:0;">
     <button id="p-btn-ok"     style="${this._btnStyle('font-weight:bold;')}">OK</button>
     <button id="p-btn-cancel" style="${this._btnStyle()}">Cancel</button>
@@ -167,14 +144,10 @@ export class PersonalizeApp {
         this.bindEvents();
     }
 
-    // ==========================================================================
-    // PREVIEW PANELS
-    // ==========================================================================
     renderPreview() {
         if (this.activeTab === 'appearance') {
             return this._appearancePreviewHtml();
         }
-        // Background + Settings tabs: CRT Monitor
         return this._crtMonitorHtml();
     }
 
@@ -188,17 +161,14 @@ export class PersonalizeApp {
           background:${this.workingState.color};
           border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;
           box-sizing:border-box;position:relative;overflow:hidden;flex-shrink:0;">
-          <!-- Inactive -->
           <div style="position:absolute;top:8px;left:10px;width:200px;height:80px;background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;box-shadow:2px 2px 6px rgba(0,0,0,.5);">
             <div style="background:#808080;height:13px;color:#c0c0c0;font-size:8px;padding:1px 4px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;"><span>Inactive Window</span><span>×</span></div>
             <div style="padding:4px;font-size:8px;color:#000;">Norm</div>
           </div>
-          <!-- Active -->
           <div style="position:absolute;top:24px;left:28px;width:230px;height:90px;background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;box-shadow:3px 3px 8px rgba(0,0,0,.6);">
             <div id="p-scheme-active-bar" style="background:${bg};height:14px;color:${fg};font-size:8px;padding:1px 4px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;"><span>Active Window</span><span>×</span></div>
             <div style="padding:5px;font-size:8px;background:#c0c0c0;height:calc(100% - 14px);box-sizing:border-box;display:flex;gap:6px;">
               <div style="background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;padding:3px;flex:1;font-size:7px;">Window Text</div>
-              <!-- Message box -->
               <div style="background:#c0c0c0;border:2px solid #fff;border-right-color:#000;border-bottom-color:#000;padding:2px 4px;font-size:7px;display:flex;flex-direction:column;align-items:center;gap:2px;">
                 <div style="background:${bg};color:${fg};padding:1px 4px;font-size:6px;font-weight:bold;width:100%;box-sizing:border-box;">Message Box</div>
                 <div style="font-size:7px;">Message Text</div>
@@ -216,37 +186,29 @@ export class PersonalizeApp {
 
         return `
         <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;margin-bottom:2px;">
-          <!-- CRT chassis -->
           <div style="width:228px;height:138px;background:#d4d0c8;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;border-radius:10px;padding:8px 8px 14px 8px;box-shadow:inset -1px -1px 0 #444,inset 1px 1px 0 #fff;display:flex;flex-direction:column;align-items:center;position:relative;box-sizing:border-box;">
-            <!-- Screen bezel (dark frame) -->
             <div style="width:100%;height:104px;background:#222;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;border-radius:3px;box-sizing:border-box;overflow:hidden;position:relative;">
-              <!-- SCREEN: use explicit px height so it actually shows -->
               <div id="crt-screen-viewport" style="width:100%;height:100px;position:relative;overflow:hidden;box-sizing:border-box;${bgStyle}">
-                <!-- Mini icons -->
                 <div style="position:absolute;top:4px;left:4px;display:flex;flex-direction:column;gap:4px;z-index:1;">
                   <div style="width:7px;height:7px;background:#ffca28;border:1px solid #000;"></div>
                   <div style="width:7px;height:7px;background:#fff;border:1px solid #000;"></div>
                 </div>
-                <!-- Mini window -->
                 <div style="position:absolute;top:10px;left:22px;width:118px;height:64px;background:#c0c0c0;border:1px solid #fff;border-right-color:#000;border-bottom-color:#000;box-shadow:2px 2px 5px rgba(0,0,0,.5);z-index:1;">
                   <div style="background:#000080;height:11px;color:#fff;font-size:7px;padding:1px 3px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;"><span>ZebOS 2</span><span>×</span></div>
                   <div style="padding:3px;font-size:6.5px;background:#c0c0c0;height:calc(100% - 11px);box-sizing:border-box;">
                     <div style="background:#fff;border:1px solid #808080;padding:2px;height:30px;box-sizing:border-box;font-size:6px;color:#333;">Live Preview</div>
                   </div>
                 </div>
-                <!-- Mini taskbar -->
                 <div style="position:absolute;bottom:0;left:0;width:100%;height:10px;background:#c0c0c0;border-top:1px solid #fff;display:flex;align-items:center;padding:0 2px;z-index:1;">
                   <div style="width:20px;height:6px;background:#c0c0c0;border:1px solid #fff;border-right-color:#000;border-bottom-color:#000;font-size:5px;font-weight:bold;line-height:6px;text-align:center;color:#000;">Start</div>
                 </div>
               </div>
             </div>
-            <!-- Power LED + button -->
             <div style="position:absolute;bottom:3px;right:14px;display:flex;align-items:center;gap:4px;">
               <div style="width:5px;height:5px;border-radius:50%;background:#00ff00;box-shadow:0 0 4px #0f0;"></div>
               <div style="width:10px;height:4px;background:#808080;border:1px solid #444;"></div>
             </div>
           </div>
-          <!-- Stand base -->
           <div style="width:64px;height:10px;background:#b0b0b0;border:2px solid #808080;border-top:none;border-radius:0 0 4px 4px;"></div>
         </div>`;
     }
@@ -264,13 +226,9 @@ export class PersonalizeApp {
         if (pattern === 'dots') {
             return `background-color:${color};background-image:radial-gradient(rgba(255,255,255,.2) 1px,transparent 1px);background-size:10px 10px;`;
         }
-        // solid
         return `background-color:${color};`;
     }
 
-    // ==========================================================================
-    // TAB CONTENT
-    // ==========================================================================
     renderTabContent() {
         const ws = this.workingState;
 
@@ -324,14 +282,13 @@ export class PersonalizeApp {
                     ws.scheme)}
                 </div>
                 <div>
-                  <div style="font-size:11px;font-weight:bold;color:#000;margin-bottom:4px;">UI Font Size:</div>
-                  ${this._dropdownHtml('p-fontsize-drop', this.fontSizes, ws.fontSize)}
+                  <div style="font-size:11px;font-weight:bold;color:#000;margin-bottom:4px;">Sound Effects:</div>
+                  ${this._dropdownHtml('p-sound-drop', this.soundSchemes, ws.soundScheme)}
                 </div>
               </div>
             </fieldset>`;
         }
 
-        // Settings tab
         return `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:8px 10px;margin:0;background:#c0c0c0;box-sizing:border-box;">
@@ -352,7 +309,6 @@ export class PersonalizeApp {
         </div>`;
     }
 
-    // Win95 radio button (styled span, not native)
     _radio(name, value, checked) {
         return `<input type="radio" name="${name}" value="${value}" ${checked?'checked':''} style="
           appearance:none;-webkit-appearance:none;
@@ -363,19 +319,14 @@ export class PersonalizeApp {
           display:inline-flex;align-items:center;justify-content:center;">`;
     }
 
-    // ==========================================================================
-    // BIND EVENTS
-    // ==========================================================================
     bindEvents() {
-        // Tab switching
         this.container.querySelectorAll('.p-tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.activeTab = btn.dataset.tab;
-                this.render(); // full re-render on tab change
+                this.render();
             });
         });
 
-        // ---------- Background tab ----------
         this.container.querySelectorAll('input[name="bg-color"]').forEach(radio => {
             radio.addEventListener('change', () => {
                 this.workingState.color = radio.value;
@@ -408,44 +359,35 @@ export class PersonalizeApp {
             });
         }
 
-        // Pattern dropdown
         this._bindDropdown('p-pattern-drop', val => {
             this.workingState.pattern = val;
             this.updateCrtPreview();
             this.markDirty();
         });
 
-        // ---------- Appearance tab ----------
         this._bindDropdown('p-scheme-drop', val => {
             this.workingState.scheme = val;
             this.updateAppearancePreview();
             this.markDirty();
         });
 
-        this._bindDropdown('p-fontsize-drop', val => {
-            this.workingState.fontSize = val;
-            // Live preview: temporarily apply font size
-            document.body.style.fontSize = val + 'px';
+        this._bindDropdown('p-sound-drop', val => {
+            this.workingState.soundScheme = val;
             this.markDirty();
         });
 
-        // ---------- Settings tab ----------
         const chkWrap = this.container.querySelector('#p-rounded-corners-wrap');
         if (chkWrap) {
             chkWrap.addEventListener('click', () => {
                 const cur = chkWrap.dataset.checked === '1';
                 const next = !cur;
                 chkWrap.dataset.checked = next ? '1' : '0';
-                // Update the checkmark visually
-                chkWrap.innerHTML = next
-                    ? `<span style="position:absolute;top:-2px;left:1px;font-size:11px;line-height:1;color:#000;font-weight:bold;">✓</span>`
-                    : '';
+                chkWrap.innerHTML = next ? W95_CHECKMARK_SVG : '';
                 this.workingState.roundedCorners = next;
                 this.markDirty();
             });
         }
 
-        // ---------- Button bar ----------
         const applyBtn  = this.container.querySelector('#p-btn-apply');
         const okBtn     = this.container.querySelector('#p-btn-ok');
         const cancelBtn = this.container.querySelector('#p-btn-cancel');
@@ -454,12 +396,11 @@ export class PersonalizeApp {
         if (okBtn)     okBtn.addEventListener('click',     () => { this.doApply(); this.onCloseRequest(); });
         if (cancelBtn) cancelBtn.addEventListener('click', () => {
             if (this.isDirty && this.onApplyCallback) {
-                this.onApplyCallback({ ...this.initialState }); // revert
+                this.onApplyCallback({ ...this.initialState });
             }
             this.onCloseRequest();
         });
 
-        // Close open dropdowns when clicking outside
         document.addEventListener('mousedown', this._outsideClickHandler = (e) => {
             if (!e.target.closest('.w95-dropdown')) {
                 this._closeAllDropdowns();
@@ -467,9 +408,6 @@ export class PersonalizeApp {
         });
     }
 
-    // ==========================================================================
-    // CUSTOM DROPDOWN LOGIC
-    // ==========================================================================
     _bindDropdown(dropId, onChange) {
         const wrap = this.container.querySelector(`#${dropId}`);
         if (!wrap) return;
@@ -483,8 +421,18 @@ export class PersonalizeApp {
             const isOpen = list.style.display !== 'none';
             this._closeAllDropdowns();
             if (!isOpen) {
+                wrap.style.zIndex = '99999';
+                if (wrap.parentElement && wrap.parentElement !== this.container) {
+                    wrap.parentElement.style.position = 'relative';
+                    wrap.parentElement.style.zIndex = '99998';
+                }
+                const fs = wrap.closest('fieldset');
+                if (fs) {
+                    fs.style.position = 'relative';
+                    fs.style.zIndex = '99997';
+                }
                 list.style.display = 'block';
-                this._openDropdown = list;
+                this._openDropdown = wrap;
             }
         });
 
@@ -512,7 +460,6 @@ export class PersonalizeApp {
                 const val = item.dataset.value;
                 wrap.dataset.value = val;
                 label.textContent  = item.textContent.trim();
-                // Update selected highlight in list
                 list.querySelectorAll('.w95-drop-item').forEach(i => {
                     i.style.background = i.dataset.value === val ? '#000080' : '#c0c0c0';
                     i.style.color      = i.dataset.value === val ? '#ffffff'  : '#000000';
@@ -524,24 +471,26 @@ export class PersonalizeApp {
     }
 
     _closeAllDropdowns() {
-        this.container.querySelectorAll('.w95-drop-list').forEach(l => {
-            l.style.display = 'none';
+        this.container.querySelectorAll('.w95-dropdown').forEach(w => {
+            w.style.zIndex = '1';
+            if (w.parentElement && w.parentElement !== this.container) {
+                w.parentElement.style.zIndex = '';
+            }
+            const fs = w.closest('fieldset');
+            if (fs) fs.style.zIndex = '';
+            const l = w.querySelector('.w95-drop-list');
+            if (l) l.style.display = 'none';
         });
         this._openDropdown = null;
     }
 
-    // ==========================================================================
-    // LIVE PREVIEW UPDATERS (no full re-render)
-    // ==========================================================================
     updateCrtPreview() {
         const vp = this.container.querySelector('#crt-screen-viewport');
         if (!vp) return;
 
         const color   = this.workingState.color   || '#008080';
         const pattern = this.workingState.pattern || 'solid';
-        const bgStyle = this._buildPatternStyle(color, pattern);
 
-        // Apply each CSS property individually instead of cssText (more reliable)
         if (pattern === 'solid') {
             vp.style.background      = color;
             vp.style.backgroundImage = 'none';
@@ -567,18 +516,15 @@ export class PersonalizeApp {
 
     updateAppearancePreview() {
         const scheme = this.schemes[this.workingState.scheme] || this.schemes['standard'];
-        // Update active window title bar in the preview
         const activeBar = this.container.querySelector('#p-scheme-active-bar');
         if (activeBar) {
             activeBar.style.background = scheme.titlebarBg;
             activeBar.style.color      = scheme.titlebarFg;
         }
-        // Update message box title bars
         this.container.querySelectorAll('.p-scheme-msg-bar').forEach(el => {
             el.style.background = scheme.titlebarBg;
             el.style.color      = scheme.titlebarFg;
         });
-        // Update desktop background color in appearance preview
         const preview = this.container.querySelector('#p-appearance-preview');
         if (preview) preview.style.background = this.workingState.color;
     }
@@ -590,9 +536,6 @@ export class PersonalizeApp {
         if (ht) ht.value = hex;
     }
 
-    // ==========================================================================
-    // APPLY / DIRTY STATE
-    // ==========================================================================
     doApply() {
         if (!this.isDirty) return;
         if (this.onApplyCallback) {
@@ -632,7 +575,6 @@ export class PersonalizeApp {
         }
     }
 
-    // Cleanup: remove global event listener when window closes
     cleanup() {
         if (this._outsideClickHandler) {
             document.removeEventListener('mousedown', this._outsideClickHandler);
