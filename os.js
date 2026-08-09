@@ -1,5 +1,10 @@
 // State tracking & Persistent VFS Storage Module (ZebOS 2 Alpha v1.8.0 Core)
-let systemState = { 
+
+// No build pipeline generates this — it's the short commit hash as of the
+// last time this file was edited, updated by hand alongside version bumps.
+const BUILD_GIT_HASH = "cf604bd";
+
+let systemState = {
     version: "1.8.0", 
     currentUser: "guest", 
     uptime: 0,
@@ -10,23 +15,63 @@ let systemState = {
 
 let topZIndex = 100; // Track screen depth layers globally across desktop workspace
 
+let devModeEnabled = false;
+let devConsoleEl = null; // set once Dev Mode is entered; logKernel mirrors into it when present
+
+// This should be a good enough logger
+function logKernel(message, level = "INFO") {
+    const stamp = new Date().toTimeString().split(' ')[0];
+    const formatted = `[${stamp}] [${level}] ${message}`;
+    if (level === "ERROR") console.error(formatted);
+    else if (level === "WARN") console.warn(formatted);
+    else console.log(formatted);
+
+    if (devConsoleEl) {
+        const line = document.createElement('div');
+        line.textContent = formatted;
+        if (level === "ERROR") line.style.color = '#ff6666';
+        else if (level === "WARN") line.style.color = '#ffcc55';
+        devConsoleEl.appendChild(line);
+        devConsoleEl.scrollTop = devConsoleEl.scrollHeight;
+    }
+
+    return formatted;
+}
+
+// ChromeOS-style dev mode entry: holding Ctrl+Alt during boot engages it.
+function enterDevMode() {
+    if (devModeEnabled) return;
+    devModeEnabled = true;
+
+    const badge = document.createElement('div');
+    badge.id = 'dev-mode-badge';
+    badge.textContent = 'DEV MODE';
+    document.getElementById('desktop-canvas')?.appendChild(badge);
+
+    devConsoleEl = document.createElement('div');
+    devConsoleEl.id = 'dev-console';
+    document.body.appendChild(devConsoleEl);
+
+    logKernel("DEV MODE: Developer mode engaged via Ctrl+Alt.", "WARN");
+}
+
 // ==========================================================================
 // PERSISTENT HARD DISK STORAGE ENGINE (LOCALSTORAGE SUBSYSTEM)
 // ==========================================================================
 
 function loadFileSystem() {
     const diskImage = localStorage.getItem('ZEBOS_V2_DISK');
-    
+
     if (diskImage) {
         try {
             systemState.fileSystem = JSON.parse(diskImage);
-            console.log("Storage System: Restored persistent file allocations from disk image sector.");
+            logKernel("Storage System: Restored persistent file allocations from disk image sector.");
         } catch (err) {
-            console.error("Storage System Error: Hard drive image corrupted. Resetting data cells.", err);
+            logKernel(`Storage System Error: Hard drive image corrupted. Resetting data cells. (${err.message})`, "ERROR");
             provisionDefaultRootFS();
         }
     } else {
-        console.log("Storage System: Initializing new root filesystem partition.");
+        logKernel("Storage System: Initializing new root filesystem partition.");
         provisionDefaultRootFS();
     }
 }
@@ -35,9 +80,9 @@ export function saveFileSystem() {
     try {
         const serializedFS = JSON.stringify(systemState.fileSystem);
         localStorage.setItem('ZEBOS_V2_DISK', serializedFS);
-        console.log("Storage System: Changes committed to local storage sectors successfully.");
+        logKernel("Storage System: Changes committed to local storage sectors successfully.");
     } catch (err) {
-        console.error("Storage System Error: Write operation failed to commit.", err);
+        logKernel(`Storage System Error: Write operation failed to commit. (${err.message})`, "ERROR");
     }
 }
 
@@ -89,26 +134,106 @@ function startSystemClock() {
     setInterval(updateClock, 1000);
 }
 
-// ==========================================================================
-// BOOT SCREEN HANDOFF CONTROLLER
-// ==========================================================================
+// Various lines that our kernel uses to simulate a boot sequence.
+const BOOT_LOG_SEQUENCE = [
+    "KERN: Starting Kernel. ",
+    "MISC: Probing display adapter... OK",
+    "KERN: Initializing window manager subsystem...",
+    "STOR: checking local disk image sector...",
+    "MISC: Loading persistent file allocations...",
+    "KERN: Starting system clock daemon...",
+    "MISC: Registering desktop shortcuts...",
+    "KERN: Handing off to Graphical Desktop Environment..."
+];
+
 function initializeBootSequence() {
-    console.log("SYSTEM START: Initializing Zeb Kernel v1.8.0...");
-    setTimeout(() => {
-        const bootScreen = document.getElementById('boot-screen');
+    logKernel("SYSTEM START: Initializing Zeb Kernel v1.8.0...");
+    const bootScreen = document.getElementById('boot-screen');
+    const logConsole = document.getElementById('boot-log-console');
+
+    let finished = false;
+    function finishBoot() {
+        if (finished) return;
+        finished = true;
+        window.removeEventListener('keydown', devModeKeyHandler);
         if (bootScreen) {
-            bootScreen.style.opacity = "0"; 
-            setTimeout(() => {
+            bootScreen.style.opacity = "0";
+            setTimeout(async () => {
                 bootScreen.remove();
-                console.log("BOOT COMPLETE: Graphical Desktop Env Core loaded successfully.");
-            }, 800); 
+                logKernel("BOOT COMPLETE: Graphical Desktop Env Core loaded successfully.");
+                try {
+                    const module = await import('./logon/logon.js');
+                    module.showLogonScreen((username) => {
+                        systemState.currentUser = username;
+                        const userTag = document.getElementById('current-user-tag');
+                        if (userTag) userTag.textContent = `👤 ${username}`;
+                        logKernel(`Session: User '${username}' signed in.`);
+                    });
+                } catch (err) {
+                    logKernel(`Kernel Error: Failed to mount logon/logon.js (${err.message})`, "ERROR");
+                }
+            }, 800);
         }
-    }, 4000);
+    }
+
+    // Holding Ctrl+Alt during boot skips straight past the log/splash animation.
+    function devModeKeyHandler(e) {
+        if (e.ctrlKey && e.altKey && !devModeEnabled) {
+            enterDevMode();
+            finishBoot();
+        }
+    }
+    window.addEventListener('keydown', devModeKeyHandler);
+
+    let lineIndex = 0;
+    function printNextBootLine() {
+        if (finished) return;
+        if (lineIndex < BOOT_LOG_SEQUENCE.length) {
+            const message = BOOT_LOG_SEQUENCE[lineIndex];
+            logKernel(message);
+            if (logConsole) {
+                const lineEl = document.createElement('div');
+                lineEl.className = 'boot-log-line';
+                lineEl.textContent = `> ${message}`;
+                logConsole.appendChild(lineEl);
+                logConsole.scrollTop = logConsole.scrollHeight;
+            }
+            lineIndex++;
+            setTimeout(printNextBootLine, 180);
+        } else {
+            setTimeout(() => {
+                if (finished) return;
+                if (bootScreen) bootScreen.classList.add('splash-active');
+                logKernel("BOOT: Kernel log complete, splash handoff engaged.");
+            }, 300);
+        }
+    }
+    printNextBootLine();
+
+    setTimeout(finishBoot, 4000);
 }
 
-// ==========================================================================
-// PHASE 2: RESIZABLE & MAXIMIZABLE WINDOW MANAGER CORE ENGINE
-// ==========================================================================
+// Window manager code
+
+const windowCleanupHandlers = new Map();
+
+export function registerWindowCleanup(uniqueId, cleanupFn) {
+    windowCleanupHandlers.set(uniqueId, cleanupFn);
+}
+
+export function closeWindow(uniqueId) {
+    const cleanup = windowCleanupHandlers.get(uniqueId);
+    if (cleanup) {
+        cleanup();
+        windowCleanupHandlers.delete(uniqueId);
+    }
+    const win = document.getElementById(`win-${uniqueId}`);
+    const tab = document.getElementById(`tab-${uniqueId}`);
+    if (win) win.remove();
+    if (tab) tab.remove();
+    logKernel(`Window closed: ${uniqueId}`);
+}
+
 export function createWindow(title, icon, uniqueId) {
     const workspace = document.getElementById('window-workspace');
     const tabsZone = document.getElementById('taskbar-tabs-zone');
@@ -146,6 +271,7 @@ export function createWindow(title, icon, uniqueId) {
     `;
 
     workspace.appendChild(win);
+    logKernel(`Window opened: ${title} (#${uniqueId})`);
 
     const tab = document.createElement('div');
     tab.className = 'taskbar-tab active-tab';
@@ -191,8 +317,7 @@ export function createWindow(title, icon, uniqueId) {
 
     document.getElementById(`win-close-${uniqueId}`).addEventListener('click', (e) => {
         e.stopPropagation();
-        win.remove();
-        tab.remove();
+        closeWindow(uniqueId);
     });
 
     setupWindowDrag(win);
@@ -264,18 +389,60 @@ function setupWindowResize(win) {
 // ==========================================================================
 // CENTRAL APPLICATION ROUTER SYSTEM
 // ==========================================================================
+function countFilesystemEntries(node) {
+    let files = 0, dirs = 0;
+    Object.values(node).forEach(item => {
+        if (item.type === 'dir') {
+            dirs++;
+            const sub = countFilesystemEntries(item.content);
+            files += sub.files;
+            dirs += sub.dirs;
+        } else {
+            files++;
+        }
+    });
+    return { files, dirs };
+}
+
 // Overwrite this specific switch block section inside your launchApplication(appId) in os.js:
 // We add an optional second parameter to dynamically handle targeted file names
 async function launchApplication(appId, customFileName = null) {
     const currentContext = getActiveFolderContext();
 
     switch (appId) {
-        case 'start-link-files': 
+        case 'start-link-files':
             const explorerBody = createWindow("Zeb Explorer", "📁", "explorer-root");
             if (explorerBody) {
                 renderZebExplorer(explorerBody);
             }
             break;
+
+        case 'start-link-prompt': {
+            const winId = 'app-terminal';
+            try {
+                const module = await import('./programs/terminal.js');
+                const termBody = createWindow("Zeb Terminal", "🐚", winId);
+                if (termBody) {
+                    const shellApi = {
+                        getContext: () => getActiveFolderContext(),
+                        getPath: () => systemState.currentDirectory === "" ? "/" : `/${systemState.currentDirectory}`,
+                        changeDirectory: (target) => shellChangeDirectory(target),
+                        mkdir: (name) => shellMkdir(name),
+                        touch: (name) => shellTouch(name),
+                        remove: (name) => shellRemove(name),
+                        openInEditor: (name) => launchApplication('start-link-text-editor', name),
+                        getUsername: () => systemState.currentUser,
+                        getVersion: () => systemState.version
+                    };
+                    const termInstance = new module.ZebTerminal(() => closeWindow(winId), shellApi);
+                    registerWindowCleanup(winId, () => termInstance.cleanup());
+                    termInstance.open(termBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount terminal.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
 
         case 'start-link-text-editor':
             // FIX: If a filename is passed by Explorer, use it. Otherwise fallback to untitled.txt
@@ -288,8 +455,9 @@ async function launchApplication(appId, customFileName = null) {
                 
                 // Generate a unique window ID using the file name string to avoid frame conflicts
                 const cleanId = targetEditFile.replace(/[^a-zA-Z0-9]/g, '');
-                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "📝", `edit-${cleanId}`);
-                
+                const winId = `edit-${cleanId}`;
+                const appBodyElement = createWindow(`Text Editor - ${targetEditFile}`, "📝", winId);
+
                 if (appBodyElement) {
                     const editorInstance = new module.TextEditor(
                         targetEditFile,
@@ -298,23 +466,83 @@ async function launchApplication(appId, customFileName = null) {
                             if (savedName) {
                                 const saveContext = getActiveFolderContext();
                                 saveContext[savedName] = { type: "file", content: savedData };
-                                
+
                                 // Call your localStorage persistent write system
-                                saveFileSystem(); 
-                                
+                                saveFileSystem();
+
                                 // Repaint open Explorer grids immediately to list the fresh document row
                                 const activeExp = document.querySelector('.explorer-grid');
                                 if (activeExp) renderZebExplorer(activeExp.parentElement);
                             }
-                        }
+                        },
+                        () => closeWindow(winId)
                     );
+                    registerWindowCleanup(winId, () => {
+                        window.removeEventListener('keydown', editorInstance.keyHandler);
+                        document.removeEventListener('click', editorInstance.documentClickHandler);
+                    });
                     editorInstance.open(appBodyElement);
                 }
             } catch (err) {
-                console.error("Kernel Error: Failed to mount editor.js", err);
+                logKernel(`Kernel Error: Failed to mount editor.js (${err.message})`, "ERROR");
             }
             break;
 
+        case 'start-link-calc': {
+            const winId = 'app-calc';
+            try {
+                const module = await import('./programs/calc.js');
+                const calcBody = createWindow("Calculator", "🧮", winId);
+                if (calcBody) {
+                    const calcInstance = new module.RetroCalculator(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => calcInstance.cleanup());
+                    calcInstance.open(calcBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount calc.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-snake': {
+            const winId = 'app-snake';
+            try {
+                const module = await import('./programs/snake.js');
+                const snakeBody = createWindow("Snake", "🐍", winId);
+                if (snakeBody) {
+                    const snakeInstance = new module.SnakeGame(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => snakeInstance.cleanup());
+                    snakeInstance.open(snakeBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount snake.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-courgette': {
+            const winId = 'app-courgette';
+            try {
+                const module = await import('./courgette/courgette.js');
+                const cgBody = createWindow("Courgette Info", "🥒", winId);
+                if (cgBody) {
+                    const counts = countFilesystemEntries(systemState.fileSystem);
+                    const diskBytes = new Blob([JSON.stringify(systemState.fileSystem)]).size;
+                    const cgInstance = new module.CourgetteInfo(() => closeWindow(winId), {
+                        version: systemState.version,
+                        uptimeSeconds: systemState.uptime,
+                        fileCount: counts.files,
+                        dirCount: counts.dirs,
+                        diskBytes
+                    });
+                    registerWindowCleanup(winId, () => cgInstance.cleanup());
+                    cgInstance.open(cgBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount courgette.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
 
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
@@ -322,11 +550,8 @@ async function launchApplication(appId, customFileName = null) {
 
         default:
             const fallbackTitles = {
-                'start-link-prompt': { name: "Zeb Terminal", icon: "🐚" },
                 'start-link-paint': { name: "Paint", icon: "🎨" },
                 'start-link-mines': { name: "Minesweeper", icon: "💣" },
-                'start-link-snake': { name: "Snake", icon: "🐍" },
-                'start-link-calc': { name: "Calc", icon: "🧮" },
                 'start-link-media': { name: "Media Player", icon: "🎬" },
                 'start-link-vm': { name: "ZebVM Manager", icon: "🎛️" }
             };
@@ -384,9 +609,9 @@ function renderZebExplorer(containerElement) {
             itemEl.addEventListener('dblclick', () => {
                 if (item.type === "dir") {
                     systemState.currentDirectory = name;
-                    renderZebExplorer(containerElement); 
+                    renderZebExplorer(containerElement);
                 } else {
-                    launchApplication('start-link-text-editor');
+                    launchApplication('start-link-text-editor', name);
                 }
             });
             grid.appendChild(itemEl);
@@ -409,6 +634,91 @@ function renderZebExplorer(containerElement) {
     });
 
     refreshExplorerGrid();
+}
+
+// ==========================================================================
+// TERMINAL SHELL API
+// The one-level directory model here mirrors Zeb Explorer's own limits
+// (a single "Up to Root" hop, no deep nesting) — the terminal just gives
+// the same virtual filesystem a command-line face.
+// ==========================================================================
+function refreshOpenExplorer() {
+    const activeExp = document.querySelector('.explorer-grid');
+    if (activeExp) renderZebExplorer(activeExp.parentElement);
+}
+
+function shellChangeDirectory(target) {
+    if (target === '/' || target === '~' || target === '..') {
+        if (target === '..' && systemState.currentDirectory === "") {
+            return { ok: false, message: "Already at root." };
+        }
+        systemState.currentDirectory = "";
+        return { ok: true };
+    }
+    const context = getActiveFolderContext();
+    const entry = context[target];
+    if (!entry) return { ok: false, message: `cd: ${target}: No such directory` };
+    if (entry.type !== 'dir') return { ok: false, message: `cd: ${target}: Not a directory` };
+    if (systemState.currentDirectory !== "") return { ok: false, message: "cd: nesting more than one level deep isn't supported yet" };
+    systemState.currentDirectory = target;
+    return { ok: true };
+}
+
+function shellMkdir(name) {
+    const context = getActiveFolderContext();
+    if (context[name]) return { message: `mkdir: ${name}: already exists` };
+    context[name] = { type: "dir", content: {} };
+    saveFileSystem();
+    refreshOpenExplorer();
+    return { message: `Created directory: ${name}` };
+}
+
+function shellTouch(name) {
+    const context = getActiveFolderContext();
+    if (context[name]) return { message: `touch: ${name}: already exists` };
+    context[name] = { type: "file", content: "" };
+    saveFileSystem();
+    refreshOpenExplorer();
+    return { message: `Created file: ${name}` };
+}
+
+function shellRemove(name) {
+    const context = getActiveFolderContext();
+    if (!context[name]) return { message: `rm: ${name}: No such file or directory` };
+    delete context[name];
+    saveFileSystem();
+    refreshOpenExplorer();
+    return { message: `Removed: ${name}` };
+}
+
+// ==========================================================================
+// DESKTOP SHORTCUT ICONS
+// ==========================================================================
+const DESKTOP_SHORTCUTS = [
+    { id: 'start-link-files', icon: '📁', label: 'Zeb Explorer' },
+    { id: 'start-link-text-editor', icon: '📝', label: 'Text Editor' },
+    { id: 'start-link-prompt', icon: '🐚', label: 'Zeb Terminal' },
+    { id: 'start-link-calc', icon: '🧮', label: 'Calculator' },
+    { id: 'start-link-snake', icon: '🐍', label: 'Snake' },
+    { id: 'start-link-courgette', icon: '🥒', label: 'Courgette Info' }
+];
+
+function renderDesktopIcons() {
+    const zone = document.getElementById('desktop-icons-zone');
+    if (!zone) return;
+
+    DESKTOP_SHORTCUTS.forEach(shortcut => {
+        const iconEl = document.createElement('div');
+        iconEl.className = 'desktop-icon';
+        iconEl.innerHTML = `
+            <div class="desktop-icon-glyph">${shortcut.icon}</div>
+            <div class="desktop-icon-label">${shortcut.label}</div>
+        `;
+        iconEl.addEventListener('dblclick', () => launchApplication(shortcut.id));
+        zone.appendChild(iconEl);
+    });
+
+    logKernel(`Desktop: Rendered ${DESKTOP_SHORTCUTS.length} application shortcuts.`);
 }
 
 // ==========================================================================
@@ -440,9 +750,13 @@ function setupStartMenuController() {
 // ==========================================================================
 // KERNEL INITIALIZATION LAUNCHPOINT
 // ==========================================================================
-loadFileSystem(); 
+loadFileSystem();
 initializeBootSequence();
 startSystemClock();
 setupStartMenuController();
+renderDesktopIcons();
+
+const buildHashTag = document.getElementById('build-git-hash');
+if (buildHashTag) buildHashTag.textContent = `git-${BUILD_GIT_HASH}`;
 
 setInterval(() => { systemState.uptime++; }, 1000);

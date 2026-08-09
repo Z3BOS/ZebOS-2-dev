@@ -10,10 +10,16 @@
 
     <!-- LAYER 3: Fullscreen Responsive Image Boot Screen Overlay -->
     <div id="boot-screen">
+        <!-- Kernel log lines print here first, before the splash art is revealed -->
+        <div id="boot-log-console"></div>
+        <img id="boot-splash-img" src="assets/system/splashboot.png" alt="">
         <div id="boot-progress-track">
             <div id="boot-progress-bar"></div>
         </div>
+        <div id="boot-dev-hint">Press Ctrl+Alt to enter Developer Mode</div>
     </div>
+
+    <!-- Sign-in screen is built entirely by logon/logon.js and mounted after boot -->
 
     <!-- LAYER 1: Fullscreen Desktop Wallpaper Grid Canvas -->
     <div id="desktop-canvas">
@@ -51,10 +57,13 @@
                 <div class="start-menu-item" id="start-link-media"> 
                     <span class="menu-icon">🎬</span> Media Player 
                 </div> 
-                <div class="start-menu-item" id="start-link-vm"> 
-                    <span class="menu-icon">🎛️</span> ZebVM Manager 
-                </div> 
-                <hr class="start-menu-divider"> 
+                <div class="start-menu-item" id="start-link-vm">
+                    <span class="menu-icon">🎛️</span> ZebVM Manager
+                </div>
+                <div class="start-menu-item" id="start-link-courgette">
+                    <span class="menu-icon">🥒</span> Courgette Info
+                </div>
+                <hr class="start-menu-divider">
                 <div class="start-menu-item" id="start-link-shutdown"> 
                     <span class="menu-icon">⭕</span> Shut Down... 
                 </div> 
@@ -70,7 +79,8 @@
         <!-- Pinned Monochrome Desktop System Build Information Tag -->
         <div id="desktop-build-tag">
             <div>ZebOS v1.8.0 (Alpha)</div>
-            <div>Build 1.8.0 (filesystem)k</div>
+            <div>Build 1.8.0 (filesystem)</div>
+            <div id="build-git-hash">git-...</div>
         </div>
 
     </div>
@@ -84,6 +94,7 @@
         <div id="taskbar-tabs-zone"></div>
 
         <div id="system-tray">
+            <span id="current-user-tag">👤 guest</span>
             <span id="live-clock">12:00 PM</span>
         </div>
     </div>

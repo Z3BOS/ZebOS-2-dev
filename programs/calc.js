@@ -1,12 +1,12 @@
 // programs/calc.js
 export class RetroCalculator {
-    constructor(onExitCallback) {
-        this.onExit = onExitCallback;
-        this.shellLog = document.getElementById('shell-log');
-        this.inputRow = document.querySelector('.input-row');
-        this.calcScreen = document.getElementById('calc-screen');
-        this.displayBox = document.getElementById('calc-display-box');
-        
+    constructor(onCloseRequest) {
+        this.onCloseRequest = onCloseRequest;
+
+        this.bodyElement = null;
+        this.displayEl = null;
+        this.gridEl = null;
+
         this.currentValue = "0";
         this.storedValue = null;
         this.activeOperator = null;
@@ -16,22 +16,54 @@ export class RetroCalculator {
         this.clickHandler = (e) => this.handleButtonClick(e);
     }
 
-    open() {
-        this.shellLog.classList.add('hidden-view');
-        this.inputRow.classList.add('hidden-view');
-        this.calcScreen.classList.remove('hidden-view');
+    open(windowBodyElement) {
+        this.bodyElement = windowBodyElement;
+        this.bodyElement.style.height = "100%";
+
+        this.bodyElement.innerHTML = `
+            <div style="display:flex; flex-direction:column; height:100%; box-sizing:border-box; padding:8px; gap:8px; background:#c0c0c0; font-family:'Courier New', monospace;">
+                <div class="calc-display" style="background:#9fbf8f; color:#0b1a08; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:10px; text-align:right; font-size:2em; font-weight:bold; letter-spacing:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">0</div>
+                <button class="calc-btn" data-value="C" style="font-size:1em; font-weight:bold; cursor:pointer; padding:6px; background-color:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; color:#000000;">C</button>
+                <div class="calc-grid" style="flex-grow:1; display:grid; grid-template-columns:repeat(4, 1fr); grid-template-rows:repeat(4, 1fr); gap:6px;"></div>
+            </div>
+        `;
+
+        this.displayEl = this.bodyElement.querySelector('.calc-display');
+        this.gridEl = this.bodyElement.querySelector('.calc-grid');
+
+        const layout = [
+            ['7', '8', '9', '/'],
+            ['4', '5', '6', '*'],
+            ['1', '2', '3', '-'],
+            ['0', '.', '=', '+']
+        ];
+
+        layout.flat().forEach(label => {
+            const btn = document.createElement('button');
+            btn.className = 'calc-btn';
+            btn.textContent = label;
+            btn.dataset.value = label;
+            btn.style.cssText = `
+                font-size:1.1em; font-weight:bold; cursor:pointer;
+                background-color:#c0c0c0; border:2px solid #ffffff;
+                border-right-color:#000000; border-bottom-color:#000000;
+                color:#000000;
+            `;
+            this.gridEl.appendChild(btn);
+        });
+
         this.clearAll();
         window.addEventListener('keydown', this.keyHandler);
-        this.calcScreen.addEventListener('click', this.clickHandler);
+        this.bodyElement.addEventListener('click', this.clickHandler);
     }
 
     handleButtonClick(e) {
         if (!e.target.classList.contains('calc-btn')) return;
-        this.processInput(e.target.textContent);
+        this.processInput(e.target.dataset.value);
     }
 
     handleKeyDown(e) {
-        if (e.key === 'Escape') { e.preventDefault(); this.close(); return; }
+        if (e.key === 'Escape') { e.preventDefault(); this.onCloseRequest(); return; }
         const validKeys = "0123456789.+-*/=";
         if (validKeys.includes(e.key)) this.processInput(e.key);
         else if (e.key === 'Enter') this.processInput('=');
@@ -81,15 +113,11 @@ export class RetroCalculator {
     }
 
     updateDisplay() {
-        this.displayBox.textContent = this.currentValue.length > 14 ? this.currentValue.substring(0, 14) : this.currentValue;
+        this.displayEl.textContent = this.currentValue.length > 14 ? this.currentValue.substring(0, 14) : this.currentValue;
     }
 
-    close() {
+    cleanup() {
         window.removeEventListener('keydown', this.keyHandler);
-        this.calcScreen.removeEventListener('click', this.clickHandler);
-        this.calcScreen.classList.add('hidden-view');
-        this.shellLog.classList.remove('hidden-view');
-        this.inputRow.classList.remove('hidden-view');
-        this.onExit();
+        if (this.bodyElement) this.bodyElement.removeEventListener('click', this.clickHandler);
     }
 }

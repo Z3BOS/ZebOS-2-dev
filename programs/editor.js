@@ -1,9 +1,10 @@
 // programs/editor.js
 export class TextEditor {
-    constructor(fileName, fileContent, onExitCallback) {
+    constructor(fileName, fileContent, onExitCallback, onCloseRequest) {
         this.fileName = fileName;
         this.content = fileContent;
         this.onExit = onExitCallback;
+        this.onCloseRequest = onCloseRequest;
         
         this.bodyElement = null;
         this.textarea = null;
@@ -46,7 +47,7 @@ export class TextEditor {
                 </div>
 
                 <!-- Standalone Text Area Content Block (Fills full frame fluidly) -->
-                <textarea class="app-editor-textarea" spellcheck="false" style="flex-grow: 1; width: 100%; border: none; outline: none; padding: 12px; font-family: monospace; font-size: 15px; resize: none; box-sizing: border-box; background-color: #ffffff; color: #000000; display: block; margin: 0;"></textarea>
+                <textarea class="app-editor-textarea" spellcheck="false" style="flex-grow: 1; width: 100%; border: none; outline: none; padding: 12px; font-family: monospace; font-size: 1.05em; resize: none; box-sizing: border-box; background-color: #ffffff; color: #000000; display: block; margin: 0;"></textarea>
                 
                 <!-- Full-Width Bottom Hotkey Shortcut Assist Strip -->
                 <div class="app-editor-footer" style="background-color: #c0c0c0; color: #000000; padding: 4px 10px; font-size: 13px; font-weight: bold; border-top: 2px solid #ffffff; flex-shrink: 0; box-sizing: border-box; height: 28px; display: flex; align-items: center;">
@@ -135,12 +136,7 @@ export class TextEditor {
 
     close() {
         this.content = this.textarea.value;
-        window.removeEventListener('keydown', this.keyHandler);
-        document.removeEventListener('click', this.documentClickHandler);
-        
-        const windowFrame = this.bodyElement.closest('.window-frame');
-        if (windowFrame) windowFrame.remove();
-        
         this.onExit(this.fileName, this.content);
+        this.onCloseRequest();
     }
 }

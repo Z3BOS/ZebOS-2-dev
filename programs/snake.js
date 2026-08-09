@@ -1,15 +1,13 @@
 // programs/snake.js
 export class SnakeGame {
-    constructor(onExitCallback) {
-        this.onExit = onExitCallback;
-        
-        this.shellLog = document.getElementById('shell-log');
-        this.inputRow = document.querySelector('.input-row');
-        this.snakeScreen = document.getElementById('snake-screen');
-        this.canvas = document.getElementById('snake-canvas');
-        this.ctx = this.canvas.getContext('2d');
-        this.scoreSpan = document.getElementById('snake-score');
-        
+    constructor(onCloseRequest) {
+        this.onCloseRequest = onCloseRequest;
+
+        this.bodyElement = null;
+        this.canvas = null;
+        this.ctx = null;
+        this.scoreEl = null;
+
         this.gridSize = 20;
         this.snake = [];
         this.food = { x: 0, y: 0 };
@@ -17,15 +15,30 @@ export class SnakeGame {
         this.dy = 0;
         this.score = 0;
         this.gameInterval = null;
-        
+
         this.keyHandler = (e) => this.handleKeyDown(e);
     }
 
-    open() {
-        this.shellLog.classList.add('hidden-view');
-        this.inputRow.classList.add('hidden-view');
-        this.snakeScreen.classList.remove('hidden-view');
-        
+    open(windowBodyElement) {
+        this.bodyElement = windowBodyElement;
+        this.bodyElement.style.height = "100%";
+
+        this.bodyElement.innerHTML = `
+            <div style="display:flex; flex-direction:column; height:100%; background:#000500; box-sizing:border-box;">
+                <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                    <canvas class="snake-canvas" width="400" height="400" style="width:400px; height:400px; max-width:100%; max-height:100%; image-rendering:pixelated; background:#000500;"></canvas>
+                </div>
+                <div style="background:#c0c0c0; color:#000000; padding:4px 10px; font-size:12px; font-weight:bold; border-top:2px solid #ffffff; flex-shrink:0; box-sizing:border-box; height:26px; display:flex; align-items:center; justify-content:space-between;">
+                    <span>Arrow Keys: Move | Esc: Exit</span>
+                    <span>Score: <span class="snake-score">0</span></span>
+                </div>
+            </div>
+        `;
+
+        this.canvas = this.bodyElement.querySelector('.snake-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.scoreEl = this.bodyElement.querySelector('.snake-score');
+
         window.addEventListener('keydown', this.keyHandler);
         this.resetGame();
         this.gameInterval = setInterval(() => this.tick(), 100);
@@ -40,7 +53,7 @@ export class SnakeGame {
         this.dx = this.gridSize;
         this.dy = 0;
         this.score = 0;
-        this.scoreSpan.textContent = this.score;
+        this.scoreEl.textContent = this.score;
         this.spawnFood();
     }
 
@@ -50,7 +63,7 @@ export class SnakeGame {
     }
 
     handleKeyDown(e) {
-        if (e.key === 'Escape') { e.preventDefault(); this.close(); return; }
+        if (e.key === 'Escape') { e.preventDefault(); this.onCloseRequest(); return; }
         if (e.key === 'ArrowUp' && this.dy === 0) { this.dx = 0; this.dy = -this.gridSize; }
         if (e.key === 'ArrowDown' && this.dy === 0) { this.dx = 0; this.dy = this.gridSize; }
         if (e.key === 'ArrowLeft' && this.dx === 0) { this.dx = -this.gridSize; this.dy = 0; }
@@ -63,15 +76,14 @@ export class SnakeGame {
         let nextX = this.snake[0].x + this.dx;
         let nextY = this.snake[0].y + this.dy;
 
-        // SP1 WRAP-AROUND PHYSICS: Loop coordinates smoothly to the opposite boundary edge
+        // Wrap-around physics: loop coordinates smoothly to the opposite boundary edge
         if (nextX < 0) nextX = this.canvas.width - this.gridSize;
         if (nextX >= this.canvas.width) nextX = 0;
         if (nextY < 0) nextY = this.canvas.height - this.gridSize;
         if (nextY >= this.canvas.height) nextY = 0;
 
         const head = { x: nextX, y: nextY };
-        
-        // Self-collision checks remain active to maintain game challenge
+
         if (this.checkSelfCollision(head)) {
             alert(`GAME OVER! Final Score achieved: ${this.score}`);
             this.resetGame();
@@ -82,7 +94,7 @@ export class SnakeGame {
 
         if (head.x === this.food.x && head.y === this.food.y) {
             this.score += 10;
-            this.scoreSpan.textContent = this.score;
+            this.scoreEl.textContent = this.score;
             this.spawnFood();
         } else {
             this.snake.pop();
@@ -113,12 +125,8 @@ export class SnakeGame {
         });
     }
 
-    close() {
+    cleanup() {
         clearInterval(this.gameInterval);
         window.removeEventListener('keydown', this.keyHandler);
-        this.snakeScreen.classList.add('hidden-view');
-        this.shellLog.classList.remove('hidden-view');
-        this.inputRow.classList.remove('hidden-view');
-        this.onExit();
     }
 }
