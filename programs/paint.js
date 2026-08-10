@@ -13,6 +13,7 @@ export class PaintApp {
 
         this.width = 640;
         this.height = 420;
+        this.activeFileName = "artwork.png";
 
         // Multi-Layer System
         this.layers = [];
@@ -21,16 +22,17 @@ export class PaintApp {
 
         // Tool Settings
         this.currentTool = 'brush'; // 'brush', 'eraser', 'fill', 'line', 'rect', 'frect', 'circle', 'fcircle'
-        this.currentBrushType = 'soft'; // 'round', 'soft', 'airbrush', 'calligraphy', 'crayon', 'marker', 'eraser'
+        this.currentBrushType = 'round'; // 'round', 'soft', 'airbrush', 'calligraphy', 'crayon', 'marker', 'eraser'
         this.currentColor = '#000000';
         this.currentSize = 6;
         this.currentOpacity = 100; // 1-100
-        this.currentHardness = 60; // 0-100
-        this.currentSmoothness = 60; // 0-100 (Quadratic Bezier Interpolation)
+        this.currentHardness = 80; // 0-100
+        this.currentSmoothness = 30; // 0-100
 
         // Drawing state
         this.isDrawing = false;
-        this.points = [];
+        this.lastX = 0;
+        this.lastY = 0;
         this.startX = 0;
         this.startY = 0;
         this.snapshotData = null;
@@ -50,43 +52,143 @@ export class PaintApp {
         this.bodyElement.style.height = "100%";
 
         this.bodyElement.innerHTML = `
+            <style>
+                .w95-slider {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    background: transparent;
+                    height: 16px;
+                    margin: 0;
+                    cursor: pointer;
+                    vertical-align: middle;
+                }
+                .w95-slider::-webkit-slider-runnable-track {
+                    height: 4px;
+                    background: #808080;
+                    border-top: 1px solid #404040;
+                    border-left: 1px solid #404040;
+                    border-right: 1px solid #ffffff;
+                    border-bottom: 1px solid #ffffff;
+                    box-sizing: border-box;
+                }
+                .w95-slider::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 10px;
+                    height: 16px;
+                    background: #c0c0c0;
+                    border: 2px solid #ffffff;
+                    border-right-color: #000000;
+                    border-bottom-color: #000000;
+                    margin-top: -6px;
+                    box-sizing: border-box;
+                }
+                .w95-slider:focus {
+                    outline: none;
+                }
+                .w95-sunken-val {
+                    background: #ffffff;
+                    border: 2px solid #808080;
+                    border-right-color: #ffffff;
+                    border-bottom-color: #ffffff;
+                    padding: 1px 4px;
+                    font-size: 10px;
+                    font-weight: bold;
+                    color: #000080;
+                    min-width: 32px;
+                    text-align: center;
+                    display: inline-block;
+                    box-sizing: border-box;
+                }
+                .paint-menu-drop-opt {
+                    padding: 4px 14px;
+                    cursor: pointer;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 11px;
+                }
+                .paint-menu-drop-opt:hover {
+                    background-color: #000080;
+                    color: #ffffff;
+                }
+            </style>
             <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; box-sizing:border-box; user-select:none; font-family:Arial, sans-serif; overflow:hidden;">
                 
-                <!-- 1. Menu / Header Bar -->
-                <div style="background:#c0c0c0; padding:4px 8px; border-bottom:2px solid #808080; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; position:relative; z-index:100;">
-                    <div style="display:flex; gap:6px; align-items:center;">
-                        <button class="paint-btn opt-new" style="padding:2px 8px; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-size:11px; display:flex; align-items:center; gap:4px;">${getIcon('clear')} New</button>
-                        <button class="paint-btn opt-save" style="padding:2px 8px; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-size:11px; display:flex; align-items:center; gap:4px;">${getIcon('save')} Save</button>
-                        <div style="border-left:1px solid #808080; border-right:1px solid #fff; width:0; height:18px; margin:0 2px;"></div>
-                        <button class="paint-btn opt-undo" style="padding:2px 6px; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-size:11px;">Undo</button>
-                        <button class="paint-btn opt-redo" style="padding:2px 6px; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-size:11px;">Redo</button>
+                <!-- 1. Win95 Standard Menubar (File, Edit, Layer, Help) -->
+                <div class="paint-menubar" style="display:flex; gap:2px; padding:2px 4px; background:#c0c0c0; border-bottom:1px solid #808080; font-size:12px; position:relative; z-index:100; flex-shrink:0;">
+                    
+                    <!-- File Menu -->
+                    <div class="menu-item-wrap" style="position:relative;">
+                        <span class="paint-menu-btn" data-menu="file" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>F</u>ile</span>
+                        <div class="paint-dropdown" id="menu-file-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:180px; padding:2px 0;">
+                            <div class="paint-menu-drop-opt opt-new"><span>New</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+N</span></div>
+                            <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
+                            <div class="paint-menu-drop-opt opt-save"><span>Save to ZebOS</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+S</span></div>
+                            <div class="paint-menu-drop-opt opt-saveas"><span>Save As to ZebOS...</span><span style="font-size:10px; color:#666; margin-left:16px;">F3</span></div>
+                            <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
+                            <div class="paint-menu-drop-opt opt-savepc" style="font-weight:bold; color:#000080;"><span>Save to PC (Export)...</span><span style="font-size:10px; color:#666; margin-left:12px;">Device</span></div>
+                            <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
+                            <div class="paint-menu-drop-opt opt-exit"><span>Exit</span><span style="font-size:10px; color:#666; margin-left:16px;">Esc</span></div>
+                        </div>
                     </div>
-                    <div style="font-size:12px; font-weight:bold; color:#000080; display:flex; align-items:center; gap:6px;">
-                        <span>ZebPaint Studio Pro</span>
-                        <span style="font-size:10px; font-weight:normal; color:#555; background:#e0e0e0; padding:1px 5px; border:1px solid #a0a0a0; border-radius:3px;">v2.5</span>
+
+                    <!-- Edit Menu -->
+                    <div class="menu-item-wrap" style="position:relative;">
+                        <span class="paint-menu-btn" data-menu="edit" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>E</u>dit</span>
+                        <div class="paint-dropdown" id="menu-edit-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                            <div class="paint-menu-drop-opt opt-undo"><span>Undo</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+Z</span></div>
+                            <div class="paint-menu-drop-opt opt-redo"><span>Redo</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+Y</span></div>
+                            <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
+                            <div class="paint-menu-drop-opt opt-clear"><span>Clear Active Layer</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Layer Menu -->
+                    <div class="menu-item-wrap" style="position:relative;">
+                        <span class="paint-menu-btn" data-menu="layer" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>L</u>ayer</span>
+                        <div class="paint-dropdown" id="menu-layer-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                            <div class="paint-menu-drop-opt opt-add-layer"><span>+ New Layer</span></div>
+                            <div class="paint-menu-drop-opt opt-del-layer"><span>- Delete Active Layer</span></div>
+                            <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
+                            <div class="paint-menu-drop-opt opt-merge-layer"><span>Merge Layer Down</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Help Menu -->
+                    <div class="menu-item-wrap" style="position:relative;">
+                        <span class="paint-menu-btn" data-menu="help" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>H</u>elp</span>
+                        <div class="paint-dropdown" id="menu-help-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                            <div class="paint-menu-drop-opt opt-about"><span>About ZebPaint Studio</span></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-left:auto; display:flex; align-items:center; gap:6px; font-size:11px; color:#555; padding-right:6px;">
+                        <span style="font-weight:bold; color:#000080;">ZebPaint Studio Pro</span>
+                        <span style="font-size:10px; background:#e0e0e0; padding:1px 4px; border:1px solid #a0a0a0;">v2.6</span>
                     </div>
                 </div>
 
-                <!-- 2. Secondary Property Toolbar (Brush Type, Size, Smoothness, Hardness, Opacity) -->
-                <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:4px 8px; display:flex; align-items:center; gap:12px; font-size:11px; flex-shrink:0; flex-wrap:wrap; position:relative; z-index:90;">
+                <!-- 2. Retro Property Toolbar (Brush Type, Size, Smoothness, Hardness, Opacity) -->
+                <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:5px 8px; display:flex; align-items:center; gap:12px; font-size:11px; flex-shrink:0; position:relative; z-index:90; overflow-x:auto;">
                     
                     <!-- Brush Selector Custom Win95 Dropdown -->
-                    <div style="display:flex; align-items:center; gap:4px; position:relative;">
+                    <div style="display:flex; align-items:center; gap:4px; position:relative; flex-shrink:0;">
                         <span style="font-weight:bold;">Brush:</span>
-                        <div class="w95-dropdown" id="paint-brush-dropdown" data-value="soft" style="position:relative; width:140px;">
+                        <div class="w95-dropdown" id="paint-brush-dropdown" data-value="round" style="position:relative; width:140px;">
                             <div class="w95-drop-display" style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:2px 6px; cursor:pointer; font-size:11px; height:22px; box-sizing:border-box;">
                                 <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
                                     <canvas class="brush-preview-thumb-head" width="24" height="14" style="background:#eee; border:1px solid #a0a0a0; flex-shrink:0;"></canvas>
-                                    <span class="w95-drop-label" style="flex-grow:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Soft Brush</span>
+                                    <span class="w95-drop-label" style="flex-grow:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Round Pen</span>
                                 </div>
                                 <span style="font-size:8px; line-height:1; flex-shrink:0; margin-left:4px;">▼</span>
                             </div>
                             <div class="w95-drop-list" style="display:none; position:absolute; top:100%; left:0; width:160px; background:#c0c0c0; border:1px solid #000; box-shadow:3px 3px 6px rgba(0,0,0,0.5); z-index:99999; box-sizing:border-box; margin-top:1px;">
                                 ${[
-                                    { value: 'round', label: 'Round Pen', desc: 'Crisp solid stroke' },
+                                    { value: 'round', label: 'Round Pen', desc: 'Solid continuous pen' },
                                     { value: 'soft', label: 'Soft Brush', desc: 'Feathered soft gradient' },
-                                    { value: 'airbrush', label: 'Airbrush Spray', desc: 'Particle scatter spray' },
-                                    { value: 'calligraphy', label: 'Calligraphy', desc: 'Angled 45° chisel stroke' },
+                                    { value: 'airbrush', label: 'Airbrush Spray', desc: 'Particle spray effect' },
+                                    { value: 'calligraphy', label: 'Calligraphy', desc: 'Chisel tip 45° angle' },
                                     { value: 'crayon', label: 'Crayon / Chalk', desc: 'Textured grainy stroke' },
                                     { value: 'marker', label: 'Highlighter', desc: 'Translucent marker' },
                                     { value: 'eraser', label: 'Eraser Tool', desc: 'Erases active layer' }
@@ -103,32 +205,32 @@ export class PaintApp {
                         </div>
                     </div>
 
-                    <!-- Size Control Slider + Value -->
-                    <div style="display:flex; align-items:center; gap:4px;">
+                    <!-- Size Control Slider -->
+                    <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;">
                         <span style="font-weight:bold;">Size:</span>
-                        <input type="range" id="paint-size-range" min="1" max="50" value="6" style="width:70px; cursor:pointer;">
-                        <span id="paint-size-val" style="width:24px; font-weight:bold; color:#000080;">6px</span>
+                        <input type="range" class="w95-slider" id="paint-size-range" min="1" max="50" value="6" style="width:75px;">
+                        <span id="paint-size-val" class="w95-sunken-val">6px</span>
                     </div>
 
                     <!-- Smoothness Slider -->
-                    <div style="display:flex; align-items:center; gap:4px;" title="Bezier curve interpolation smoothness">
+                    <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;" title="Stroke smoothing">
                         <span style="font-weight:bold;">Smooth:</span>
-                        <input type="range" id="paint-smooth-range" min="0" max="100" value="60" style="width:65px; cursor:pointer;">
-                        <span id="paint-smooth-val" style="width:28px;">60%</span>
+                        <input type="range" class="w95-slider" id="paint-smooth-range" min="0" max="100" value="30" style="width:70px;">
+                        <span id="paint-smooth-val" class="w95-sunken-val">30%</span>
                     </div>
 
                     <!-- Hardness Slider -->
-                    <div style="display:flex; align-items:center; gap:4px;" title="Edge softness (0% = soft blur, 100% = hard edge)">
+                    <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;" title="Edge softness (0% = soft, 100% = sharp)">
                         <span style="font-weight:bold;">Hardness:</span>
-                        <input type="range" id="paint-hard-range" min="0" max="100" value="60" style="width:65px; cursor:pointer;">
-                        <span id="paint-hard-val" style="width:28px;">60%</span>
+                        <input type="range" class="w95-slider" id="paint-hard-range" min="0" max="100" value="80" style="width:70px;">
+                        <span id="paint-hard-val" class="w95-sunken-val">80%</span>
                     </div>
 
                     <!-- Opacity Slider -->
-                    <div style="display:flex; align-items:center; gap:4px;" title="Stroke transparency for color shading & blending">
+                    <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;" title="Stroke opacity">
                         <span style="font-weight:bold;">Opacity:</span>
-                        <input type="range" id="paint-opacity-range" min="1" max="100" value="100" style="width:65px; cursor:pointer;">
-                        <span id="paint-opacity-val" style="width:30px;">100%</span>
+                        <input type="range" class="w95-slider" id="paint-opacity-range" min="1" max="100" value="100" style="width:70px;">
+                        <span id="paint-opacity-val" class="w95-sunken-val">100%</span>
                     </div>
                 </div>
 
@@ -170,14 +272,14 @@ export class PaintApp {
                         <div style="border-top:1px solid #808080; padding-top:6px; display:flex; flex-direction:column; gap:6px; font-size:11px;">
                             <div style="display:flex; align-items:center; justify-content:space-between;">
                                 <span>Layer Opacity:</span>
-                                <span id="layer-opacity-val" style="font-weight:bold;">100%</span>
+                                <span id="layer-opacity-val" class="w95-sunken-val" style="min-width:38px;">100%</span>
                             </div>
-                            <input type="range" id="layer-opacity-range" min="0" max="100" value="100" style="width:100%; cursor:pointer;">
+                            <input type="range" class="w95-slider" id="layer-opacity-range" min="0" max="100" value="100" style="width:100%;">
                             
                             <div style="display:flex; gap:4px; margin-top:2px;">
-                                <button id="layer-btn-up" title="Move Layer Up" style="flex:1; padding:2px 0; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">▲ Up</button>
-                                <button id="layer-btn-down" title="Move Layer Down" style="flex:1; padding:2px 0; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">▼ Down</button>
-                                <button id="layer-btn-merge" title="Merge Down" style="flex:1; padding:2px 0; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Merge</button>
+                                <button id="layer-btn-up" title="Move Layer Up" style="flex:1; padding:2px 0; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-size:10px; font-weight:bold;">▲ Up</button>
+                                <button id="layer-btn-down" title="Move Layer Down" style="flex:1; padding:2px 0; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-size:10px; font-weight:bold;">▼ Down</button>
+                                <button id="layer-btn-merge" title="Merge Down" style="flex:1; padding:2px 0; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-size:10px; font-weight:bold;">Merge</button>
                             </div>
                         </div>
                     </div>
@@ -214,6 +316,7 @@ export class PaintApp {
         this.addLayer("Background Layer");
 
         // Initialize UI controls & event listeners
+        this.initMenubar();
         this.initControls();
         this.initBrushThumbnails();
 
@@ -222,6 +325,161 @@ export class PaintApp {
         window.addEventListener('mousemove', this.boundMouseMove);
         window.addEventListener('mouseup', this.boundMouseUp);
         window.addEventListener('keydown', this.boundKeyDown);
+    }
+
+    initMenubar() {
+        const menuBtns = this.bodyElement.querySelectorAll('.paint-menu-btn');
+        const dropdowns = this.bodyElement.querySelectorAll('.paint-dropdown');
+
+        const closeAllMenus = () => {
+            dropdowns.forEach(d => d.style.display = 'none');
+            menuBtns.forEach(b => { b.style.background = 'transparent'; b.style.color = '#000'; });
+        };
+
+        menuBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const menuType = btn.dataset.menu;
+                const targetDrop = this.bodyElement.querySelector(`#menu-${menuType}-drop`);
+                const isOpen = targetDrop.style.display === 'block';
+
+                closeAllMenus();
+
+                if (!isOpen) {
+                    targetDrop.style.display = 'block';
+                    btn.style.background = '#000080';
+                    btn.style.color = '#ffffff';
+                }
+            });
+
+            btn.addEventListener('mouseenter', () => {
+                const anyOpen = Array.from(dropdowns).some(d => d.style.display === 'block');
+                if (anyOpen) {
+                    const menuType = btn.dataset.menu;
+                    const targetDrop = this.bodyElement.querySelector(`#menu-${menuType}-drop`);
+                    closeAllMenus();
+                    targetDrop.style.display = 'block';
+                    btn.style.background = '#000080';
+                    btn.style.color = '#ffffff';
+                }
+            });
+        });
+
+        document.addEventListener('click', () => closeAllMenus());
+
+        // File Menu Handlers
+        this.bodyElement.querySelector('.opt-new').addEventListener('click', () => {
+            closeAllMenus();
+            this.createNewCanvas();
+        });
+
+        this.bodyElement.querySelector('.opt-save').addEventListener('click', () => {
+            closeAllMenus();
+            this.saveToZebOS(this.activeFileName);
+        });
+
+        this.bodyElement.querySelector('.opt-saveas').addEventListener('click', () => {
+            closeAllMenus();
+            showOsPrompt("Save As to ZebOS", "Enter filename to save artwork to ZebOS storage:", this.activeFileName, (filename) => {
+                if (filename) {
+                    this.activeFileName = filename;
+                    this.saveToZebOS(filename);
+                }
+            });
+        });
+
+        this.bodyElement.querySelector('.opt-savepc').addEventListener('click', () => {
+            closeAllMenus();
+            this.exportToPC();
+        });
+
+        this.bodyElement.querySelector('.opt-exit').addEventListener('click', () => {
+            closeAllMenus();
+            this.onCloseRequest();
+        });
+
+        // Edit Menu Handlers
+        this.bodyElement.querySelector('.opt-undo').addEventListener('click', () => { closeAllMenus(); this.undo(); });
+        this.bodyElement.querySelector('.opt-redo').addEventListener('click', () => { closeAllMenus(); this.redo(); });
+        this.bodyElement.querySelector('.opt-clear').addEventListener('click', () => { closeAllMenus(); this.clearActiveLayer(); });
+
+        // Layer Menu Handlers
+        this.bodyElement.querySelector('.opt-add-layer').addEventListener('click', () => { closeAllMenus(); this.addLayer(); });
+        this.bodyElement.querySelector('.opt-del-layer').addEventListener('click', () => { closeAllMenus(); this.deleteActiveLayer(); });
+        this.bodyElement.querySelector('.opt-merge-layer').addEventListener('click', () => { closeAllMenus(); this.mergeActiveLayerDown(); });
+
+        // Help Menu Handler
+        this.bodyElement.querySelector('.opt-about').addEventListener('click', () => {
+            closeAllMenus();
+            showOsConfirm("About ZebPaint Studio Pro", "ZebPaint Studio Pro v2.6\n\nAdvanced retro image editor with multi-layer rendering, visual brush drop-downs, Bezier curve smoothing, and dual VFS/PC export support.\n\nCreated for ZebOS 2.");
+        });
+    }
+
+    saveToZebOS(filename) {
+        const dataUrl = this.mainCanvas.toDataURL("image/png");
+        if (this.saveToVFS) this.saveToVFS(filename, dataUrl);
+        showOsConfirm("Artwork Saved to ZebOS", `'${filename}' has been saved to your active ZebOS folder.`);
+    }
+
+    exportToPC() {
+        const dataUrl = this.mainCanvas.toDataURL("image/png");
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = this.activeFileName || "artwork.png";
+        a.click();
+    }
+
+    createNewCanvas() {
+        showOsConfirm("New Canvas", "Create new blank canvas? All unsaved layer changes will be cleared.", false, () => {
+            this.layers = [];
+            this.layerCounter = 1;
+            this.addLayer("Background Layer");
+        });
+    }
+
+    clearActiveLayer() {
+        const activeLayer = this.getActiveLayer();
+        if (activeLayer) {
+            activeLayer.ctx.clearRect(0, 0, this.width, this.height);
+            if (this.activeLayerIndex === 0) {
+                activeLayer.ctx.fillStyle = '#ffffff';
+                activeLayer.ctx.fillRect(0, 0, this.width, this.height);
+            }
+            this.renderComposite();
+            this.saveHistoryState();
+        }
+    }
+
+    deleteActiveLayer() {
+        if (this.layers.length <= 1) {
+            showOsConfirm("Cannot Delete Layer", "At least one layer must remain in the project.");
+            return;
+        }
+        this.layers.splice(this.activeLayerIndex, 1);
+        this.activeLayerIndex = Math.max(0, this.activeLayerIndex - 1);
+        this.renderComposite();
+        this.renderLayersUI();
+        this.saveHistoryState();
+    }
+
+    mergeActiveLayerDown() {
+        if (this.activeLayerIndex <= 0) {
+            showOsConfirm("Cannot Merge Down", "There is no layer below the selected active layer.");
+            return;
+        }
+        const upperLayer = this.layers[this.activeLayerIndex];
+        const lowerLayer = this.layers[this.activeLayerIndex - 1];
+
+        lowerLayer.ctx.save();
+        lowerLayer.ctx.globalAlpha = upperLayer.opacity;
+        lowerLayer.ctx.drawImage(upperLayer.canvas, 0, 0);
+        lowerLayer.ctx.restore();
+
+        this.layers.splice(this.activeLayerIndex, 1);
+        this.activeLayerIndex--;
+        this.renderComposite();
+        this.renderLayersUI();
+        this.saveHistoryState();
     }
 
     // Initialize Layer Stack
@@ -424,18 +682,7 @@ export class PaintApp {
 
         // Layer Action Buttons
         this.bodyElement.querySelector('#layer-btn-add').addEventListener('click', () => this.addLayer());
-        this.bodyElement.querySelector('#layer-btn-del').addEventListener('click', () => {
-            if (this.layers.length <= 1) {
-                showOsConfirm("Cannot Delete Layer", "At least one layer must remain in the project.");
-                return;
-            }
-            this.layers.splice(this.activeLayerIndex, 1);
-            this.activeLayerIndex = Math.max(0, this.activeLayerIndex - 1);
-            this.renderComposite();
-            this.renderLayersUI();
-            this.saveHistoryState();
-        });
-
+        this.bodyElement.querySelector('#layer-btn-del').addEventListener('click', () => this.deleteActiveLayer());
         this.bodyElement.querySelector('#layer-btn-up').addEventListener('click', () => {
             if (this.activeLayerIndex < this.layers.length - 1) {
                 const temp = this.layers[this.activeLayerIndex];
@@ -460,25 +707,7 @@ export class PaintApp {
             }
         });
 
-        this.bodyElement.querySelector('#layer-btn-merge').addEventListener('click', () => {
-            if (this.activeLayerIndex <= 0) {
-                showOsConfirm("Cannot Merge Down", "There is no layer below the selected active layer.");
-                return;
-            }
-            const upperLayer = this.layers[this.activeLayerIndex];
-            const lowerLayer = this.layers[this.activeLayerIndex - 1];
-
-            lowerLayer.ctx.save();
-            lowerLayer.ctx.globalAlpha = upperLayer.opacity;
-            lowerLayer.ctx.drawImage(upperLayer.canvas, 0, 0);
-            lowerLayer.ctx.restore();
-
-            this.layers.splice(this.activeLayerIndex, 1);
-            this.activeLayerIndex--;
-            this.renderComposite();
-            this.renderLayersUI();
-            this.saveHistoryState();
-        });
+        this.bodyElement.querySelector('#layer-btn-merge').addEventListener('click', () => this.mergeActiveLayerDown());
 
         const layerOpacityRange = this.bodyElement.querySelector('#layer-opacity-range');
         const layerOpacityVal = this.bodyElement.querySelector('#layer-opacity-val');
@@ -490,30 +719,6 @@ export class PaintApp {
                 this.renderComposite();
             }
         });
-
-        // New / Save / Undo / Redo
-        this.bodyElement.querySelector('.opt-new').addEventListener('click', () => {
-            showOsConfirm("New Canvas", "Create new blank canvas? All unsaved layer changes will be cleared.", false, () => {
-                this.layers = [];
-                this.layerCounter = 1;
-                this.addLayer("Background Layer");
-            });
-        });
-
-        this.bodyElement.querySelector('.opt-save').addEventListener('click', () => {
-            showOsPrompt("Save Artwork", "Enter filename to save image:", "artwork.png", (filename) => {
-                if (!filename) return;
-                const dataUrl = this.mainCanvas.toDataURL("image/png");
-                if (this.saveToVFS) this.saveToVFS(filename, dataUrl);
-                const a = document.createElement('a');
-                a.href = dataUrl;
-                a.download = filename;
-                a.click();
-            });
-        });
-
-        this.bodyElement.querySelector('.opt-undo').addEventListener('click', () => this.undo());
-        this.bodyElement.querySelector('.opt-redo').addEventListener('click', () => this.redo());
     }
 
     // Render Mini Thumbnails for Visual Brush Dropdown
@@ -549,12 +754,13 @@ export class PaintApp {
             ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
         } else if (bType === 'soft') {
-            for (let i = 0; i <= 10; i++) {
-                const t = i / 10;
+            const transparentColor = hexToTransparentRgba(color);
+            for (let i = 0; i <= 15; i++) {
+                const t = i / 15;
                 const x = p1.x + (p2.x - p1.x) * t;
                 const grad = ctx.createRadialGradient(x, p1.y, 1, x, p1.y, 4);
                 grad.addColorStop(0, color);
-                grad.addColorStop(1, 'transparent');
+                grad.addColorStop(1, transparentColor);
                 ctx.fillStyle = grad;
                 ctx.beginPath(); ctx.arc(x, p1.y, 4, 0, Math.PI * 2); ctx.fill();
             }
@@ -567,8 +773,8 @@ export class PaintApp {
             }
         } else if (bType === 'calligraphy') {
             ctx.fillStyle = color;
-            for (let i = 0; i <= 10; i++) {
-                const t = i / 10;
+            for (let i = 0; i <= 15; i++) {
+                const t = i / 15;
                 const x = p1.x + (p2.x - p1.x) * t;
                 ctx.fillRect(x - 2, (h/2) - 3, 3, 6);
             }
@@ -609,13 +815,13 @@ export class PaintApp {
 
         this.isDrawing = true;
         const coords = this.getCanvasCoords(e);
+        this.lastX = coords.x;
+        this.lastY = coords.y;
         this.startX = coords.x;
         this.startY = coords.y;
-        this.points = [coords];
 
         if (this.currentTool === 'fill') {
-            this.floodFill(activeLayer.ctx, Math.floor(coords.x), Math.floor(coords.y), this.currentColor);
-            this.renderComposite();
+            this.floodFill(Math.floor(coords.x), Math.floor(coords.y), this.currentColor);
             this.saveHistoryState();
             this.isDrawing = false;
             return;
@@ -625,7 +831,7 @@ export class PaintApp {
         this.snapshotImageData = activeLayer.ctx.getImageData(0, 0, this.width, this.height);
 
         if (this.currentTool === 'brush' || this.currentTool === 'eraser') {
-            this.drawBrushSegment(activeLayer.ctx, coords, coords);
+            this.drawContinuousStroke(activeLayer.ctx, coords.x, coords.y, coords.x, coords.y);
             this.renderComposite();
         }
     }
@@ -640,20 +846,9 @@ export class PaintApp {
         if (!activeLayer) return;
 
         if (this.currentTool === 'brush' || this.currentTool === 'eraser') {
-            this.points.push(coords);
-
-            // Apply curve smoothing based on smoothness slider
-            const smoothFactor = this.currentSmoothness / 100;
-            if (smoothFactor > 0 && this.points.length > 2) {
-                const p1 = this.points[this.points.length - 2];
-                const p2 = this.points[this.points.length - 1];
-                const midX = (p1.x + p2.x) / 2;
-                const midY = (p1.y + p2.y) / 2;
-                this.drawBrushSegment(activeLayer.ctx, p1, { x: midX, y: midY });
-            } else {
-                const prev = this.points[this.points.length - 2] || coords;
-                this.drawBrushSegment(activeLayer.ctx, prev, coords);
-            }
+            this.drawContinuousStroke(activeLayer.ctx, this.lastX, this.lastY, coords.x, coords.y);
+            this.lastX = coords.x;
+            this.lastY = coords.y;
             this.renderComposite();
         } else if (['line', 'rect', 'frect', 'circle', 'fcircle'].includes(this.currentTool)) {
             // Restore snapshot for dynamic preview
@@ -666,11 +861,11 @@ export class PaintApp {
     handleMouseUp(e) {
         if (!this.isDrawing) return;
         this.isDrawing = false;
-        this.points = [];
         this.saveHistoryState();
     }
 
-    drawBrushSegment(ctx, p1, p2) {
+    // High-Density Sub-Pixel Interpolated Stroke Rendering (100% Solid & Gapless)
+    drawContinuousStroke(ctx, x1, y1, x2, y2) {
         const tool = (this.currentTool === 'eraser') ? 'eraser' : this.currentBrushType;
         const size = this.currentSize;
         const opacity = (this.currentOpacity / 100);
@@ -685,8 +880,8 @@ export class PaintApp {
             ctx.lineJoin = 'round';
             ctx.lineWidth = size * 2;
             ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
             ctx.stroke();
         } else if (tool === 'round') {
             ctx.globalAlpha = opacity;
@@ -695,75 +890,9 @@ export class PaintApp {
             ctx.strokeStyle = color;
             ctx.lineWidth = size;
             ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
             ctx.stroke();
-        } else if (tool === 'soft') {
-            ctx.globalAlpha = opacity;
-            const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-            const steps = Math.max(1, Math.ceil(dist / Math.max(1, size * 0.2)));
-            for (let i = 0; i <= steps; i++) {
-                const t = i / steps;
-                const x = p1.x + (p2.x - p1.x) * t;
-                const y = p1.y + (p2.y - p1.y) * t;
-                const rad = Math.max(1, size / 2);
-                const innerRad = Math.max(0.5, rad * hardness);
-                const grad = ctx.createRadialGradient(x, y, innerRad, x, y, rad);
-                grad.addColorStop(0, color);
-                grad.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.arc(x, y, rad, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        } else if (tool === 'airbrush') {
-            ctx.globalAlpha = opacity;
-            ctx.fillStyle = color;
-            const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-            const steps = Math.max(1, Math.ceil(dist / 2));
-            const density = Math.round(size * 1.5);
-            for (let i = 0; i <= steps; i++) {
-                const t = i / steps;
-                const cx = p1.x + (p2.x - p1.x) * t;
-                const cy = p1.y + (p2.y - p1.y) * t;
-                for (let j = 0; j < density; j++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const r = Math.random() * (size / 2);
-                    ctx.fillRect(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r, 1.2, 1.2);
-                }
-            }
-        } else if (tool === 'calligraphy') {
-            ctx.globalAlpha = opacity;
-            ctx.fillStyle = color;
-            const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-            const steps = Math.max(1, Math.ceil(dist / 2));
-            for (let i = 0; i <= steps; i++) {
-                const t = i / steps;
-                const x = p1.x + (p2.x - p1.x) * t;
-                const y = p1.y + (p2.y - p1.y) * t;
-                ctx.beginPath();
-                ctx.moveTo(x - size/2, y - size/4);
-                ctx.lineTo(x + size/2, y + size/4);
-                ctx.lineTo(x + size/2 + 2, y + size/4 + 2);
-                ctx.lineTo(x - size/2 + 2, y - size/4 + 2);
-                ctx.closePath();
-                ctx.fill();
-            }
-        } else if (tool === 'crayon') {
-            ctx.fillStyle = color;
-            const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-            const steps = Math.max(1, Math.ceil(dist / 2));
-            for (let i = 0; i <= steps; i++) {
-                const t = i / steps;
-                const cx = p1.x + (p2.x - p1.x) * t;
-                const cy = p1.y + (p2.y - p1.y) * t;
-                for (let j = 0; j < Math.round(size * 0.8); j++) {
-                    const rx = (Math.random() - 0.5) * size;
-                    const ry = (Math.random() - 0.5) * size;
-                    ctx.globalAlpha = opacity * (0.3 + Math.random() * 0.7);
-                    ctx.fillRect(cx + rx, cy + ry, 1.5, 1.5);
-                }
-            }
         } else if (tool === 'marker') {
             ctx.globalAlpha = opacity * 0.4;
             ctx.lineCap = 'square';
@@ -771,9 +900,62 @@ export class PaintApp {
             ctx.strokeStyle = color;
             ctx.lineWidth = size * 1.5;
             ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
             ctx.stroke();
+        } else {
+            // For Soft Brush, Airbrush, Calligraphy, Crayon: Sub-pixel high-density interpolation
+            const dist = Math.hypot(x2 - x1, y2 - y1);
+            const stepSize = Math.max(0.5, size * 0.15); // Sub-pixel step for gapless stroke
+            const steps = Math.max(1, Math.ceil(dist / stepSize));
+
+            for (let i = 0; i <= steps; i++) {
+                const t = steps === 0 ? 0 : i / steps;
+                const px = x1 + (x2 - x1) * t;
+                const py = y1 + (y2 - y1) * t;
+
+                if (tool === 'soft') {
+                    ctx.globalAlpha = opacity;
+                    const rad = Math.max(1, size / 2);
+                    const innerRad = Math.max(0.2, rad * hardness);
+                    const transparentColor = hexToTransparentRgba(color);
+                    const grad = ctx.createRadialGradient(px, py, innerRad, px, py, rad);
+                    grad.addColorStop(0, color);
+                    grad.addColorStop(1, transparentColor);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(px, py, rad, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (tool === 'airbrush') {
+                    ctx.globalAlpha = opacity;
+                    ctx.fillStyle = color;
+                    const density = Math.round(size * 1.2);
+                    for (let j = 0; j < density; j++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const r = Math.random() * (size / 2);
+                        ctx.fillRect(px + Math.cos(angle) * r, py + Math.sin(angle) * r, 1.2, 1.2);
+                    }
+                } else if (tool === 'calligraphy') {
+                    ctx.globalAlpha = opacity;
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(px - size/2, py - size/4);
+                    ctx.lineTo(px + size/2, py + size/4);
+                    ctx.lineTo(px + size/2 + 2, py + size/4 + 2);
+                    ctx.lineTo(px - size/2 + 2, py - size/4 + 2);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (tool === 'crayon') {
+                    ctx.fillStyle = color;
+                    const density = Math.round(size * 0.8);
+                    for (let j = 0; j < density; j++) {
+                        const rx = (Math.random() - 0.5) * size;
+                        const ry = (Math.random() - 0.5) * size;
+                        ctx.globalAlpha = opacity * (0.4 + Math.random() * 0.6);
+                        ctx.fillRect(px + rx, py + ry, 1.5, 1.5);
+                    }
+                }
+            }
         }
 
         ctx.restore();
@@ -804,48 +986,67 @@ export class PaintApp {
         ctx.restore();
     }
 
-    // Flood Fill Algorithm
-    floodFill(ctx, startX, startY, fillColorHex) {
-        const imgData = ctx.getImageData(0, 0, this.width, this.height);
-        const data = imgData.data;
+    // Robust Breadth-First Flood Fill (Paint Bucket)
+    floodFill(startX, startY, fillColorHex) {
+        const activeLayer = this.getActiveLayer();
+        if (!activeLayer) return;
 
-        const targetColor = getPixel(startX, startY);
-        const fillColor = hexToRgba(fillColorHex, Math.round(this.currentOpacity * 2.55));
-
-        if (colorsMatch(targetColor, fillColor)) return;
-
-        const queue = [[startX, startY]];
         const w = this.width;
         const h = this.height;
 
+        // Sample target color from composite canvas view
+        const compImgData = this.mainCtx.getImageData(0, 0, w, h);
+        const compData = compImgData.data;
+
+        const startIdx = (startY * w + startX) * 4;
+        const targetR = compData[startIdx];
+        const targetG = compData[startIdx + 1];
+        const targetB = compData[startIdx + 2];
+        const targetA = compData[startIdx + 3];
+
+        const fillRgba = hexToRgba(fillColorHex, Math.round((this.currentOpacity / 100) * 255));
+
+        // If fill color matches target color, exit early
+        if (Math.abs(targetR - fillRgba[0]) < 5 && Math.abs(targetG - fillRgba[1]) < 5 && Math.abs(targetB - fillRgba[2]) < 5 && Math.abs(targetA - fillRgba[3]) < 5) {
+            return;
+        }
+
+        const layerImgData = activeLayer.ctx.getImageData(0, 0, w, h);
+        const layerData = layerImgData.data;
+
+        const visited = new Uint8Array(w * h);
+        const queue = [startX, startY];
+
         while (queue.length > 0) {
-            const [x, y] = queue.pop();
-            const idx = (y * w + x) * 4;
+            const y = queue.pop();
+            const x = queue.pop();
+            const pos = y * w + x;
 
-            if (colorsMatch(getPixelIdx(idx), targetColor)) {
-                setPixelIdx(idx, fillColor);
+            if (x < 0 || x >= w || y < 0 || y >= h || visited[pos]) continue;
+            visited[pos] = 1;
 
-                if (x > 0) queue.push([x - 1, y]);
-                if (x < w - 1) queue.push([x + 1, y]);
-                if (y > 0) queue.push([x, y - 1]);
-                if (y < h - 1) queue.push([x, y + 1]);
+            const idx = pos * 4;
+            const curR = compData[idx];
+            const curG = compData[idx + 1];
+            const curB = compData[idx + 2];
+            const curA = compData[idx + 3];
+
+            if (Math.abs(curR - targetR) < 35 && Math.abs(curG - targetG) < 35 && Math.abs(curB - targetB) < 35 && Math.abs(curA - targetA) < 35) {
+                layerData[idx] = fillRgba[0];
+                layerData[idx + 1] = fillRgba[1];
+                layerData[idx + 2] = fillRgba[2];
+                layerData[idx + 3] = fillRgba[3];
+
+                if (x + 1 < w) queue.push(x + 1, y);
+                if (x - 1 >= 0) queue.push(x - 1, y);
+                if (y + 1 < h) queue.push(x, y + 1);
+                if (y - 1 >= 0) queue.push(x, y - 1);
             }
         }
-        ctx.putImageData(imgData, 0, 0);
 
-        function getPixel(x, y) {
-            const idx = (y * w + x) * 4;
-            return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
-        }
-        function getPixelIdx(idx) {
-            return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
-        }
-        function setPixelIdx(idx, col) {
-            data[idx] = col[0]; data[idx + 1] = col[1]; data[idx + 2] = col[2]; data[idx + 3] = col[3];
-        }
-        function colorsMatch(a, b) {
-            return Math.abs(a[0] - b[0]) < 15 && Math.abs(a[1] - b[1]) < 15 && Math.abs(a[2] - b[2]) < 15 && Math.abs(a[3] - b[3]) < 15;
-        }
+        activeLayer.ctx.putImageData(layerImgData, 0, 0);
+        this.renderComposite();
+
         function hexToRgba(hex, alpha) {
             let c = hex.replace('#', '');
             if (c.length === 3) c = c.split('').map(x => x + x).join('');
@@ -915,6 +1116,12 @@ export class PaintApp {
         } else if (e.ctrlKey && (e.key === 'y' || e.key === 'Y')) {
             e.preventDefault();
             this.redo();
+        } else if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+            this.saveToZebOS(this.activeFileName);
+        } else if (e.ctrlKey && (e.key === 'n' || e.key === 'N')) {
+            e.preventDefault();
+            this.createNewCanvas();
         }
     }
 
@@ -926,4 +1133,13 @@ export class PaintApp {
         window.removeEventListener('mouseup', this.boundMouseUp);
         window.removeEventListener('keydown', this.boundKeyDown);
     }
+}
+
+function hexToTransparentRgba(hex) {
+    if (!hex || typeof hex !== 'string') return 'rgba(0,0,0,0)';
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    const num = parseInt(c, 16);
+    if (isNaN(num)) return 'rgba(0,0,0,0)';
+    return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, 0)`;
 }
