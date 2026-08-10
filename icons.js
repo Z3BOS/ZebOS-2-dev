@@ -328,6 +328,53 @@ const SVGS = {
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M19.14 12.94C19.18 12.63 19.2 12.32 19.2 12C19.2 11.68 19.18 11.37 19.14 11.06L21.16 9.48C21.34 9.34 21.39 9.08 21.28 8.87L19.37 5.56C19.25 5.35 19 5.27 18.78 5.35L16.4 6.31C15.9 5.93 15.37 5.61 14.79 5.37L14.43 2.83C14.39 2.6 14.2 2.43 13.97 2.43H10.13C9.9 2.43 9.71 2.6 9.67 2.83L9.31 5.37C8.73 5.61 8.2 5.93 7.7 6.31L5.32 5.35C5.1 5.27 4.85 5.35 4.73 5.56L2.82 8.87C2.71 9.08 2.76 9.34 2.94 9.48L4.96 11.06C4.92 11.37 4.9 11.68 4.9 12C4.9 12.32 4.92 12.63 4.96 12.94L2.94 14.52C2.76 14.66 2.71 14.92 2.82 15.13L4.73 18.44C4.85 18.65 5.1 18.73 5.32 18.65L7.7 17.69C8.2 18.07 8.73 18.39 9.31 18.63L9.67 21.17C9.71 21.4 9.9 21.57 10.13 21.57H13.97C14.2 21.57 14.39 21.4 14.43 21.17L14.79 18.63C15.37 18.39 15.9 18.07 16.4 17.69L18.78 18.65C19 18.73 19.25 18.65 19.37 18.44L21.28 15.13C21.39 14.92 21.34 14.66 21.16 14.52L19.14 12.94ZM12 15.5C10.07 15.5 8.5 13.93 8.5 12C8.5 10.07 10.07 8.5 12 8.5C13.93 8.5 15.5 10.07 15.5 12C15.5 13.93 13.93 15.5 12 15.5Z" fill="#333333"/>
         </svg>
+    `,
+    fill: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 11L13 5L5 13L11 19L19 11Z" fill="#1976d2" stroke="#000000" stroke-width="1.5"/>
+            <path d="M19 11C20.5 12.5 21 14.5 19.5 16C18 17.5 16 17 14.5 15.5" stroke="#1976d2" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 20C4 20 7 18 8 20" stroke="#1976d2" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    `,
+    frect: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="16" height="16" fill="#000000" stroke="#000000" stroke-width="1.5"/>
+        </svg>
+    `,
+    fcircle: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="8" fill="#000000" stroke="#000000" stroke-width="1.5"/>
+        </svg>
+    `,
+    layerAdd: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#c0c0c0" stroke="#000000" stroke-width="1.5"/>
+            <path d="M2 12L12 17L22 12" stroke="#000000" stroke-width="1.5"/>
+            <path d="M2 17L12 22L22 17" stroke="#000000" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="4" fill="#2e7d32"/>
+            <line x1="18" y1="16" x2="18" y2="20" stroke="#ffffff" stroke-width="1.5"/>
+            <line x1="16" y1="18" x2="20" y2="18" stroke="#ffffff" stroke-width="1.5"/>
+        </svg>
+    `,
+    layerDel: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#c0c0c0" stroke="#000000" stroke-width="1.5"/>
+            <path d="M2 12L12 17L22 12" stroke="#000000" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="4" fill="#c62828"/>
+            <line x1="16" y1="18" x2="20" y2="18" stroke="#ffffff" stroke-width="1.5"/>
+        </svg>
+    `,
+    layerVis: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" fill="none" stroke="#000000" stroke-width="1.5"/>
+            <circle cx="12" cy="12" r="4" fill="#000080"/>
+        </svg>
+    `,
+    layerHide: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" fill="none" stroke="#808080" stroke-width="1.5"/>
+            <line x1="3" y1="3" x2="21" y2="21" stroke="#d32f2f" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
     `
 };
 
