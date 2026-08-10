@@ -166,25 +166,32 @@ export class TextEditor {
         this.bodyElement.querySelectorAll('.opt-about').forEach(el => el.addEventListener('click', () => this.showAboutDialog()));
 
         this.bodyElement.querySelectorAll('.opt-cut').forEach(el => el.addEventListener('click', () => {
-            document.execCommand('cut');
+            this.performCut();
             this.hideAllMenus();
         }));
         this.bodyElement.querySelectorAll('.opt-copy').forEach(el => el.addEventListener('click', () => {
-            document.execCommand('copy');
+            this.performCopy();
             this.hideAllMenus();
         }));
         this.bodyElement.querySelectorAll('.opt-paste').forEach(el => el.addEventListener('click', () => {
-            document.execCommand('paste');
+            this.performPaste();
             this.hideAllMenus();
         }));
         this.bodyElement.querySelectorAll('.opt-selectall').forEach(el => el.addEventListener('click', () => {
-            this.textarea.select();
+            this.performSelectAll();
             this.hideAllMenus();
         }));
         this.bodyElement.querySelectorAll('.opt-undo').forEach(el => el.addEventListener('click', () => {
-            document.execCommand('undo');
+            this.performUndo();
             this.hideAllMenus();
         }));
+
+        // Context menu on textarea
+        this.textarea.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showContextMenu(e.clientX, e.clientY);
+        });
 
         // Dropdown options hover styling
         this.bodyElement.querySelectorAll('.dropdown-opt').forEach(opt => {
@@ -197,6 +204,209 @@ export class TextEditor {
                 opt.style.color = '#000000';
             });
         });
+    }
+
+    performCopy() {
+        const start = this.textarea.selectionStart;
+        const end = this.textarea.selectionEnd;
+        const selectedText = this.textarea.value.substring(start, end);
+        if (selectedText) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(selectedText).catch(() => {});
+            }
+            window.zebosClipboard = selectedText;
+            this.flashFooterFeedback(`Copied ${selectedText.length} char(s)`);
+        }
+    }
+
+    performCut() {
+        const start = this.textarea.selectionStart;
+        const end = this.textarea.selectionEnd;
+        const val = this.textarea.value;
+        const selectedText = val.substring(start, end);
+        if (selectedText) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(selectedText).catch(() => {});
+            }
+            window.zebosClipboard = selectedText;
+            this.textarea.value = val.substring(0, start) + val.substring(end);
+            this.textarea.selectionStart = start;
+            this.textarea.selectionEnd = start;
+            this.updateCursorStats();
+            this.flashFooterFeedback(`Cut ${selectedText.length} char(s)`);
+        }
+    }
+
+    async performPaste() {
+        let textToPaste = "";
+        try {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                textToPaste = await navigator.clipboard.readText();
+            }
+        } catch (e) {
+            /* ignore permission error */
+        }
+        if (!textToPaste && window.zebosClipboard) {
+            textToPaste = window.zebosClipboard;
+        }
+
+        if (textToPaste) {
+            const start = this.textarea.selectionStart;
+            const end = this.textarea.selectionEnd;
+            const val = this.textarea.value;
+            this.textarea.value = val.substring(0, start) + textToPaste + val.substring(end);
+            const newPos = start + textToPaste.length;
+            this.textarea.selectionStart = newPos;
+            this.textarea.selectionEnd = newPos;
+            this.updateCursorStats();
+            this.flashFooterFeedback(`Pasted ${textToPaste.length} char(s)`);
+        }
+    }
+
+    performDelete() {
+        const start = this.textarea.selectionStart;
+        const end = this.textarea.selectionEnd;
+        const val = this.textarea.value;
+        if (start !== end) {
+            this.textarea.value = val.substring(0, start) + val.substring(end);
+            this.textarea.selectionStart = start;
+            this.textarea.selectionEnd = start;
+            this.updateCursorStats();
+        }
+    }
+
+    performSelectAll() {
+        this.textarea.focus();
+        this.textarea.select();
+    }
+
+    performUndo() {
+        this.textarea.focus();
+        document.execCommand('undo');
+    }
+
+    showContextMenu(x, y) {
+        this.closeContextMenu();
+        this.hideAllMenus();
+
+        const hasSelection = this.textarea.selectionStart !== this.textarea.selectionEnd;
+        const menu = document.createElement('div');
+        menu.className = 'editor-context-menu';
+        menu.style.cssText = `
+            position: fixed;
+            left: ${x}px;
+            top: ${y}px;
+            z-index: 100008;
+            background: #c0c0c0;
+            border: 2px solid #ffffff;
+            border-right-color: #000000;
+            border-bottom-color: #000000;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+            padding: 2px;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            min-width: 145px;
+            box-sizing: border-box;
+            user-select: none;
+        `;
+
+        menu.innerHTML = `
+            <div class="cm-item opt-undo" style="padding:4px 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                <span>Undo</span><span style="color:#666; font-size:10px; margin-left:12px;">Ctrl+Z</span>
+            </div>
+            <div style="height:1px; background:#808080; border-bottom:1px solid #fff; margin:2px 0;"></div>
+            <div class="cm-item opt-cut ${hasSelection ? '' : 'disabled'}" style="padding:4px 16px; cursor:${hasSelection ? 'pointer' : 'default'}; color:${hasSelection ? '#000' : '#808080'}; display:flex; justify-content:space-between; align-items:center;">
+                <span>Cut</span><span style="color:${hasSelection ? '#666' : '#808080'}; font-size:10px; margin-left:12px;">Ctrl+X</span>
+            </div>
+            <div class="cm-item opt-copy ${hasSelection ? '' : 'disabled'}" style="padding:4px 16px; cursor:${hasSelection ? 'pointer' : 'default'}; color:${hasSelection ? '#000' : '#808080'}; display:flex; justify-content:space-between; align-items:center;">
+                <span>Copy</span><span style="color:${hasSelection ? '#666' : '#808080'}; font-size:10px; margin-left:12px;">Ctrl+C</span>
+            </div>
+            <div class="cm-item opt-paste" style="padding:4px 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                <span>Paste</span><span style="color:#666; font-size:10px; margin-left:12px;">Ctrl+V</span>
+            </div>
+            <div class="cm-item opt-delete ${hasSelection ? '' : 'disabled'}" style="padding:4px 16px; cursor:${hasSelection ? 'pointer' : 'default'}; color:${hasSelection ? '#000' : '#808080'}; display:flex; justify-content:space-between; align-items:center;">
+                <span>Delete</span><span style="color:${hasSelection ? '#666' : '#808080'}; font-size:10px; margin-left:12px;">Del</span>
+            </div>
+            <div style="height:1px; background:#808080; border-bottom:1px solid #fff; margin:2px 0;"></div>
+            <div class="cm-item opt-selectall" style="padding:4px 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                <span>Select All</span><span style="color:#666; font-size:10px; margin-left:12px;">Ctrl+A</span>
+            </div>
+            <div class="cm-item opt-clearall" style="padding:4px 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                <span>Clear All</span>
+            </div>
+            <div style="height:1px; background:#808080; border-bottom:1px solid #fff; margin:2px 0;"></div>
+            <div class="cm-item opt-wordwrap" style="padding:4px 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                <span>${this.wordWrap ? '✓ ' : ''}Word Wrap</span>
+            </div>
+        `;
+
+        document.body.appendChild(menu);
+        this.contextMenuElement = menu;
+
+        const rect = menu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) menu.style.left = `${window.innerWidth - rect.width - 4}px`;
+        if (rect.bottom > window.innerHeight) menu.style.top = `${window.innerHeight - rect.height - 4}px`;
+
+        menu.querySelectorAll('.cm-item').forEach(item => {
+            if (item.classList.contains('disabled')) return;
+
+            item.addEventListener('mouseenter', () => {
+                item.style.background = '#000080';
+                item.style.color = '#ffffff';
+                item.querySelectorAll('span').forEach(s => s.style.color = '#ffffff');
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.background = 'transparent';
+                item.style.color = '#000000';
+                const spans = item.querySelectorAll('span');
+                if (spans[1]) spans[1].style.color = '#666666';
+            });
+        });
+
+        const undoOpt = menu.querySelector('.opt-undo');
+        if (undoOpt) undoOpt.addEventListener('click', () => { this.performUndo(); this.closeContextMenu(); });
+
+        const cutOpt = menu.querySelector('.opt-cut');
+        if (cutOpt && hasSelection) cutOpt.addEventListener('click', () => { this.performCut(); this.closeContextMenu(); });
+
+        const copyOpt = menu.querySelector('.opt-copy');
+        if (copyOpt && hasSelection) copyOpt.addEventListener('click', () => { this.performCopy(); this.closeContextMenu(); });
+
+        const pasteOpt = menu.querySelector('.opt-paste');
+        if (pasteOpt) pasteOpt.addEventListener('click', () => { this.performPaste(); this.closeContextMenu(); });
+
+        const deleteOpt = menu.querySelector('.opt-delete');
+        if (deleteOpt && hasSelection) deleteOpt.addEventListener('click', () => { this.performDelete(); this.closeContextMenu(); });
+
+        const selectAllOpt = menu.querySelector('.opt-selectall');
+        if (selectAllOpt) selectAllOpt.addEventListener('click', () => { this.performSelectAll(); this.closeContextMenu(); });
+
+        const clearAllOpt = menu.querySelector('.opt-clearall');
+        if (clearAllOpt) clearAllOpt.addEventListener('click', () => { this.textarea.value = ""; this.updateCursorStats(); this.closeContextMenu(); });
+
+        const wrapOpt = menu.querySelector('.opt-wordwrap');
+        if (wrapOpt) wrapOpt.addEventListener('click', () => {
+            this.wordWrap = !this.wordWrap;
+            const box = this.bodyElement.querySelector('#editor-wrap-box');
+            if (box) box.innerHTML = this.wordWrap ? W95_CHECKMARK_SVG : '';
+            this.textarea.style.whiteSpace = this.wordWrap ? 'pre-wrap' : 'pre';
+            this.closeContextMenu();
+        });
+
+        const closeHandler = (e) => {
+            if (!menu.contains(e.target)) {
+                this.closeContextMenu();
+                document.removeEventListener('mousedown', closeHandler);
+            }
+        };
+        setTimeout(() => document.addEventListener('mousedown', closeHandler), 10);
+    }
+
+    closeContextMenu() {
+        if (this.contextMenuElement) {
+            this.contextMenuElement.remove();
+            this.contextMenuElement = null;
+        }
     }
 
     toggleMenu(menuName, btnEl) {
@@ -229,8 +439,9 @@ export class TextEditor {
     }
 
     handleDocumentClick(e) {
-        if (e.target.closest && e.target.closest('.menu-item-wrap')) return;
+        if (e.target.closest && (e.target.closest('.menu-item-wrap') || e.target.closest('.editor-context-menu'))) return;
         this.hideAllMenus();
+        this.closeContextMenu();
     }
 
     handleKeyDown(e) {
@@ -319,7 +530,7 @@ export class TextEditor {
                 <div style="height:1px; background:#808080; border-bottom:1px solid #fff;"></div>
                 <div style="font-size:11px; line-height:1.4; color:#222;">
                     Copyright © 2026 ZebOS System Utilities.<br>
-                    A retro plain-text editor featuring Win95 menubars, live stats, and VFS file management.
+                    A retro plain-text editor featuring ZebOS menubars, live stats, and VFS file management.
                 </div>
                 <div style="display:flex; justify-content:flex-end; margin-top:6px;">
                     <button id="about-ok-btn" style="padding:4px 20px; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold;">OK</button>

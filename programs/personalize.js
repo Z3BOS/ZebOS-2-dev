@@ -40,7 +40,7 @@ export class PersonalizeApp {
         };
 
         this.soundSchemes = [
-            { value: 'classic', label: 'Classic Win95 Synthesizer' },
+            { value: 'classic', label: 'Classic ZebOS Synthesizer' },
             { value: 'muted',   label: 'Muted (No Audio)' },
         ];
     }

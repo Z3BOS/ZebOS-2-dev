@@ -703,9 +703,20 @@ body.rounded-corners .retro-context-menu {
     min-width: 220px; min-height: 140px;
 }
 
+.active-window .window-header,
+.os-prompt-modal .window-header,
 .window-frame.active-window .window-header {
-    background: var(--os-titlebar-bg, #000080) !important;
+    background: var(--os-titlebar-bg, linear-gradient(90deg, #000080 0%, #1084d0 100%)) !important;
     color: var(--os-titlebar-fg, #ffffff) !important;
+}
+
+.os-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: transparent !important;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100005;
 }
 
 .window-header {

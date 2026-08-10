@@ -215,7 +215,7 @@ function ensureSystemFoldersExist() {
                             type: "dir",
                             content: {
                                 "welcome.txt": { type: "file", content: "Welcome to ZebOS 2!\nEnjoy exploring the retro operating system interface." },
-                                "notes.txt":   { type: "file", content: "ZebOS 2 Dev Notes:\n- Custom Win95 controls\n- Dynamic taskbar\n- Synthesizer sound engine" }
+                                "notes.txt":   { type: "file", content: "ZebOS 2 Dev Notes:\n- Custom ZebOS controls\n- Dynamic taskbar\n- Synthesizer sound engine" }
                             }
                         },
                         "Pictures":  { type: "dir", content: {} },
@@ -491,7 +491,7 @@ function provisionDefaultRootFS() {
                             type: "dir",
                             content: {
                                 "welcome.txt": { type: "file", content: "Welcome to ZebOS 2!\nEnjoy exploring the retro operating system interface." },
-                                "notes.txt":   { type: "file", content: "ZebOS 2 Dev Notes:\n- Custom Win95 controls\n- Dynamic taskbar\n- Synthesizer sound engine" }
+                                "notes.txt":   { type: "file", content: "ZebOS 2 Dev Notes:\n- Custom ZebOS controls\n- Dynamic taskbar\n- Synthesizer sound engine" }
                             }
                         },
                         "Pictures":  { type: "dir", content: {} },
@@ -1241,7 +1241,7 @@ export function showOsPrompt(title, message, defaultValue = "", onConfirm = null
     overlay.style.cssText = `
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0, 0, 0, 0.3);
+        background: transparent;
         display: flex; align-items: center; justify-content: center;
         z-index: 100005;
     `;
@@ -1316,7 +1316,7 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
     overlay.style.cssText = `
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0, 0, 0, 0.35);
+        background: transparent;
         display: flex; align-items: center; justify-content: center;
         z-index: 100005;
     `;

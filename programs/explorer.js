@@ -36,42 +36,46 @@ export class FileExplorerApp {
                 </div>
 
                 <!-- 2. Standard Toolbar -->
-                <div class="explorer-toolbar" style="display:flex; align-items:center; justify-content:space-between; gap:6px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:nowrap; overflow-x:auto;">
-                    <!-- Left Navigation Icons Group (Always pinned on left) -->
-                    <div style="display:flex; align-items:center; gap:3px; flex-shrink:0;">
-                        <button class="exp-tb-btn" id="exp-tb-home" title="My Computer (Home)" style="display:flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                            <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('home')}</span>
-                        </button>
-                        <button class="exp-tb-btn" id="exp-tb-back" title="Back" style="display:flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                            <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('back')}</span>
-                        </button>
-                        <button class="exp-tb-btn" id="exp-tb-up" title="Up One Level" style="display:flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                            <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('up')}</span>
-                        </button>
-                    </div>
+                <div class="explorer-toolbar" style="display:flex; align-items:center; gap:4px; padding:2px 4px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:nowrap; overflow:hidden;">
+                    <!-- Navigation Tools -->
+                    <button class="exp-tb-btn" id="exp-tb-home" title="My Computer (Home)" style="display:inline-flex; align-items:center; justify-content:center; padding:2px 5px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:24px; height:22px; box-sizing:border-box;">
+                        <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('home')}</span>
+                    </button>
+                    <button class="exp-tb-btn" id="exp-tb-back" title="Back" style="display:inline-flex; align-items:center; justify-content:center; padding:2px 5px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:24px; height:22px; box-sizing:border-box;">
+                        <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('back')}</span>
+                    </button>
+                    <button class="exp-tb-btn" id="exp-tb-up" title="Up One Level" style="display:inline-flex; align-items:center; justify-content:center; padding:2px 5px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:24px; height:22px; box-sizing:border-box;">
+                        <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('up')}</span>
+                    </button>
 
-                    <div style="width:1px; height:18px; background:#808080; flex-shrink:0;"></div>
+                    <!-- 3D Separator -->
+                    <div style="border-left:1px solid #808080; border-right:1px solid #ffffff; width:0; height:18px; margin:0 3px; flex-shrink:0;"></div>
 
                     <!-- File Action Tools -->
-                    <div style="display:flex; align-items:center; gap:3px; flex-shrink:0;">
-                        <button class="exp-tb-btn" id="exp-tb-cut" title="Cut" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cut</button>
-                        <button class="exp-tb-btn" id="exp-tb-copy" title="Copy" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Copy</button>
-                        <button class="exp-tb-btn" id="exp-tb-paste" title="Paste" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Paste</button>
-                        <button class="exp-tb-btn" id="exp-tb-delete" title="Delete" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Delete</button>
-                        <button class="exp-tb-btn" id="exp-tb-newfolder" title="New Folder" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">+ Folder</button>
-                    </div>
+                    <button class="exp-tb-btn" id="exp-tb-cut" title="Cut" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">Cut</button>
+                    <button class="exp-tb-btn" id="exp-tb-copy" title="Copy" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">Copy</button>
+                    <button class="exp-tb-btn" id="exp-tb-paste" title="Paste" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">Paste</button>
+                    <button class="exp-tb-btn" id="exp-tb-delete" title="Delete" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">Delete</button>
+                    <button class="exp-tb-btn" id="exp-tb-newfolder" title="New Folder" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">+ Folder</button>
 
-                    <div style="width:1px; height:18px; background:#808080; flex-shrink:0;"></div>
+                    <!-- 3D Separator -->
+                    <div style="border-left:1px solid #808080; border-right:1px solid #ffffff; width:0; height:18px; margin:0 3px; flex-shrink:0;"></div>
 
-                    <!-- Clean View Selector Dropdown -->
-                    <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                    <!-- Custom Win95 View Selector Dropdown -->
+                    <div style="display:inline-flex; align-items:center; gap:4px; margin-left:auto; flex-shrink:0;">
                         <span style="font-size:11px; font-weight:bold;">View:</span>
-                        <select id="exp-view-select" style="background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; font-size:11px; padding:1px 4px; cursor:pointer; font-family:Arial, sans-serif; outline:none;">
-                            <option value="large">Large Icons</option>
-                            <option value="small">Small Icons</option>
-                            <option value="list">List</option>
-                            <option value="details">Details</option>
-                        </select>
+                        <div class="w95-dropdown" id="exp-view-dropdown" data-value="large" style="position:relative; width:105px; flex-shrink:0;">
+                            <div class="w95-drop-display" style="display:flex; align-items:center; justify-content:space-between; background:#c0c0c0; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:2px 4px; cursor:pointer; font-size:11px; font-family:Arial,sans-serif; height:22px; box-sizing:border-box;">
+                                <span class="w95-drop-label" style="flex-grow:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Large Icons</span>
+                                <span style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; font-size:8px; line-height:1; margin-left:4px;">▼</span>
+                            </div>
+                            <div class="w95-drop-list" style="display:none; position:absolute; top:100%; right:0; width:115px; background:#c0c0c0; border:1px solid #000000; box-shadow:2px 2px 4px rgba(0,0,0,0.4); z-index:99999; box-sizing:border-box; margin-top:1px;">
+                                <div class="w95-drop-item" data-value="large" style="padding:2px 6px; font-size:11px; cursor:pointer; background:#000080; color:#ffffff;">Large Icons</div>
+                                <div class="w95-drop-item" data-value="small" style="padding:2px 6px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">Small Icons</div>
+                                <div class="w95-drop-item" data-value="list" style="padding:2px 6px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">List</div>
+                                <div class="w95-drop-item" data-value="details" style="padding:2px 6px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">Details</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -203,12 +207,38 @@ export class FileExplorerApp {
             }
         });
 
-        const viewSelect = this.container.querySelector('#exp-view-select');
-        if (viewSelect) {
-            viewSelect.value = this.viewMode;
-            viewSelect.addEventListener('change', (e) => {
-                this.viewMode = e.target.value;
-                this.refreshView();
+        const viewDrop = this.container.querySelector('#exp-view-dropdown');
+        if (viewDrop) {
+            const display = viewDrop.querySelector('.w95-drop-display');
+            const list = viewDrop.querySelector('.w95-drop-list');
+
+            display.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = list.style.display === 'block';
+                list.style.display = isOpen ? 'none' : 'block';
+            });
+
+            list.querySelectorAll('.w95-drop-item').forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    item.style.background = '#000080';
+                    item.style.color = '#ffffff';
+                });
+                item.addEventListener('mouseleave', () => {
+                    if (item.dataset.value !== this.viewMode) {
+                        item.style.background = '#c0c0c0';
+                        item.style.color = '#000000';
+                    }
+                });
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.viewMode = item.dataset.value;
+                    list.style.display = 'none';
+                    this.refreshView();
+                });
+            });
+
+            document.addEventListener('click', () => {
+                if (list) list.style.display = 'none';
             });
         }
     }
@@ -246,9 +276,24 @@ export class FileExplorerApp {
     refreshView() {
         const addressInput = this.container.querySelector('#exp-address-input');
         const addressIcon  = this.container.querySelector('#exp-address-icon');
-        const viewSelect   = this.container.querySelector('#exp-view-select');
+        const viewDrop     = this.container.querySelector('#exp-view-dropdown');
 
-        if (viewSelect) viewSelect.value = this.viewMode;
+        if (viewDrop) {
+            const labels = {
+                large: 'Large Icons',
+                small: 'Small Icons',
+                list: 'List',
+                details: 'Details'
+            };
+            const labelEl = viewDrop.querySelector('.w95-drop-label');
+            if (labelEl) labelEl.textContent = labels[this.viewMode] || 'Large Icons';
+
+            viewDrop.querySelectorAll('.w95-drop-item').forEach(item => {
+                const isSelected = item.dataset.value === this.viewMode;
+                item.style.background = isSelected ? '#000080' : '#c0c0c0';
+                item.style.color = isSelected ? '#ffffff' : '#000000';
+            });
+        }
 
         if (this.currentPath === "HOME") {
             if (addressInput) addressInput.value = "My Computer";
