@@ -20,26 +20,15 @@ export class ZebVMManager {
                 desc: 'Classic ZebOS v1.6.2 Service Pack 1 Virtual Workstation'
             },
             {
-                id: 'vm-hh-launcher',
-                name: 'Private H&H Launcher',
-                url: 'https://aduritetbh.github.io/homework/',
-                os: 'H&H Launcher OS 4.0',
-                ram: 1024,
-                cpus: 4,
+                id: 'vm-zebos-legacy',
+                name: 'ZebOS 1.0 Classic',
+                url: 'https://z3bos.github.io/ZebOS/',
+                os: 'ZebOS v1.0.0',
+                ram: 256,
+                cpus: 1,
                 status: 'stopped',
                 booting: false,
-                desc: 'Enterprise H&H Application Execution Environment'
-            },
-            {
-                id: 'vm-hh-ai',
-                name: 'Private H&H AI',
-                url: 'https://aduritetbh.github.io/H-H-AI/',
-                os: 'H-H AI Engine v3.0',
-                ram: 2048,
-                cpus: 4,
-                status: 'stopped',
-                booting: false,
-                desc: 'Advanced H&H Artificial Intelligence Machine'
+                desc: 'Legacy 16-Bit ZebOS v1.0 Architecture Virtual Instance'
             }
         ];
 
@@ -82,7 +71,7 @@ export class ZebVMManager {
                         </button>
                     </div>
                     <div style="font-weight:bold; color:#000080; display:flex; align-items:center; gap:6px;">
-                        <span class="exp-icon-wrap">${getIcon('vm')}</span> ZebVM Hypervisor v2.5.0
+                        <span class="exp-icon-wrap">${getIcon('vm')}</span> ZebVM Hypervisor v2.5.1
                     </div>
                 </div>
 
@@ -131,7 +120,7 @@ export class ZebVMManager {
             return `
                 <div style="flex-grow:1; background:#0c0c0c; color:#00ff00; font-family:'Consolas','Courier New',monospace; padding:16px; font-size:12px; line-height:1.6; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
                     <div style="width:50px; height:50px; margin-bottom:12px;">${getIcon('vm')}</div>
-                    <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.5.0 Post Diagnostic Check</div>
+                    <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.5.1 Post Diagnostic Check</div>
                     <div style="color:#00ff00; margin-top:8px;">Initializing Virtual Hardware Layer...</div>
                     <div style="color:#888888; margin-top:4px;">Probing ${vm.cpus} vCPU cores | Allocating ${vm.ram}MB Virtual RAM</div>
                     <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${vm.name}]...</div>
