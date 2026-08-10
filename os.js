@@ -136,9 +136,15 @@ function enterDevMode() {
 // ==========================================================================
 
 function loadFileSystem() {
-    const diskImage = localStorage.getItem('ZEBOS_V2_DISK');
-    // Restore persisted OS appearance settings
-    const savedSettings = localStorage.getItem('ZEBOS_V2_SETTINGS');
+    let diskImage = null;
+    let savedSettings = null;
+    try {
+        diskImage = localStorage.getItem('ZEBOS_V2_DISK');
+        savedSettings = localStorage.getItem('ZEBOS_V2_SETTINGS');
+    } catch (e) {
+        logKernel("Storage System Warning: LocalStorage access restricted or unavailable.", "WARN");
+    }
+
     if (savedSettings) {
         try {
             const s = JSON.parse(savedSettings);
@@ -149,11 +155,17 @@ function loadFileSystem() {
             if (s.roundedCorners !== undefined) systemState.roundedCorners = s.roundedCorners;
         } catch(e) { /* ignore */ }
     }
+
     if (diskImage) {
         try {
-            systemState.fileSystem = JSON.parse(diskImage);
-            logKernel("Storage System: Restored persistent file allocations from disk image sector.");
-            ensureSystemFoldersExist();
+            const parsed = JSON.parse(diskImage);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                systemState.fileSystem = parsed;
+                logKernel("Storage System: Restored persistent file allocations from disk image sector.");
+                ensureSystemFoldersExist();
+            } else {
+                throw new Error("Disk sector contains non-object data structure.");
+            }
         } catch (err) {
             logKernel(`Storage System Error: Hard drive image corrupted. Resetting data cells. (${err.message})`, "ERROR");
             provisionDefaultRootFS();
@@ -161,15 +173,19 @@ function loadFileSystem() {
     } else {
         provisionDefaultRootFS();
     }
+    window.zebosState = systemState;
 }
 
 function ensureSystemFoldersExist() {
-    if (!systemState.fileSystem) systemState.fileSystem = {};
+    if (!systemState.fileSystem || typeof systemState.fileSystem !== 'object') {
+        systemState.fileSystem = {};
+    }
 
-    // Automatically remove legacy Windows, Program Files, or System32 folders from stored disk images
-    if (systemState.fileSystem["Windows"]) delete systemState.fileSystem["Windows"];
-    if (systemState.fileSystem["Program Files"]) delete systemState.fileSystem["Program Files"];
-    if (systemState.fileSystem["System32"]) delete systemState.fileSystem["System32"];
+    // Purge any legacy Windows / legacy storage keys if present
+    const legacyKeys = ["Windows", "Program Files", "ProgramFiles", "System32", "sys32"];
+    legacyKeys.forEach(k => {
+        if (systemState.fileSystem[k]) delete systemState.fileSystem[k];
+    });
 
     const defaults = {
         "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.0!\nPersistent storage disk saving & dynamic VFS active." },
@@ -236,12 +252,47 @@ function ensureSystemFoldersExist() {
 
     let updated = false;
     for (const key in defaults) {
-        if (!systemState.fileSystem[key]) {
+        const existing = systemState.fileSystem[key];
+        if (!existing || typeof existing !== 'object' || (defaults[key].type === 'dir' && (existing.type !== 'dir' || !existing.content))) {
             systemState.fileSystem[key] = defaults[key];
             updated = true;
         }
     }
+    ensureUserProfileFolder(systemState.currentUser || "Guest");
     if (updated) saveFileSystem();
+}
+
+export function ensureUserProfileFolder(rawUsername) {
+    const name = (rawUsername && rawUsername.trim()) ? rawUsername.trim() : "Guest";
+    const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+    systemState.currentUser = formattedName;
+
+    if (!systemState.fileSystem) systemState.fileSystem = {};
+    if (!systemState.fileSystem["Users"]) {
+        systemState.fileSystem["Users"] = { type: "dir", content: {} };
+    }
+    const usersContent = systemState.fileSystem["Users"].content;
+
+    if (!usersContent[formattedName]) {
+        usersContent[formattedName] = {
+            type: "dir",
+            content: {
+                "Desktop":   { type: "dir", content: {} },
+                "Documents": {
+                    type: "dir",
+                    content: {
+                        "welcome.txt": { type: "file", content: `Welcome to ZebOS 2, ${formattedName}!\nEnjoy exploring your personal retro workspace.` },
+                        "notes.txt":   { type: "file", content: "ZebOS 2 Dev Notes:\n- Custom ZebOS controls\n- Dynamic taskbar\n- Synthesizer sound engine" }
+                    }
+                },
+                "Pictures":  { type: "dir", content: {} },
+                "Downloads": { type: "dir", content: {} }
+            }
+        };
+        saveFileSystem();
+    }
+    window.zebosState = systemState;
+    return formattedName;
 }
 
 export function saveFileSystem() {
@@ -587,7 +638,7 @@ function initializeBootSequence() {
                 try {
                     const module = await import('./logon/logon.js');
                     module.showLogonScreen((username) => {
-                        systemState.currentUser = username;
+                        const activeUser = ensureUserProfileFolder(username);
                         const desktopCanvas = document.getElementById('desktop-canvas');
                         const taskbar = document.getElementById('system-taskbar');
                         if (desktopCanvas) {
@@ -874,6 +925,34 @@ function setWindowBounds(bodyElement, width, height) {
     }
 }
 
+function launchFile(fileName) {
+    if (!fileName) return;
+    if (fileName.endsWith('.zdl')) {
+        showOsConfirm(
+            "Cannot Open System Library",
+            `'${fileName}' is a ZebOS System Dynamic Library (.zdl) binary module.\n\nSystem libraries are compiled binary components executed directly by ZebOS kernel drivers and cannot be opened in Text Editor.`,
+            true,
+            () => {}
+        );
+        return;
+    }
+    if (fileName.endsWith('.png') || fileName.endsWith('.bmp')) {
+        launchApplication('start-link-paint', fileName);
+        return;
+    }
+    if (fileName.endsWith('.exe')) {
+        const lower = fileName.toLowerCase();
+        if (lower.includes('paint')) launchApplication('start-link-paint');
+        else if (lower.includes('editor')) launchApplication('start-link-text-editor');
+        else if (lower.includes('cmd') || lower.includes('terminal')) launchApplication('start-link-prompt');
+        else if (lower.includes('mines')) launchApplication('start-link-mines');
+        else if (lower.includes('player')) launchApplication('start-link-media');
+        else launchApplication('start-link-text-editor', fileName);
+        return;
+    }
+    launchApplication('start-link-text-editor', fileName);
+}
+
 async function launchApplication(appId, customFileName = null) {
     const currentContext = getActiveFolderContext();
 
@@ -887,7 +966,7 @@ async function launchApplication(appId, customFileName = null) {
                     setWindowBounds(explorerBody, 760, 480);
                     const expInstance = new module.FileExplorerApp(
                         () => closeWindow(winId),
-                        (fileName) => launchApplication('start-link-text-editor', fileName),
+                        (fileName) => launchFile(fileName),
                         () => saveFileSystem(),
                         (path) => getVfsNodeByPath(path)
                     );

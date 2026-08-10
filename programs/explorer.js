@@ -36,65 +36,65 @@ export class FileExplorerApp {
                 </div>
 
                 <!-- 2. Standard Toolbar -->
-                <div class="explorer-toolbar" style="display:flex; align-items:center; gap:4px; padding:2px 4px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:nowrap; overflow:hidden;">
+                <div class="explorer-toolbar" style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:nowrap; overflow:visible; position:relative; z-index:100;">
                     <!-- Navigation Tools -->
-                    <button class="exp-tb-btn" id="exp-tb-home" title="My Computer (Home)" style="display:inline-flex; align-items:center; justify-content:center; padding:2px 5px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:24px; height:22px; box-sizing:border-box;">
+                    <button class="exp-tb-btn" id="exp-tb-home" title="My Computer (Home)" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:26px; height:24px; box-sizing:border-box;">
                         <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('home')}</span>
                     </button>
-                    <button class="exp-tb-btn" id="exp-tb-back" title="Back" style="display:inline-flex; align-items:center; justify-content:center; padding:2px 5px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:24px; height:22px; box-sizing:border-box;">
+                    <button class="exp-tb-btn" id="exp-tb-back" title="Back" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:26px; height:24px; box-sizing:border-box;">
                         <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('back')}</span>
                     </button>
-                    <button class="exp-tb-btn" id="exp-tb-up" title="Up One Level" style="display:inline-flex; align-items:center; justify-content:center; padding:2px 5px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:24px; height:22px; box-sizing:border-box;">
+                    <button class="exp-tb-btn" id="exp-tb-up" title="Up One Level" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; min-width:26px; height:24px; box-sizing:border-box;">
                         <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('up')}</span>
                     </button>
 
                     <!-- 3D Separator -->
-                    <div style="border-left:1px solid #808080; border-right:1px solid #ffffff; width:0; height:18px; margin:0 3px; flex-shrink:0;"></div>
+                    <div style="border-left:1px solid #808080; border-right:1px solid #ffffff; width:0; height:20px; margin:0 4px; flex-shrink:0;"></div>
 
                     <!-- File Action Tools -->
-                    <button class="exp-tb-btn" id="exp-tb-cut" title="Cut" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">Cut</button>
-                    <button class="exp-tb-btn" id="exp-tb-copy" title="Copy" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">Copy</button>
-                    <button class="exp-tb-btn" id="exp-tb-paste" title="Paste" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">Paste</button>
-                    <button class="exp-tb-btn" id="exp-tb-delete" title="Delete" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">Delete</button>
-                    <button class="exp-tb-btn" id="exp-tb-newfolder" title="New Folder" style="padding:2px 6px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:22px; font-size:11px; box-sizing:border-box;">+ Folder</button>
+                    <button class="exp-tb-btn" id="exp-tb-cut" title="Cut" style="padding:3px 8px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:24px; font-size:11px; box-sizing:border-box;">Cut</button>
+                    <button class="exp-tb-btn" id="exp-tb-copy" title="Copy" style="padding:3px 8px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:24px; font-size:11px; box-sizing:border-box;">Copy</button>
+                    <button class="exp-tb-btn" id="exp-tb-paste" title="Paste" style="padding:3px 8px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:24px; font-size:11px; box-sizing:border-box;">Paste</button>
+                    <button class="exp-tb-btn" id="exp-tb-delete" title="Delete" style="padding:3px 8px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:24px; font-size:11px; box-sizing:border-box;">Delete</button>
+                    <button class="exp-tb-btn" id="exp-tb-newfolder" title="New Folder" style="padding:3px 8px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; height:24px; font-size:11px; box-sizing:border-box;">+ Folder</button>
 
                     <!-- 3D Separator -->
-                    <div style="border-left:1px solid #808080; border-right:1px solid #ffffff; width:0; height:18px; margin:0 3px; flex-shrink:0;"></div>
+                    <div style="border-left:1px solid #808080; border-right:1px solid #ffffff; width:0; height:20px; margin:0 4px; flex-shrink:0;"></div>
 
                     <!-- Custom Win95 View Selector Dropdown -->
-                    <div style="display:inline-flex; align-items:center; gap:4px; margin-left:auto; flex-shrink:0;">
+                    <div style="display:inline-flex; align-items:center; gap:6px; margin-left:auto; flex-shrink:0; position:relative; z-index:200;">
                         <span style="font-size:11px; font-weight:bold;">View:</span>
-                        <div class="w95-dropdown" id="exp-view-dropdown" data-value="large" style="position:relative; width:105px; flex-shrink:0;">
-                            <div class="w95-drop-display" style="display:flex; align-items:center; justify-content:space-between; background:#c0c0c0; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:2px 4px; cursor:pointer; font-size:11px; font-family:Arial,sans-serif; height:22px; box-sizing:border-box;">
+                        <div class="w95-dropdown" id="exp-view-dropdown" data-value="large" style="position:relative; width:110px; flex-shrink:0;">
+                            <div class="w95-drop-display" style="display:flex; align-items:center; justify-content:space-between; background:#c0c0c0; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:2px 6px; cursor:pointer; font-size:11px; font-family:Arial,sans-serif; height:24px; box-sizing:border-box;">
                                 <span class="w95-drop-label" style="flex-grow:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Large Icons</span>
                                 <span style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; font-size:8px; line-height:1; margin-left:4px;">▼</span>
                             </div>
-                            <div class="w95-drop-list" style="display:none; position:absolute; top:100%; right:0; width:115px; background:#c0c0c0; border:1px solid #000000; box-shadow:2px 2px 4px rgba(0,0,0,0.4); z-index:99999; box-sizing:border-box; margin-top:1px;">
-                                <div class="w95-drop-item" data-value="large" style="padding:2px 6px; font-size:11px; cursor:pointer; background:#000080; color:#ffffff;">Large Icons</div>
-                                <div class="w95-drop-item" data-value="small" style="padding:2px 6px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">Small Icons</div>
-                                <div class="w95-drop-item" data-value="list" style="padding:2px 6px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">List</div>
-                                <div class="w95-drop-item" data-value="details" style="padding:2px 6px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">Details</div>
+                            <div class="w95-drop-list" style="display:none; position:absolute; top:100%; right:0; width:120px; background:#c0c0c0; border:1px solid #000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; box-sizing:border-box; margin-top:2px;">
+                                <div class="w95-drop-item" data-value="large" style="padding:4px 8px; font-size:11px; cursor:pointer; background:#000080; color:#ffffff;">Large Icons</div>
+                                <div class="w95-drop-item" data-value="small" style="padding:4px 8px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">Small Icons</div>
+                                <div class="w95-drop-item" data-value="list" style="padding:4px 8px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">List</div>
+                                <div class="w95-drop-item" data-value="details" style="padding:4px 8px; font-size:11px; cursor:pointer; background:#c0c0c0; color:#000000;">Details</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 3. Address Bar -->
-                <div class="explorer-addressbar" style="display:flex; align-items:center; gap:6px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080;">
+                <div class="explorer-addressbar" style="display:flex; align-items:center; gap:8px; padding:4px 8px; background:#c0c0c0; border-bottom:1px solid #808080;">
                     <span style="font-weight:bold; font-size:11px;">Address:</span>
-                    <div style="display:flex; align-items:center; flex-grow:1; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:1px 4px;">
-                        <span class="exp-icon-wrap" id="exp-address-icon" style="margin-right:4px;width:16px;height:16px;display:inline-flex;align-items:center;">${getIcon('home')}</span>
+                    <div style="display:flex; align-items:center; flex-grow:1; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:2px 6px; height:24px; box-sizing:border-box;">
+                        <span class="exp-icon-wrap" id="exp-address-icon" style="margin-right:6px;width:16px;height:16px;display:inline-flex;align-items:center;">${getIcon('home')}</span>
                         <input type="text" id="exp-address-input" value="My Computer" style="flex-grow:1; border:none; outline:none; font-family:Arial, sans-serif; font-size:12px;">
                     </div>
                 </div>
 
                 <!-- 4. Split Main Workspace Panel -->
-                <div class="explorer-body-split" style="display:flex; flex-grow:1; overflow:hidden; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; margin:2px;">
+                <div class="explorer-body-split" style="display:flex; flex-grow:1; overflow:hidden; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; margin:3px;">
                     
                     <!-- Left Sidebar (Folder Tree & Information Card) -->
-                    <div class="explorer-sidebar" style="width:200px; min-width:170px; background:#c0c0c0; border-right:2px solid #808080; display:flex; flex-direction:column; padding:8px; box-sizing:border-box; overflow-y:auto;">
+                    <div class="explorer-sidebar" style="width:220px; min-width:180px; background:#c0c0c0; border-right:2px solid #808080; display:flex; flex-direction:column; padding:10px 12px; box-sizing:border-box; overflow-y:auto; gap:10px;">
                         <!-- Selected / Active Folder Info Card -->
-                        <div id="exp-sidebar-info" style="display:flex; flex-direction:column; gap:6px; border-bottom:1px solid #808080; padding-bottom:12px; margin-bottom:8px;">
+                        <div id="exp-sidebar-info" style="display:flex; flex-direction:column; gap:6px; border-bottom:1px solid #808080; padding-bottom:14px; margin-bottom:4px;">
                             <div style="width:48px; height:48px;" id="exp-info-icon">${getIcon('computer')}</div>
                             <div style="font-size:15px; font-weight:bold; color:#000080; word-break:break-all;" id="exp-info-title">My Computer</div>
                             <div style="font-size:11px; color:#555;" id="exp-info-type">System Dashboard</div>
@@ -106,12 +106,12 @@ export class FileExplorerApp {
                         </div>
 
                         <!-- Tree Navigation -->
-                        <div style="font-weight:bold; font-size:11px; margin-bottom:4px; color:#000080;">All Locations</div>
-                        <div id="exp-folder-tree" style="display:flex; flex-direction:column; gap:2px; font-size:11px;"></div>
+                        <div style="font-weight:bold; font-size:11px; color:#000080;">All Locations</div>
+                        <div id="exp-folder-tree" style="display:flex; flex-direction:column; gap:3px; font-size:11px;"></div>
                     </div>
 
                     <!-- Right Main Content Panel -->
-                    <div class="explorer-main-view" style="flex-grow:1; background:#ffffff; overflow:auto; padding:6px; position:relative;">
+                    <div class="explorer-main-view" style="flex-grow:1; background:#ffffff; overflow:auto; padding:14px 16px; position:relative;">
                         <div id="exp-items-container"></div>
                     </div>
                 </div>
@@ -134,8 +134,6 @@ export class FileExplorerApp {
         const btnHome = this.container.querySelector('#exp-tb-home');
         const btnUp = this.container.querySelector('#exp-tb-up');
         const btnBack = this.container.querySelector('#exp-tb-back');
-        const btnNewFolder = this.container.querySelector('#exp-tb-newfolder');
-        const btnDelete = this.container.querySelector('#exp-tb-delete');
         const addressInput = this.container.querySelector('#exp-address-input');
 
         btnHome.addEventListener('click', () => this.navigateTo("HOME"));
@@ -159,17 +157,71 @@ export class FileExplorerApp {
             }
         });
 
-        btnNewFolder.addEventListener('click', () => {
-            if (this.currentPath === "HOME") {
-                this.navigateTo(""); // Switch to ZebRoot for folder creation
+        const btnCut       = this.container.querySelector('#exp-tb-cut');
+        const btnCopy      = this.container.querySelector('#exp-tb-copy');
+        const btnPaste     = this.container.querySelector('#exp-tb-paste');
+        const btnDelete    = this.container.querySelector('#exp-tb-delete');
+        const btnNewFolder = this.container.querySelector('#exp-tb-newfolder');
+
+        btnCut.addEventListener('click', () => {
+            if (this.selectedItem && this.currentPath !== "HOME") {
+                const context = this.getVfsContext(this.currentPath);
+                if (context && context[this.selectedItem]) {
+                    window.zebosClipboard = { name: this.selectedItem, item: JSON.parse(JSON.stringify(context[this.selectedItem])) };
+                    delete context[this.selectedItem];
+                    this.selectedItem = null;
+                    this.saveVfsCallback();
+                    this.refreshView();
+                }
             }
+        });
+
+        btnCopy.addEventListener('click', () => {
+            if (this.selectedItem && this.currentPath !== "HOME") {
+                const context = this.getVfsContext(this.currentPath);
+                if (context && context[this.selectedItem]) {
+                    window.zebosClipboard = { name: this.selectedItem, item: JSON.parse(JSON.stringify(context[this.selectedItem])) };
+                    this.updateToolbarButtonStates();
+                }
+            }
+        });
+
+        btnPaste.addEventListener('click', () => {
+            if (window.zebosClipboard && this.currentPath !== "HOME") {
+                const context = this.getVfsContext(this.currentPath);
+                if (context) {
+                    let destName = window.zebosClipboard.name;
+                    if (context[destName]) {
+                        const parts = destName.split('.');
+                        if (parts.length > 1 && destName.includes('.')) {
+                            const ext = parts.pop();
+                            destName = `${parts.join('.')}_copy.${ext}`;
+                        } else {
+                            destName = `${destName}_copy`;
+                        }
+                    }
+                    context[destName] = JSON.parse(JSON.stringify(window.zebosClipboard.item));
+                    this.saveVfsCallback();
+                    this.refreshView();
+                }
+            }
+        });
+
+        btnNewFolder.addEventListener('click', () => {
+            if (this.currentPath === "HOME") return;
             showOsPrompt("New Folder", "Type a name for the new folder:", "New Folder", (name) => {
-                const folderName = name.trim();
+                const folderName = name ? name.trim() : "";
                 if (!folderName) return;
                 const context = this.getVfsContext(this.currentPath);
-                context[folderName] = { type: "dir", content: {} };
-                this.saveVfsCallback();
-                this.refreshView();
+                if (context) {
+                    if (context[folderName]) {
+                        showOsConfirm("Folder Exists", `A folder or file named '${folderName}' already exists.`);
+                        return;
+                    }
+                    context[folderName] = { type: "dir", content: {} };
+                    this.saveVfsCallback();
+                    this.refreshView();
+                }
             });
         });
 
@@ -328,6 +380,46 @@ export class FileExplorerApp {
 
         const statusMid = this.container.querySelector('#exp-status-mid');
         if (statusMid) statusMid.textContent = `Disk Free: ${freeMbStr} MB (Used: ${usedStr})`;
+
+        this.updateToolbarButtonStates();
+    }
+
+    updateToolbarButtonStates() {
+        const cutBtn       = this.container.querySelector('#exp-tb-cut');
+        const copyBtn      = this.container.querySelector('#exp-tb-copy');
+        const pasteBtn     = this.container.querySelector('#exp-tb-paste');
+        const deleteBtn    = this.container.querySelector('#exp-tb-delete');
+        const newFolderBtn = this.container.querySelector('#exp-tb-newfolder');
+
+        const isHome = (this.currentPath === "HOME");
+        const hasSelection = (this.selectedItem !== null && !isHome);
+        const hasClipboard = (!!window.zebosClipboard && !isHome);
+
+        const applyState = (btn, enabled) => {
+            if (!btn) return;
+            btn.disabled = !enabled;
+            if (enabled) {
+                btn.style.color = '#000000';
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.border = '2px solid #ffffff';
+                btn.style.borderRightColor = '#000000';
+                btn.style.borderBottomColor = '#000000';
+            } else {
+                btn.style.color = '#808080';
+                btn.style.opacity = '0.65';
+                btn.style.cursor = 'default';
+                btn.style.border = '1px solid #808080';
+                btn.style.borderRightColor = '#808080';
+                btn.style.borderBottomColor = '#808080';
+            }
+        };
+
+        applyState(cutBtn, hasSelection);
+        applyState(copyBtn, hasSelection);
+        applyState(deleteBtn, hasSelection);
+        applyState(pasteBtn, hasClipboard);
+        applyState(newFolderBtn, !isHome);
     }
 
     renderHomeView() {
@@ -358,48 +450,18 @@ export class FileExplorerApp {
               <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));gap:12px;">
                 
                 <!-- Drive Z: -->
-                <div class="exp-drive-card" data-path="" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:6px;">
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <div style="width:28px;height:28px;flex-shrink:0;">${getIcon('drive')}</div>
+                <div class="exp-drive-card" data-path="" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:8px;max-width:320px;">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:32px;height:32px;flex-shrink:0;">${getIcon('drive')}</div>
                     <div>
-                      <div style="font-weight:bold;font-size:12px;color:#000080;">ZebRoot (Z:)</div>
-                      <div style="font-size:10px;color:#444;">ZebVFS Primary Volume</div>
+                      <div style="font-weight:bold;font-size:13px;color:#000080;">ZebRoot (Z:)</div>
+                      <div style="font-size:11px;color:#444;">ZebVFS Primary System Volume</div>
                     </div>
                   </div>
-                  <div style="width:100%;height:12px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;box-sizing:border-box;">
+                  <div style="width:100%;height:14px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;box-sizing:border-box;">
                     <div style="width:${usedPercent}%;height:100%;background:#000080;"></div>
                   </div>
-                  <div style="font-size:10px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${usedStr} used of 2.00 GB (${freeMbStr} MB free)</div>
-                </div>
-
-                <!-- Drive R: -->
-                <div class="exp-drive-card" data-path="" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:6px;">
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <div style="width:28px;height:28px;flex-shrink:0;">${getIcon('drive')}</div>
-                    <div>
-                      <div style="font-weight:bold;font-size:12px;color:#000080;">RAM Disk (R:)</div>
-                      <div style="font-size:10px;color:#444;">Volatile Memory Cache</div>
-                    </div>
-                  </div>
-                  <div style="width:100%;height:12px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;box-sizing:border-box;">
-                    <div style="width:12%;height:100%;background:#000080;"></div>
-                  </div>
-                  <div style="font-size:10px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">64 MB used of 512 MB (448 MB free)</div>
-                </div>
-
-                <!-- Drive D: -->
-                <div class="exp-drive-card" data-path="" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:10px;cursor:default;display:flex;flex-direction:column;gap:6px;">
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <div style="width:28px;height:28px;flex-shrink:0;">${getIcon('media')}</div>
-                    <div>
-                      <div style="font-weight:bold;font-size:12px;color:#000080;">ZebOS CD-ROM (D:)</div>
-                      <div style="font-size:10px;color:#444;">Disc Media (Read-Only)</div>
-                    </div>
-                  </div>
-                  <div style="width:100%;height:12px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;box-sizing:border-box;">
-                    <div style="width:100%;height:100%;background:#808080;"></div>
-                  </div>
-                  <div style="font-size:10px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">650 MB / 650 MB (Optical Disc)</div>
+                  <div style="font-size:11px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${usedStr} used of 2.00 GB (${freeMbStr} MB free)</div>
                 </div>
 
               </div>
@@ -414,7 +476,7 @@ export class FileExplorerApp {
                   { name: 'ZebApps', path: 'ZebApps', icon: 'folder', desc: 'Applications' },
                   { name: 'Users', path: 'Users', icon: 'user', desc: 'User Profiles' },
                   { name: 'ZebOS', path: 'ZebOS', icon: 'settings', desc: 'System Config' },
-                  { name: 'Documents', path: 'Users/Guest/Documents', icon: 'editor', desc: 'My Documents' }
+                  { name: 'Documents', path: `Users/${window.zebosState?.currentUser || 'Guest'}/Documents`, icon: 'editor', desc: 'My Documents' }
                 ].map(loc => `
                 <div class="exp-quick-loc" data-path="${loc.path}" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:10px;">
                   <div style="width:26px;height:26px;flex-shrink:0;">${getIcon(loc.icon)}</div>
@@ -455,8 +517,9 @@ export class FileExplorerApp {
         grid.style.cssText = `
             display: flex;
             flex-wrap: wrap;
-            gap: ${this.viewMode === 'large' ? '16px' : '8px'};
-            padding: 4px;
+            gap: ${this.viewMode === 'large' ? '20px' : '10px'};
+            padding: 8px;
+            min-height: 100%;
         `;
 
         items.forEach(name => {
@@ -471,30 +534,32 @@ export class FileExplorerApp {
 
             if (this.viewMode === 'large') {
                 card.style.cssText = `
-                    width: 72px;
+                    width: 84px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    padding: 4px;
+                    padding: 8px 4px;
                     border: 1px transparent solid;
                     cursor: pointer;
                     text-align: center;
+                    border-radius: 2px;
                 `;
                 card.innerHTML = `
-                    <div style="width:36px; height:36px;">${iconSvg}</div>
-                    <div style="font-size:11px; margin-top:4px; word-break:break-word; max-width:68px;">${name}</div>
+                    <div style="width:40px; height:40px;">${iconSvg}</div>
+                    <div style="font-size:11px; margin-top:6px; word-break:break-word; max-width:80px; line-height:1.2;">${name}</div>
                 `;
             } else if (this.viewMode === 'small') {
                 card.style.cssText = `
-                    width: 140px;
+                    width: 160px;
                     display: flex;
                     align-items: center;
-                    gap: 6px;
-                    padding: 3px 6px;
+                    gap: 8px;
+                    padding: 6px 8px;
                     cursor: pointer;
+                    border-radius: 2px;
                 `;
                 card.innerHTML = `
-                    <div style="width:18px; height:18px;">${iconSvg}</div>
+                    <div style="width:20px; height:20px; flex-shrink:0;">${iconSvg}</div>
                     <div style="font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</div>
                 `;
             } else {
@@ -502,12 +567,13 @@ export class FileExplorerApp {
                     width: 100%;
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    padding: 4px 8px;
+                    gap: 10px;
+                    padding: 6px 10px;
                     cursor: pointer;
+                    border-radius: 2px;
                 `;
                 card.innerHTML = `
-                    <div style="width:18px; height:18px;">${iconSvg}</div>
+                    <div style="width:20px; height:20px; flex-shrink:0;">${iconSvg}</div>
                     <div style="font-size:12px;">${name}</div>
                 `;
             }
@@ -533,6 +599,14 @@ export class FileExplorerApp {
             });
 
             grid.appendChild(card);
+        });
+
+        // Click outside items to deselect
+        container.addEventListener('click', (e) => {
+            if (!e.target.closest('.explorer-item')) {
+                this.selectedItem = null;
+                this.refreshView();
+            }
         });
 
         container.appendChild(grid);
@@ -580,12 +654,12 @@ export class FileExplorerApp {
             }
 
             row.innerHTML = `
-                <td style="padding:3px 8px; display:flex; align-items:center; gap:6px;">
-                    <span style="width:16px; height:16px;">${iconSvg}</span> ${name}
+                <td style="padding:6px 10px; display:flex; align-items:center; gap:8px;">
+                    <span style="width:18px; height:18px; flex-shrink:0;">${iconSvg}</span> ${name}
                 </td>
-                <td style="padding:3px 8px;">${typeStr}</td>
-                <td style="padding:3px 8px;">${sizeStr}</td>
-                <td style="padding:3px 8px;">${new Date().toLocaleDateString()}</td>
+                <td style="padding:6px 10px;">${typeStr}</td>
+                <td style="padding:6px 10px;">${sizeStr}</td>
+                <td style="padding:6px 10px;">${new Date().toLocaleDateString()}</td>
             `;
 
             row.addEventListener('click', (e) => {
@@ -604,6 +678,13 @@ export class FileExplorerApp {
             });
 
             tbody.appendChild(row);
+        });
+
+        container.addEventListener('click', (e) => {
+            if (!e.target.closest('.explorer-table-row')) {
+                this.selectedItem = null;
+                this.refreshView();
+            }
         });
 
         container.appendChild(table);
