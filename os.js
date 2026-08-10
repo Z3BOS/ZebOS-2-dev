@@ -982,7 +982,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-prompt': {
             const winId = 'app-terminal';
             try {
-                const module = await import('./programs/terminal.js');
+                const module = await import(`./programs/terminal.js?v=${Date.now()}`);
                 const termBody = createWindow("Zeb Terminal", "terminal", winId);
                 if (termBody) {
                     setWindowBounds(termBody, 700, 440);
@@ -1046,7 +1046,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-paint': {
             const winId = 'app-paint';
             try {
-                const module = await import('./programs/paint.js');
+                const module = await import(`./programs/paint.js?v=${Date.now()}`);
                 const paintBody = createWindow("ZebPaint Studio Pro", "paint", winId);
                 if (paintBody) {
                     setWindowBounds(paintBody, 920, 620);
@@ -1072,7 +1072,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-mines': {
             const winId = 'app-mines';
             try {
-                const module = await import('./programs/mines.js');
+                const module = await import(`./programs/mines.js?v=${Date.now()}`);
                 const minesBody = createWindow("Minesweeper", "mines", winId);
                 if (minesBody) {
                     setWindowBounds(minesBody, 360, 420);
@@ -1089,7 +1089,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-media': {
             const winId = 'app-media';
             try {
-                const module = await import('./programs/media.js');
+                const module = await import(`./programs/media.js?v=${Date.now()}`);
                 const mediaBody = createWindow("Media Player", "media", winId);
                 if (mediaBody) {
                     setWindowBounds(mediaBody, 720, 480);
@@ -1112,7 +1112,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-vm': {
             const winId = 'app-vm';
             try {
-                const module = await import('./programs/vm.js');
+                const module = await import(`./programs/vm.js?v=${Date.now()}`);
                 const vmBody = createWindow("ZebVM Manager", "vm", winId);
                 if (vmBody) {
                     setWindowBounds(vmBody, 880, 560);
@@ -1129,7 +1129,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-calc': {
             const winId = 'app-calc';
             try {
-                const module = await import('./programs/calc.js');
+                const module = await import(`./programs/calc.js?v=${Date.now()}`);
                 const calcBody = createWindow("Calculator", "calc", winId);
                 if (calcBody) {
                     setWindowBounds(calcBody, 320, 400);
@@ -1146,7 +1146,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-snake': {
             const winId = 'app-snake';
             try {
-                const module = await import('./programs/snake.js');
+                const module = await import(`./programs/snake.js?v=${Date.now()}`);
                 const snakeBody = createWindow("Snake", "snake", winId);
                 if (snakeBody) {
                     setWindowBounds(snakeBody, 420, 460);
@@ -1188,7 +1188,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-personalize': {
             const winId = 'personalize-dialog';
             try {
-                const module = await import('./programs/personalize.js');
+                const module = await import(`./programs/personalize.js?v=${Date.now()}`);
                 const pBody = createWindow("Display Properties", "personalize", winId);
                 if (pBody) {
                     setWindowBounds(pBody, 470, 490);
