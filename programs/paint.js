@@ -119,12 +119,12 @@ export class PaintApp {
             <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; box-sizing:border-box; user-select:none; font-family:Arial, sans-serif; overflow:hidden;">
                 
                 <!-- 1. Win95 Standard Menubar (File, Edit, Layer, Help) -->
-                <div class="paint-menubar" style="display:flex; gap:2px; padding:2px 4px; background:#c0c0c0; border-bottom:1px solid #808080; font-size:12px; position:relative; z-index:100; flex-shrink:0;">
+                <div class="paint-menubar" style="display:flex; gap:2px; padding:2px 4px; background:#c0c0c0; border-bottom:1px solid #808080; font-size:12px; position:relative; z-index:500; flex-shrink:0;">
                     
                     <!-- File Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="paint-menu-btn" data-menu="file" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>F</u>ile</span>
-                        <div class="paint-dropdown" id="menu-file-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:180px; padding:2px 0;">
+                        <div class="paint-dropdown" id="menu-file-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; min-width:180px; padding:2px 0;">
                             <div class="paint-menu-drop-opt opt-new"><span>New</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+N</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
                             <div class="paint-menu-drop-opt opt-save"><span>Save to ZebOS</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+S</span></div>
@@ -139,7 +139,7 @@ export class PaintApp {
                     <!-- Edit Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="paint-menu-btn" data-menu="edit" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>E</u>dit</span>
-                        <div class="paint-dropdown" id="menu-edit-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                        <div class="paint-dropdown" id="menu-edit-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; min-width:160px; padding:2px 0;">
                             <div class="paint-menu-drop-opt opt-undo"><span>Undo</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+Z</span></div>
                             <div class="paint-menu-drop-opt opt-redo"><span>Redo</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+Y</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
@@ -150,7 +150,7 @@ export class PaintApp {
                     <!-- Layer Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="paint-menu-btn" data-menu="layer" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>L</u>ayer</span>
-                        <div class="paint-dropdown" id="menu-layer-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                        <div class="paint-dropdown" id="menu-layer-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; min-width:160px; padding:2px 0;">
                             <div class="paint-menu-drop-opt opt-add-layer"><span>+ New Layer</span></div>
                             <div class="paint-menu-drop-opt opt-del-layer"><span>- Delete Active Layer</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
@@ -161,7 +161,7 @@ export class PaintApp {
                     <!-- Help Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="paint-menu-btn" data-menu="help" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>H</u>elp</span>
-                        <div class="paint-dropdown" id="menu-help-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                        <div class="paint-dropdown" id="menu-help-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; min-width:160px; padding:2px 0;">
                             <div class="paint-menu-drop-opt opt-about"><span>About ZebPaint Studio</span></div>
                         </div>
                     </div>
@@ -674,6 +674,16 @@ export class PaintApp {
                 brushWrap.dataset.value = item.dataset.value;
                 brushLabel.textContent = item.querySelector('span').textContent.trim();
                 brushList.style.display = 'none';
+
+                // Synchronize active tool button with selected brush type
+                const toolBtns = this.bodyElement.querySelectorAll('.paint-tool-btn');
+                if (item.dataset.value === 'eraser') {
+                    this.currentTool = 'eraser';
+                    toolBtns.forEach(b => b.classList.toggle('active-tool', b.dataset.tool === 'eraser'));
+                } else {
+                    this.currentTool = 'brush';
+                    toolBtns.forEach(b => b.classList.toggle('active-tool', b.dataset.tool === 'brush'));
+                }
                 this.renderBrushHeadThumb();
             });
         });
@@ -812,15 +822,27 @@ export class PaintApp {
 
     handleMouseDown(e) {
         if (e.button !== 0) return;
-        const activeLayer = this.getActiveLayer();
-        if (!activeLayer || !activeLayer.visible) return;
+        
+        this.isDrawing = false;
+        let activeLayer = this.getActiveLayer();
+        if (!activeLayer) {
+            this.addLayer("Layer 1");
+            activeLayer = this.getActiveLayer();
+        }
 
-        this.isDrawing = true;
+        // Auto-enable visibility if drawing on a hidden layer so strokes are never lost
+        if (!activeLayer.visible) {
+            activeLayer.visible = true;
+            this.renderComposite();
+            this.renderLayersUI();
+        }
+
         const coords = this.getCanvasCoords(e);
         this.lastX = coords.x;
         this.lastY = coords.y;
         this.startX = coords.x;
         this.startY = coords.y;
+        this.isDrawing = true;
 
         if (this.currentTool === 'fill') {
             this.floodFill(Math.floor(coords.x), Math.floor(coords.y), this.currentColor);
@@ -878,13 +900,15 @@ export class PaintApp {
 
     // High-Density Sub-Pixel Interpolated Stroke Rendering (100% Solid & Gapless)
     drawContinuousStroke(ctx, x1, y1, x2, y2) {
-        const tool = (this.currentTool === 'eraser') ? 'eraser' : this.currentBrushType;
-        const size = this.currentSize;
-        const opacity = (this.currentOpacity / 100);
-        const hardness = (this.currentHardness / 100);
-        const color = this.currentColor;
+        if (!ctx) return;
+        const tool = (this.currentTool === 'eraser') ? 'eraser' : (this.currentBrushType || 'round');
+        const size = Math.max(1, isNaN(this.currentSize) ? 6 : Number(this.currentSize));
+        const opacity = Math.max(0.01, Math.min(1.0, isNaN(this.currentOpacity) ? 1.0 : (Number(this.currentOpacity) / 100)));
+        const hardness = Math.max(0, Math.min(1.0, isNaN(this.currentHardness) ? 0.8 : (Number(this.currentHardness) / 100)));
+        const color = this.currentColor || '#000000';
 
         ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
 
         if (tool === 'eraser') {
             ctx.globalCompositeOperation = 'destination-out';
