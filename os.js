@@ -149,19 +149,99 @@ function loadFileSystem() {
             if (s.roundedCorners !== undefined) systemState.roundedCorners = s.roundedCorners;
         } catch(e) { /* ignore */ }
     }
-
     if (diskImage) {
         try {
             systemState.fileSystem = JSON.parse(diskImage);
             logKernel("Storage System: Restored persistent file allocations from disk image sector.");
+            ensureSystemFoldersExist();
         } catch (err) {
             logKernel(`Storage System Error: Hard drive image corrupted. Resetting data cells. (${err.message})`, "ERROR");
             provisionDefaultRootFS();
         }
     } else {
-        logKernel("Storage System: Initializing new root filesystem partition.");
         provisionDefaultRootFS();
     }
+}
+
+function ensureSystemFoldersExist() {
+    if (!systemState.fileSystem) systemState.fileSystem = {};
+
+    // Automatically remove legacy Windows, Program Files, or System32 folders from stored disk images
+    if (systemState.fileSystem["Windows"]) delete systemState.fileSystem["Windows"];
+    if (systemState.fileSystem["Program Files"]) delete systemState.fileSystem["Program Files"];
+    if (systemState.fileSystem["System32"]) delete systemState.fileSystem["System32"];
+
+    const defaults = {
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "Zeb32": {
+            type: "dir",
+            content: {
+                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.5.0.8f31b40" },
+                "shell32.zdl":   { type: "file", content: "ZebOS Desktop User Interface Shell Controller" },
+                "user32.zdl":    { type: "file", content: "ZebOS Windowing & Event Management Subsystem" },
+                "gdi32.zdl":     { type: "file", content: "ZebOS Graphics Device Interface Subsystem" },
+                "vfs32.zdl":     { type: "file", content: "Virtual File Allocation Subsystem & Disk Driver" },
+                "net32.zdl":     { type: "file", content: "ZebOS Socket Protocol Subsystem" },
+                "sound32.zdl":   { type: "file", content: "Web Audio Synthesizer Audio Driver" },
+                "drivers": {
+                    type: "dir",
+                    content: {
+                        "display.zdl":  { type: "file", content: "SVGA Color Display Controller Driver" },
+                        "mouse.zdl":    { type: "file", content: "PS/2 Mouse Input Driver" },
+                        "keyboard.zdl": { type: "file", content: "AT Standard Keyboard Driver" }
+                    }
+                }
+            }
+        },
+        "ZebApps": {
+            type: "dir",
+            content: {
+                "Paint Studio": { type: "dir", content: { "paint.exe": { type: "file", content: "Binary Executable: Paint Studio" } } },
+                "Text Editor":  { type: "dir", content: { "editor.exe": { type: "file", content: "Binary Executable: Text Editor" } } },
+                "Terminal":     { type: "dir", content: { "cmd.exe": { type: "file", content: "Binary Executable: Zeb Terminal Prompt" } } },
+                "Minesweeper":   { type: "dir", content: { "mines.exe": { type: "file", content: "Binary Executable: Minesweeper Game" } } },
+                "Media Player":  { type: "dir", content: { "player.exe": { type: "file", content: "Binary Executable: Retro Media Player" } } },
+                "ZebVM":         { type: "dir", content: { "zebvm.exe": { type: "file", content: "Binary Executable: ZebVM Virtual Machine" } } }
+            }
+        },
+        "Users": {
+            type: "dir",
+            content: {
+                "Guest": {
+                    type: "dir",
+                    content: {
+                        "Desktop":   { type: "dir", content: {} },
+                        "Documents": {
+                            type: "dir",
+                            content: {
+                                "welcome.txt": { type: "file", content: "Welcome to ZebOS 2!\nEnjoy exploring the retro operating system interface." },
+                                "notes.txt":   { type: "file", content: "ZebOS 2 Dev Notes:\n- Custom Win95 controls\n- Dynamic taskbar\n- Synthesizer sound engine" }
+                            }
+                        },
+                        "Pictures":  { type: "dir", content: {} },
+                        "Downloads": { type: "dir", content: {} }
+                    }
+                }
+            }
+        },
+        "ZebOS": {
+            type: "dir",
+            content: {
+                "system.ini": { type: "file", content: "[boot]\nshell=shell32.zdl\ndrivers=display.zdl,mouse.zdl,sound32.zdl\n" },
+                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=2.5.0\nTheme=Standard\n" },
+                "zebos.cfg":   { type: "file", content: "CONFIG_DEV_MODE=0\nCONFIG_VFS_QUOTA=2097152\n" }
+            }
+        }
+    };
+
+    let updated = false;
+    for (const key in defaults) {
+        if (!systemState.fileSystem[key]) {
+            systemState.fileSystem[key] = defaults[key];
+            updated = true;
+        }
+    }
+    if (updated) saveFileSystem();
 }
 
 export function saveFileSystem() {
@@ -369,7 +449,7 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
         "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.0!\nPersistent storage disk saving & dynamic VFS active." },
-        "System32": {
+        "Zeb32": {
             type: "dir",
             content: {
                 "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.5.0.8f31b40" },
@@ -389,7 +469,7 @@ function provisionDefaultRootFS() {
                 }
             }
         },
-        "Program Files": {
+        "ZebApps": {
             type: "dir",
             content: {
                 "Paint Studio": { type: "dir", content: { "paint.exe": { type: "file", content: "Binary Executable: Paint Studio" } } },
@@ -420,7 +500,7 @@ function provisionDefaultRootFS() {
                 }
             }
         },
-        "Windows": {
+        "ZebOS": {
             type: "dir",
             content: {
                 "system.ini": { type: "file", content: "[boot]\nshell=shell32.zdl\ndrivers=display.zdl,mouse.zdl,sound32.zdl\n" },

@@ -6,13 +6,16 @@ let activeSubmenu = null;
 
 export function initContextMenuSystem(callbacks = {}) {
     document.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        
         const items = getContextMenuForElement(e.target, callbacks);
         if (items && items.length > 0) {
+            e.preventDefault();
             renderContextMenu(e.clientX, e.clientY, items);
         } else {
             closeContextMenu();
+            const isTextField = e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.isContentEditable;
+            if (!isTextField) {
+                e.preventDefault();
+            }
         }
     });
 
@@ -150,39 +153,50 @@ function getContextMenuForElement(target, callbacks) {
         ];
     }
 
-    // 6. Default Desktop Background Canvas
-    return [
-        { 
-            label: 'View', icon: 'explorer', hasSubmenu: true,
-            submenu: [
-                { label: 'Large Icons', icon: 'explorer', isCheckable: true, checked: callbacks.getCurrentViewMode?.() === 'large', action: () => callbacks.onChangeDesktopView?.('large') },
-                { label: 'Small Icons', icon: 'file', isCheckable: true, checked: callbacks.getCurrentViewMode?.() === 'small', action: () => callbacks.onChangeDesktopView?.('small') },
-                { label: 'Auto Arrange', icon: 'settings', isCheckable: true, checked: callbacks.getAutoArrange?.(), action: () => callbacks.onArrangeIcons?.('auto') }
-            ]
-        },
-        { 
-            label: 'Arrange Icons', icon: 'file', hasSubmenu: true,
-            submenu: [
-                { label: 'By Name', icon: 'editor', isCheckable: true, checked: callbacks.getSortBy?.() === 'name', action: () => callbacks.onArrangeIcons?.('name') },
-                { label: 'By Type', icon: 'folder', isCheckable: true, checked: callbacks.getSortBy?.() === 'type', action: () => callbacks.onArrangeIcons?.('type') },
-                { label: 'By Size', icon: 'calc', isCheckable: true, checked: callbacks.getSortBy?.() === 'size', action: () => callbacks.onArrangeIcons?.('size') }
-            ]
-        },
-        { label: 'Refresh', icon: 'startLogo', action: () => callbacks.onRefreshDesktop?.() },
-        { type: 'separator' },
-        { 
-            label: 'New', icon: 'newFolder', hasSubmenu: true,
-            submenu: [
-                { label: 'Folder', icon: 'folder', action: () => callbacks.onCreateNewFolder?.() },
-                { label: 'Text Document', icon: 'editor', action: () => callbacks.onCreateNewFile?.('Text Document', 'txt') },
-                { label: 'Bitmap Image', icon: 'paint', action: () => callbacks.onCreateNewFile?.('Bitmap Image', 'png') },
-                { label: 'Shortcut', icon: 'startLogo', action: () => callbacks.onCreateNewShortcut?.() }
-            ]
-        },
-        { type: 'separator' },
-        { label: 'Personalize', icon: 'personalize', action: () => callbacks.onOpenPersonalize?.() },
-        { label: 'Properties', icon: 'settings', action: () => showDesktopPropertiesDialog(callbacks) }
-    ];
+    // 6. Application Window Body / Container
+    const windowFrame = target.closest('.window-frame, .window-body');
+    if (windowFrame) {
+        return null;
+    }
+
+    // 7. Default Desktop Background Canvas
+    const desktopArea = target.closest('#desktop, #desktop-icons-zone, #desktop-build-tag, body');
+    if (desktopArea) {
+        return [
+            { 
+                label: 'View', icon: 'explorer', hasSubmenu: true,
+                submenu: [
+                    { label: 'Large Icons', icon: 'explorer', isCheckable: true, checked: callbacks.getCurrentViewMode?.() === 'large', action: () => callbacks.onChangeDesktopView?.('large') },
+                    { label: 'Small Icons', icon: 'file', isCheckable: true, checked: callbacks.getCurrentViewMode?.() === 'small', action: () => callbacks.onChangeDesktopView?.('small') },
+                    { label: 'Auto Arrange', icon: 'settings', isCheckable: true, checked: callbacks.getAutoArrange?.(), action: () => callbacks.onArrangeIcons?.('auto') }
+                ]
+            },
+            { 
+                label: 'Arrange Icons', icon: 'file', hasSubmenu: true,
+                submenu: [
+                    { label: 'By Name', icon: 'editor', isCheckable: true, checked: callbacks.getSortBy?.() === 'name', action: () => callbacks.onArrangeIcons?.('name') },
+                    { label: 'By Type', icon: 'folder', isCheckable: true, checked: callbacks.getSortBy?.() === 'type', action: () => callbacks.onArrangeIcons?.('type') },
+                    { label: 'By Size', icon: 'calc', isCheckable: true, checked: callbacks.getSortBy?.() === 'size', action: () => callbacks.onArrangeIcons?.('size') }
+                ]
+            },
+            { label: 'Refresh', icon: 'startLogo', action: () => callbacks.onRefreshDesktop?.() },
+            { type: 'separator' },
+            { 
+                label: 'New', icon: 'newFolder', hasSubmenu: true,
+                submenu: [
+                    { label: 'Folder', icon: 'folder', action: () => callbacks.onCreateNewFolder?.() },
+                    { label: 'Text Document', icon: 'editor', action: () => callbacks.onCreateNewFile?.('Text Document', 'txt') },
+                    { label: 'Bitmap Image', icon: 'paint', action: () => callbacks.onCreateNewFile?.('Bitmap Image', 'png') },
+                    { label: 'Shortcut', icon: 'startLogo', action: () => callbacks.onCreateNewShortcut?.() }
+                ]
+            },
+            { type: 'separator' },
+            { label: 'Personalize', icon: 'personalize', action: () => callbacks.onOpenPersonalize?.() },
+            { label: 'Properties', icon: 'settings', action: () => showDesktopPropertiesDialog(callbacks) }
+        ];
+    }
+
+    return null;
 }
 
 function renderContextMenu(x, y, items, parentRow = null) {

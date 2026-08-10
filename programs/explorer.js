@@ -36,31 +36,43 @@ export class FileExplorerApp {
                 </div>
 
                 <!-- 2. Standard Toolbar -->
-                <div class="explorer-toolbar" style="display:flex; align-items:center; gap:4px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:wrap; overflow-x:auto;">
-                    <button class="exp-tb-btn" id="exp-tb-home" title="My Computer (Home)" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;">${getIcon('home')}</span> Home
-                    </button>
-                    <button class="exp-tb-btn" id="exp-tb-back" title="Back" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;">${getIcon('back')}</span> Back
-                    </button>
-                    <button class="exp-tb-btn" id="exp-tb-up" title="Up One Level" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;">${getIcon('up')}</span> Up
-                    </button>
-                    <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
-                    <button class="exp-tb-btn" id="exp-tb-cut" title="Cut" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cut</button>
-                    <button class="exp-tb-btn" id="exp-tb-copy" title="Copy" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Copy</button>
-                    <button class="exp-tb-btn" id="exp-tb-paste" title="Paste" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Paste</button>
-                    <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
-                    <button class="exp-tb-btn" id="exp-tb-delete" title="Delete" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Delete</button>
-                    <button class="exp-tb-btn" id="exp-tb-newfolder" title="New Folder" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">+ Folder</button>
-                    <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
-                    
-                    <!-- View Selector -->
-                    <span style="font-size:11px; font-weight:bold; margin-left:4px;">Views:</span>
-                    <button class="exp-view-btn active-view-btn" id="exp-view-large" title="Large Icons" style="padding:2px 6px; background:#c0c0c0; border:1px solid #000; border-right-color:#fff; border-bottom-color:#fff; cursor:pointer; font-weight:bold;">Large</button>
-                    <button class="exp-view-btn" id="exp-view-small" title="Small Icons" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Small</button>
-                    <button class="exp-view-btn" id="exp-view-list" title="List View" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">List</button>
-                    <button class="exp-view-btn" id="exp-view-details" title="Details View" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Details</button>
+                <div class="explorer-toolbar" style="display:flex; align-items:center; justify-content:space-between; gap:6px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080; flex-wrap:nowrap; overflow-x:auto;">
+                    <!-- Left Navigation Icons Group (Always pinned on left) -->
+                    <div style="display:flex; align-items:center; gap:3px; flex-shrink:0;">
+                        <button class="exp-tb-btn" id="exp-tb-home" title="My Computer (Home)" style="display:flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
+                            <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('home')}</span>
+                        </button>
+                        <button class="exp-tb-btn" id="exp-tb-back" title="Back" style="display:flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
+                            <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('back')}</span>
+                        </button>
+                        <button class="exp-tb-btn" id="exp-tb-up" title="Up One Level" style="display:flex; align-items:center; justify-content:center; padding:3px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
+                            <span class="exp-icon-wrap" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;">${getIcon('up')}</span>
+                        </button>
+                    </div>
+
+                    <div style="width:1px; height:18px; background:#808080; flex-shrink:0;"></div>
+
+                    <!-- File Action Tools -->
+                    <div style="display:flex; align-items:center; gap:3px; flex-shrink:0;">
+                        <button class="exp-tb-btn" id="exp-tb-cut" title="Cut" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cut</button>
+                        <button class="exp-tb-btn" id="exp-tb-copy" title="Copy" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Copy</button>
+                        <button class="exp-tb-btn" id="exp-tb-paste" title="Paste" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Paste</button>
+                        <button class="exp-tb-btn" id="exp-tb-delete" title="Delete" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Delete</button>
+                        <button class="exp-tb-btn" id="exp-tb-newfolder" title="New Folder" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">+ Folder</button>
+                    </div>
+
+                    <div style="width:1px; height:18px; background:#808080; flex-shrink:0;"></div>
+
+                    <!-- Clean View Selector Dropdown -->
+                    <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                        <span style="font-size:11px; font-weight:bold;">View:</span>
+                        <select id="exp-view-select" style="background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; font-size:11px; padding:1px 4px; cursor:pointer; font-family:Arial, sans-serif; outline:none;">
+                            <option value="large">Large Icons</option>
+                            <option value="small">Small Icons</option>
+                            <option value="list">List</option>
+                            <option value="details">Details</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- 3. Address Bar -->
@@ -191,26 +203,14 @@ export class FileExplorerApp {
             }
         });
 
-        const viewModes = ['large', 'small', 'list', 'details'];
-        viewModes.forEach(mode => {
-            const btn = this.container.querySelector(`#exp-view-${mode}`);
-            if (btn) {
-                btn.addEventListener('click', () => {
-                    this.viewMode = mode;
-                    this.container.querySelectorAll('.exp-view-btn').forEach(b => {
-                        b.style.border = '1px solid #fff';
-                        b.style.borderRightColor = '#000';
-                        b.style.borderBottomColor = '#000';
-                        b.style.fontWeight = 'normal';
-                    });
-                    btn.style.border = '1px solid #000';
-                    btn.style.borderRightColor = '#fff';
-                    btn.style.borderBottomColor = '#fff';
-                    btn.style.fontWeight = 'bold';
-                    this.refreshView();
-                });
-            }
-        });
+        const viewSelect = this.container.querySelector('#exp-view-select');
+        if (viewSelect) {
+            viewSelect.value = this.viewMode;
+            viewSelect.addEventListener('change', (e) => {
+                this.viewMode = e.target.value;
+                this.refreshView();
+            });
+        }
     }
 
     navigateTo(path) {
@@ -246,6 +246,9 @@ export class FileExplorerApp {
     refreshView() {
         const addressInput = this.container.querySelector('#exp-address-input');
         const addressIcon  = this.container.querySelector('#exp-address-icon');
+        const viewSelect   = this.container.querySelector('#exp-view-select');
+
+        if (viewSelect) viewSelect.value = this.viewMode;
 
         if (this.currentPath === "HOME") {
             if (addressInput) addressInput.value = "My Computer";
@@ -362,10 +365,10 @@ export class FileExplorerApp {
               <div style="font-size:12px;font-weight:bold;color:#000080;margin-bottom:8px;">System Quick Locations</div>
               <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));gap:10px;">
                 ${[
-                  { name: 'System32', path: 'System32', icon: 'zdl', desc: 'Core Libraries' },
-                  { name: 'Program Files', path: 'Program Files', icon: 'folder', desc: 'Applications' },
+                  { name: 'Zeb32', path: 'Zeb32', icon: 'zdl', desc: 'Core Libraries' },
+                  { name: 'ZebApps', path: 'ZebApps', icon: 'folder', desc: 'Applications' },
                   { name: 'Users', path: 'Users', icon: 'user', desc: 'User Profiles' },
-                  { name: 'Windows', path: 'Windows', icon: 'settings', desc: 'System Config' },
+                  { name: 'ZebOS', path: 'ZebOS', icon: 'settings', desc: 'System Config' },
                   { name: 'Documents', path: 'Users/Guest/Documents', icon: 'editor', desc: 'My Documents' }
                 ].map(loc => `
                 <div class="exp-quick-loc" data-path="${loc.path}" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:10px;">
@@ -379,15 +382,15 @@ export class FileExplorerApp {
             </div>
 
             <!-- System Info Summary Card -->
-            <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:10px 14px;background:#c0c0c0;margin-top:4px;">
-              <legend style="color:#000080;font-weight:bold;padding:0 4px;">ZebOS System Summary</legend>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11px;color:#000;">
+            <div style="position:relative; margin-top:14px; padding:16px 14px 12px 14px; border:2px solid #ffffff; border-left-color:#808080; border-top-color:#808080; background:#c0c0c0; box-sizing:border-box;">
+              <span style="position:absolute; top:-9px; left:12px; background:#c0c0c0; padding:0 6px; font-weight:bold; font-size:11px; color:#000080;">ZebOS System Summary</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px 16px; font-size:11px; color:#000;">
                 <div>OS Version: <strong>ZebOS 2.5.0 Alpha</strong></div>
                 <div>Processor: <strong>ZebCore™ x86 Virtual CPU</strong></div>
                 <div>System Memory: <strong>1024 MB RAM</strong></div>
                 <div>Graphics: <strong>SVGA TrueColor (32-bit)</strong></div>
               </div>
-            </fieldset>
+            </div>
 
         </div>`;
 

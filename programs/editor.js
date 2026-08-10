@@ -2,6 +2,8 @@
 import { getIcon } from '../icons.js';
 import { showOsPrompt } from '../os.js';
 
+const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;
+
 export class TextEditor {
     constructor(fileName, fileContent, onExitCallback, onCloseRequest) {
         this.fileName = fileName;
@@ -56,12 +58,20 @@ export class TextEditor {
                     <!-- Edit Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="editor-menu-btn" data-menu="edit" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>E</u>dit</span>
-                        <div class="editor-dropdown hidden-view" id="menu-edit-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                        <div class="editor-dropdown hidden-view" id="menu-edit-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:170px; padding:2px 0;">
                             <div class="dropdown-opt opt-undo" style="padding:4px 14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;"><span>Undo</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+Z</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
                             <div class="dropdown-opt opt-cut" style="padding:4px 14px; cursor:pointer;">Cut</div>
                             <div class="dropdown-opt opt-copy" style="padding:4px 14px; cursor:pointer;">Copy</div>
                             <div class="dropdown-opt opt-paste" style="padding:4px 14px; cursor:pointer;">Paste</div>
+                            <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
+                            
+                            <!-- Custom Win95 Checkbox for Word Wrap -->
+                            <div class="dropdown-opt opt-wordwrap" style="padding:4px 14px; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                                <div id="editor-wrap-box" style="width:13px;height:13px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;">${W95_CHECKMARK_SVG}</div>
+                                <span>Word Wrap</span>
+                            </div>
+                            
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
                             <div class="dropdown-opt opt-selectall" style="padding:4px 14px; cursor:pointer;">Select All</div>
                         </div>
@@ -84,37 +94,18 @@ export class TextEditor {
                     </div>
                 </div>
 
-                <!-- 2. Standard Win95 Quick Toolbar -->
-                <div class="editor-toolbar" style="display:flex; align-items:center; gap:4px; padding:3px 6px; background:#c0c0c0; border-bottom:1px solid #808080; flex-shrink:0; flex-wrap:wrap;">
-                    <button class="exp-tb-btn opt-save" title="Save File (F2)" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('file')}</span> Save
-                    </button>
-                    <button class="exp-tb-btn opt-saveas" title="Save As (F3)" style="display:flex; align-items:center; gap:4px; padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">
-                        <span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('editor')}</span> Save As
-                    </button>
-                    <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
-                    <button class="exp-tb-btn opt-cut" title="Cut" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cut</button>
-                    <button class="exp-tb-btn opt-copy" title="Copy" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Copy</button>
-                    <button class="exp-tb-btn opt-paste" title="Paste" style="padding:2px 6px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Paste</button>
-                    <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
-                    <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; user-select:none;">
-                        <input type="checkbox" id="editor-wrap-check" checked style="accent-color:#000080;"> Word Wrap
-                    </label>
-                    <div style="margin-left:auto; font-size:11px; font-weight:bold; color:#000080; padding-right:4px;" class="app-editor-filename">Z:\\${this.fileName}</div>
-                </div>
-
-                <!-- 3. Text Area Content Canvas Block with Sunken 3D Border -->
+                <!-- 2. Text Area Content Canvas Block with Sunken 3D Border -->
                 <div style="flex-grow:1; display:flex; flex-direction:column; padding:2px; background:#c0c0c0; overflow:hidden;">
                     <div style="flex-grow:1; display:flex; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff;">
                         <textarea class="app-editor-textarea" spellcheck="false" style="flex-grow:1; width:100%; height:100%; border:none; outline:none; padding:8px 10px; font-family:'Courier New', Consolas, monospace; font-size:13px; line-height:1.4; resize:none; box-sizing:border-box; background:#ffffff; color:#000000; display:block; margin:0;"></textarea>
                     </div>
                 </div>
 
-                <!-- 4. Win95 Inset Statusbar -->
+                <!-- 3. Win95 Inset Statusbar -->
                 <div class="editor-statusbar" style="display:flex; align-items:center; justify-content:space-between; padding:3px 8px; background:#c0c0c0; border-top:1px solid #fff; font-size:11px; color:#333; flex-shrink:0;">
                     <div id="editor-line-col" style="min-width:90px;">Ln 1, Col 1</div>
                     <div id="editor-stats">0 chars | 0 words</div>
-                    <div id="editor-footer-hint" style="color:#000080; font-weight:bold;">F2: Save | F3: Save As | Esc: Exit</div>
+                    <div id="editor-footer-hint" style="color:#000080; font-weight:bold;" class="app-editor-filename">Z:\\${this.fileName}</div>
                 </div>
             </div>
         `;
@@ -134,12 +125,16 @@ export class TextEditor {
         this.textarea.addEventListener('keyup', this.selectionHandler);
         this.textarea.addEventListener('click', this.selectionHandler);
 
-        // Word wrap checkbox
-        const wrapCheck = this.bodyElement.querySelector('#editor-wrap-check');
-        if (wrapCheck) {
-            wrapCheck.addEventListener('change', (e) => {
-                this.wordWrap = e.target.checked;
+        // Word wrap dropdown toggle
+        const wrapOpt = this.bodyElement.querySelector('.opt-wordwrap');
+        if (wrapOpt) {
+            wrapOpt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.wordWrap = !this.wordWrap;
+                const box = this.bodyElement.querySelector('#editor-wrap-box');
+                if (box) box.innerHTML = this.wordWrap ? W95_CHECKMARK_SVG : '';
                 this.textarea.style.whiteSpace = this.wordWrap ? 'pre-wrap' : 'pre';
+                this.hideAllMenus();
             });
         }
 
@@ -167,6 +162,8 @@ export class TextEditor {
         this.bodyElement.querySelectorAll('.opt-save').forEach(el => el.addEventListener('click', () => this.saveFile()));
         this.bodyElement.querySelectorAll('.opt-saveas').forEach(el => el.addEventListener('click', () => this.saveAsFile()));
         this.bodyElement.querySelectorAll('.opt-exit').forEach(el => el.addEventListener('click', () => this.close()));
+        this.bodyElement.querySelectorAll('.opt-find').forEach(el => el.addEventListener('click', () => this.showFindDialog()));
+        this.bodyElement.querySelectorAll('.opt-about').forEach(el => el.addEventListener('click', () => this.showAboutDialog()));
 
         this.bodyElement.querySelectorAll('.opt-cut').forEach(el => el.addEventListener('click', () => {
             document.execCommand('cut');
@@ -247,10 +244,94 @@ export class TextEditor {
             e.preventDefault();
             this.saveAsFile();
         }
+        if (e.key === 'F4' || (e.ctrlKey && e.key.toLowerCase() === 'f')) {
+            e.preventDefault();
+            this.showFindDialog();
+        }
         if (e.key === 'Escape') {
             e.preventDefault();
             this.close();
         }
+    }
+
+    showFindDialog() {
+        this.hideAllMenus();
+        showOsPrompt("Find Text", "Enter text string to find in document:", this.lastSearchQuery || "", (query) => {
+            if (!query) return;
+            this.lastSearchQuery = query;
+            const text = this.textarea.value;
+            const searchLower = query.toLowerCase();
+            const startPos = (this.textarea.selectionEnd || 0);
+            let index = text.toLowerCase().indexOf(searchLower, startPos);
+            
+            if (index === -1) {
+                index = text.toLowerCase().indexOf(searchLower, 0);
+            }
+
+            if (index !== -1) {
+                this.textarea.focus();
+                this.textarea.setSelectionRange(index, index + query.length);
+                this.flashFooterFeedback(`Found: "${query}"`);
+            } else {
+                this.flashFooterFeedback(`Cannot find "${query}"`);
+            }
+        });
+    }
+
+    showAboutDialog() {
+        this.hideAllMenus();
+        const modal = document.createElement('div');
+        modal.className = 'os-prompt-modal active-window';
+        modal.style.cssText = `
+            position: fixed !important;
+            left: 50% !important;
+            top: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 320px !important;
+            background-color: #c0c0c0;
+            border: 2px solid #ffffff;
+            border-right-color: #000000;
+            border-bottom-color: #000000;
+            box-shadow: 4px 4px 16px rgba(0,0,0,0.5);
+            z-index: 100001;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        `;
+
+        modal.innerHTML = `
+            <div class="window-header">
+                <div class="window-title">About Text Editor</div>
+                <div class="window-controls">
+                    <button class="win-btn" id="about-close-btn">${getIcon('winClose')}</button>
+                </div>
+            </div>
+            <div style="padding:16px; display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                    <div style="width:36px; height:36px; flex-shrink:0;">${getIcon('editor')}</div>
+                    <div>
+                        <div style="font-weight:bold; font-size:14px; color:#000080;">ZebOS Text Editor</div>
+                        <div style="font-size:11px; color:#555;">Version 2.5.0 (Build 2026)</div>
+                    </div>
+                </div>
+                <div style="height:1px; background:#808080; border-bottom:1px solid #fff;"></div>
+                <div style="font-size:11px; line-height:1.4; color:#222;">
+                    Copyright © 2026 ZebOS System Utilities.<br>
+                    A retro plain-text editor featuring Win95 menubars, live stats, and VFS file management.
+                </div>
+                <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+                    <button id="about-ok-btn" style="padding:4px 20px; background:#c0c0c0; border:2px solid #fff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold;">OK</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const closeAbout = () => modal.remove();
+        modal.querySelector('#about-close-btn').addEventListener('click', closeAbout);
+        modal.querySelector('#about-ok-btn').addEventListener('click', closeAbout);
     }
 
     updateCursorStats() {
@@ -302,7 +383,7 @@ export class TextEditor {
             hintEl.style.color = "#008000";
             setTimeout(() => {
                 if (hintEl) {
-                    hintEl.textContent = "F2: Save | F3: Save As | Esc: Exit";
+                    hintEl.textContent = `Z:\\${this.fileName}`;
                     hintEl.style.color = "#000080";
                 }
             }, 1800);
