@@ -57,12 +57,13 @@ function getContextMenuForElement(target, callbacks) {
     if (explorerItem) {
         const itemName = explorerItem.dataset.itemName;
         const itemType = explorerItem.dataset.itemType;
+        const deleteLabel = itemType === 'dir' ? 'Delete Folder' : (itemName.endsWith('.zdl') ? 'Delete Library' : 'Delete File');
         return [
             { label: 'Open', icon: itemType === 'dir' ? 'folder' : 'file', bold: true, action: () => callbacks.onOpenExplorerItem?.(itemName, itemType) },
             { type: 'separator' },
             { label: 'Cut', icon: 'file', action: () => callbacks.onCopyCutFile?.(itemName, 'cut') },
             { label: 'Copy', icon: 'file', action: () => callbacks.onCopyCutFile?.(itemName, 'copy') },
-            { label: 'Delete', icon: 'winClose', action: () => callbacks.onDeleteFile?.(itemName) },
+            { label: deleteLabel, icon: 'winClose', action: () => callbacks.onDeleteFile?.(itemName) },
             { label: 'Rename', icon: 'editor', action: () => callbacks.onRenameFile?.(itemName) },
             { type: 'separator' },
             { label: 'Properties', icon: 'settings', action: () => showItemPropertiesDialog(itemName, itemType, callbacks) }
@@ -115,16 +116,24 @@ function getContextMenuForElement(target, callbacks) {
         ];
     }
 
-    // 4. Desktop Shortcut Icon
+    // 4. Desktop Shortcut / Icon
     const shortcutIcon = target.closest('.desktop-icon');
     if (shortcutIcon) {
         const appId = shortcutIcon.dataset.appId || shortcutIcon.id;
+        const vfsName = shortcutIcon.dataset.vfsName;
+        const itemType = shortcutIcon.dataset.itemType;
         const label = shortcutIcon.querySelector('.desktop-icon-label')?.textContent.trim() || appId;
+
+        let deleteLabel = 'Delete Shortcut';
+        if (vfsName || shortcutIcon.dataset.isCustomVfs === 'true') {
+            deleteLabel = itemType === 'dir' ? 'Delete Folder' : (label.endsWith('.zdl') ? 'Delete Library' : 'Delete File');
+        }
+
         return [
             { label: 'Open', icon: 'startLogo', bold: true, action: () => callbacks.onOpenApp?.(appId) },
             { type: 'separator' },
-            { label: 'Delete Shortcut', icon: 'winClose', action: () => callbacks.onDeleteAppShortcut?.(shortcutIcon) },
-            { label: 'Rename Shortcut', icon: 'editor', action: () => callbacks.onRenameAppShortcut?.(shortcutIcon) },
+            { label: deleteLabel, icon: 'winClose', action: () => callbacks.onDeleteAppShortcut?.(shortcutIcon) },
+            { label: 'Rename', icon: 'editor', action: () => callbacks.onRenameAppShortcut?.(shortcutIcon) },
             { type: 'separator' },
             { label: 'Properties', icon: 'settings', action: () => showShortcutPropertiesDialog(label, appId) }
         ];

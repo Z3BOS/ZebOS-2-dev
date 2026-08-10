@@ -199,6 +199,20 @@ const SVGS = {
             <line x1="13" y1="14" x2="19" y2="14" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
     `,
+    home: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H15V14H9V21H4C3.44772 21 3 20.5523 3 20V10.5Z" fill="#c0c0c0" stroke="#000080" stroke-width="1.5"/>
+            <rect x="10" y="15" width="4" height="6" fill="#000080"/>
+        </svg>
+    `,
+    zdl: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 3H14L19 8V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V3Z" fill="#e8eaf6" stroke="#1a237e" stroke-width="1.5"/>
+            <path d="M14 3V8H19" stroke="#1a237e" stroke-width="1.5" fill="#c5cae9"/>
+            <circle cx="12" cy="14" r="3.5" fill="#3949ab" stroke="#1a237e" stroke-width="1"/>
+            <path d="M12 11.5V16.5M9.5 14H14.5" stroke="#ffffff" stroke-width="1"/>
+        </svg>
+    `,
     smileyNormal: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="10" fill="#ffeb3b" stroke="#000000" stroke-width="1.5"/>

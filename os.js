@@ -268,6 +268,9 @@ function setupTaskbarEvents() {
 // Apply taskbar layout properties from Taskbar Properties dialog
 function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
     const tb = document.getElementById('system-taskbar');
+    const startMenu = document.getElementById('start-menu');
+    const buildTag = document.getElementById('desktop-build-tag');
+    const iconsZone = document.getElementById('desktop-icons-zone');
     if (!tb) return;
 
     const sz = parseInt(size, 10) || 40;
@@ -308,6 +311,51 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
         tb.style.transition = 'opacity 0.2s';
     }
 
+    // Offset calculations for UI elements when taskbar is visible vs auto-hidden
+    const offset = autoHide ? 0 : sz;
+
+    if (startMenu) {
+        startMenu.style.bottom = ''; startMenu.style.top = ''; startMenu.style.left = ''; startMenu.style.right = '';
+        if (pos === 'bottom') {
+            startMenu.style.bottom = `${offset}px`;
+            startMenu.style.left = '2px';
+        } else if (pos === 'top') {
+            startMenu.style.top = `${offset}px`;
+            startMenu.style.left = '2px';
+        } else if (pos === 'left') {
+            startMenu.style.bottom = '0px';
+            startMenu.style.left = `${offset}px`;
+        } else if (pos === 'right') {
+            startMenu.style.bottom = '0px';
+            startMenu.style.right = `${offset}px`;
+        }
+    }
+
+    if (buildTag) {
+        buildTag.style.bottom = ''; buildTag.style.top = ''; buildTag.style.left = ''; buildTag.style.right = '';
+        buildTag.style.right = '20px';
+        if (pos === 'bottom') {
+            buildTag.style.bottom = `${offset + 15}px`;
+        } else if (pos === 'top') {
+            buildTag.style.bottom = '15px';
+        } else if (pos === 'right') {
+            buildTag.style.bottom = '15px';
+            buildTag.style.right = `${offset + 20}px`;
+        } else {
+            buildTag.style.bottom = '15px';
+        }
+    }
+
+    if (iconsZone) {
+        iconsZone.style.padding = '12px';
+        if (!autoHide) {
+            if (pos === 'bottom') iconsZone.style.paddingBottom = `${sz + 12}px`;
+            if (pos === 'top')    iconsZone.style.paddingTop    = `${sz + 12}px`;
+            if (pos === 'left')   iconsZone.style.paddingLeft   = `${sz + 12}px`;
+            if (pos === 'right')  iconsZone.style.paddingRight  = `${sz + 12}px`;
+        }
+    }
+
     const clockEl = document.getElementById('live-clock');
     if (clockEl) {
         const tray = clockEl.closest('#system-tray');
@@ -320,27 +368,90 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.0! Persistent storage disk saving is active." },
-        "test.txt": { type: "file", content: "Hello World lines data tracking matrix storage block." },
-        "documents": { type: "dir", content: {
-            "notes.txt": { type: "file", content: "Inside folders text reference mapping loop array data payload." }
-        } } 
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "System32": {
+            type: "dir",
+            content: {
+                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.5.0.8f31b40" },
+                "shell32.zdl":   { type: "file", content: "ZebOS Desktop User Interface Shell Controller" },
+                "user32.zdl":    { type: "file", content: "ZebOS Windowing & Event Management Subsystem" },
+                "gdi32.zdl":     { type: "file", content: "ZebOS Graphics Device Interface Subsystem" },
+                "vfs32.zdl":     { type: "file", content: "Virtual File Allocation Subsystem & Disk Driver" },
+                "net32.zdl":     { type: "file", content: "ZebOS Socket Protocol Subsystem" },
+                "sound32.zdl":   { type: "file", content: "Web Audio Synthesizer Audio Driver" },
+                "drivers": {
+                    type: "dir",
+                    content: {
+                        "display.zdl":  { type: "file", content: "SVGA Color Display Controller Driver" },
+                        "mouse.zdl":    { type: "file", content: "PS/2 Mouse Input Driver" },
+                        "keyboard.zdl": { type: "file", content: "AT Standard Keyboard Driver" }
+                    }
+                }
+            }
+        },
+        "Program Files": {
+            type: "dir",
+            content: {
+                "Paint Studio": { type: "dir", content: { "paint.exe": { type: "file", content: "Binary Executable: Paint Studio" } } },
+                "Text Editor":  { type: "dir", content: { "editor.exe": { type: "file", content: "Binary Executable: Text Editor" } } },
+                "Terminal":     { type: "dir", content: { "cmd.exe": { type: "file", content: "Binary Executable: Zeb Terminal Prompt" } } },
+                "Minesweeper":   { type: "dir", content: { "mines.exe": { type: "file", content: "Binary Executable: Minesweeper Game" } } },
+                "Media Player":  { type: "dir", content: { "player.exe": { type: "file", content: "Binary Executable: Retro Media Player" } } },
+                "ZebVM":         { type: "dir", content: { "zebvm.exe": { type: "file", content: "Binary Executable: ZebVM Virtual Machine" } } }
+            }
+        },
+        "Users": {
+            type: "dir",
+            content: {
+                "Guest": {
+                    type: "dir",
+                    content: {
+                        "Desktop":   { type: "dir", content: {} },
+                        "Documents": {
+                            type: "dir",
+                            content: {
+                                "welcome.txt": { type: "file", content: "Welcome to ZebOS 2!\nEnjoy exploring the retro operating system interface." },
+                                "notes.txt":   { type: "file", content: "ZebOS 2 Dev Notes:\n- Custom Win95 controls\n- Dynamic taskbar\n- Synthesizer sound engine" }
+                            }
+                        },
+                        "Pictures":  { type: "dir", content: {} },
+                        "Downloads": { type: "dir", content: {} }
+                    }
+                }
+            }
+        },
+        "Windows": {
+            type: "dir",
+            content: {
+                "system.ini": { type: "file", content: "[boot]\nshell=shell32.zdl\ndrivers=display.zdl,mouse.zdl,sound32.zdl\n" },
+                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=2.5.0\nTheme=Standard\n" },
+                "zebos.cfg":   { type: "file", content: "CONFIG_DEV_MODE=0\nCONFIG_VFS_QUOTA=2097152\n" }
+            }
+        }
     };
-    saveFileSystem(); 
+    saveFileSystem();
 }
 
 // ==========================================================================
 // FILE SYSTEM WORKSPACE MANAGER ROUTINES
 // ==========================================================================
+export function getVfsNodeByPath(pathStr) {
+    if (!pathStr || pathStr === "" || pathStr === "/") return systemState.fileSystem;
+    const parts = pathStr.split('/').filter(Boolean);
+    let curr = systemState.fileSystem;
+    for (const part of parts) {
+        if (curr[part] && curr[part].type === 'dir') {
+            if (!curr[part].content) curr[part].content = {};
+            curr = curr[part].content;
+        } else {
+            return systemState.fileSystem;
+        }
+    }
+    return curr;
+}
+
 function getActiveFolderContext() {
-    if (systemState.currentDirectory === "") {
-        return systemState.fileSystem; 
-    }
-    if (!systemState.fileSystem[systemState.currentDirectory]) {
-        systemState.currentDirectory = "";
-        return systemState.fileSystem;
-    }
-    return systemState.fileSystem[systemState.currentDirectory].content; 
+    return getVfsNodeByPath(systemState.currentDirectory);
 }
 
 // ==========================================================================
@@ -987,19 +1098,23 @@ function refreshOpenExplorer() {
 }
 
 function shellChangeDirectory(target) {
-    if (target === '/' || target === '~' || target === '..') {
-        if (target === '..' && systemState.currentDirectory === "") {
-            return { ok: false, message: "Already at root." };
-        }
+    if (target === '/' || target === '~') {
         systemState.currentDirectory = "";
         return { ok: true };
     }
+    if (target === '..') {
+        if (systemState.currentDirectory === "") return { ok: false, message: "Already at root." };
+        const parts = systemState.currentDirectory.split('/');
+        parts.pop();
+        systemState.currentDirectory = parts.join('/');
+        return { ok: true };
+    }
+    const fullPath = systemState.currentDirectory === "" ? target : `${systemState.currentDirectory}/${target}`;
     const context = getActiveFolderContext();
     const entry = context[target];
     if (!entry) return { ok: false, message: `cd: ${target}: No such directory` };
     if (entry.type !== 'dir') return { ok: false, message: `cd: ${target}: Not a directory` };
-    if (systemState.currentDirectory !== "") return { ok: false, message: "cd: nesting more than one level deep isn't supported yet" };
-    systemState.currentDirectory = target;
+    systemState.currentDirectory = fullPath;
     return { ok: true };
 }
 
@@ -1121,6 +1236,89 @@ export function showOsPrompt(title, message, defaultValue = "", onConfirm = null
     closeBtn.addEventListener('click', cleanup);
 }
 
+export function showOsConfirm(title, message, isWarning = false, onConfirm = null) {
+    const overlay = document.createElement('div');
+    overlay.className = 'os-modal-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.35);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100005;
+    `;
+
+    const dialog = document.createElement('div');
+    dialog.className = 'os-prompt-modal active-window';
+    dialog.style.cssText = `
+        position: relative !important;
+        left: auto !important; top: auto !important;
+        width: 370px !important;
+        height: auto !important;
+        background-color: #c0c0c0;
+        border: 2px solid #ffffff;
+        border-right-color: #000000;
+        border-bottom-color: #000000;
+        box-shadow: 4px 4px 18px rgba(0,0,0,0.6);
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+    `;
+
+    const iconHtml = isWarning
+        ? `<div style="width:36px;height:36px;flex-shrink:0;color:#ffffff;display:flex;align-items:center;justify-content:center;background:#d32f2f;border:2px solid #800000;border-radius:50%;font-weight:bold;font-size:22px;line-height:1;">!</div>`
+        : `<div style="width:32px;height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${getIcon('winClose')}</div>`;
+
+    const headerStyle = isWarning
+        ? `background: linear-gradient(90deg, #800000 0%, #d32f2f 100%); color:#ffffff;`
+        : ``;
+
+    dialog.innerHTML = `
+        <div class="window-header" style="${headerStyle}">
+            <div class="window-title" style="${isWarning ? 'color:#ffffff;' : ''}">${title}</div>
+            <div class="window-controls">
+                <button class="win-btn" id="confirm-close">${getIcon('winClose')}</button>
+            </div>
+        </div>
+        <div style="padding:16px; font-size:12px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; align-items:flex-start; gap:12px;">
+                ${iconHtml}
+                <div style="font-size:12px; color:#000; line-height:1.4; word-break:break-word; white-space:pre-wrap;">${message}</div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                <button id="confirm-yes" style="padding:4px 20px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; ${isWarning ? 'color:#800000;' : ''}">Yes</button>
+                <button id="confirm-no" style="padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">No</button>
+            </div>
+        </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const yesBtn = dialog.querySelector('#confirm-yes');
+    const noBtn = dialog.querySelector('#confirm-no');
+    const closeBtn = dialog.querySelector('#confirm-close');
+
+    const cleanup = () => {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    yesBtn.addEventListener('click', () => {
+        cleanup();
+        if (onConfirm) onConfirm();
+    });
+
+    noBtn.addEventListener('click', cleanup);
+    closeBtn.addEventListener('click', cleanup);
+
+    window.addEventListener('keydown', function handleEsc(e) {
+        if (e.key === 'Escape') {
+            cleanup();
+            window.removeEventListener('keydown', handleEsc);
+        }
+    });
+
+    setTimeout(() => yesBtn.focus(), 50);
+}
+
 let currentDesktopViewMode = 'large'; // 'large' or 'small'
 
 function renderDesktopIcons() {
@@ -1138,6 +1336,9 @@ function renderDesktopIcons() {
     shortcuts.forEach(shortcut => {
         const iconEl = document.createElement('div');
         iconEl.dataset.appId = shortcut.id;
+        if (shortcut.vfsName) iconEl.dataset.vfsName = shortcut.vfsName;
+        if (shortcut.isCustomVfs) iconEl.dataset.isCustomVfs = 'true';
+        if (shortcut.itemType) iconEl.dataset.itemType = shortcut.itemType;
         
         if (currentDesktopViewMode === 'small') {
             iconEl.className = 'desktop-icon small-view';
@@ -1295,7 +1496,37 @@ initContextMenuSystem({
     getSortBy: () => systemState.desktopSortBy || 'type',
     onOpenApp: (appId) => launchApplication(appId),
     onOpenPersonalize: () => launchApplication('start-link-personalize'),
-    onDeleteAppShortcut: (el) => el.remove(),
+    onDeleteAppShortcut: (el) => {
+        if (!el) return;
+        const vfsName = el.dataset.vfsName;
+        const label = el.querySelector('.desktop-icon-label, .desktop-shortcut-label')?.textContent.trim() || el.id;
+        const targetName = vfsName || label;
+        const isZdl = targetName.endsWith('.zdl');
+        const isVfs = !!vfsName;
+        const itemType = el.dataset.itemType;
+
+        const title = isZdl ? "Confirm System Library Delete" : (isVfs ? (itemType === 'dir' ? "Confirm Folder Delete" : "Confirm File Delete") : "Confirm Shortcut Delete");
+        const message = isZdl
+            ? `Are you sure you want to delete '${targetName}'?\n\nWARNING: .zdl files are vital ZebOS System Dynamic Libraries. Deleting system libraries may corrupt system operation!`
+            : `Are you sure you want to delete '${targetName}'?`;
+
+        showOsConfirm(title, message, isZdl, () => {
+            if (vfsName && systemState.fileSystem[vfsName]) {
+                delete systemState.fileSystem[vfsName];
+                saveFileSystem();
+                logKernel(`Desktop: Deleted VFS item '${vfsName}' from disk storage.`);
+            } else {
+                const index = DESKTOP_SHORTCUTS.findIndex(s => s.label === label || s.vfsName === vfsName || s.id === el.dataset.appId);
+                if (index !== -1) {
+                    DESKTOP_SHORTCUTS.splice(index, 1);
+                }
+                logKernel(`Desktop: Removed shortcut '${label}'.`);
+            }
+            renderDesktopIcons();
+            refreshOpenExplorer();
+            playSystemSound('close');
+        });
+    },
     onRenameAppShortcut: (el) => {
         const label = el.querySelector('.desktop-icon-label, .desktop-shortcut-label');
         const currentName = label ? label.textContent.trim() : "Shortcut";
@@ -1325,10 +1556,24 @@ initContextMenuSystem({
         }
     },
     onDeleteFile: (itemName) => {
+        const isZdl = itemName.endsWith('.zdl');
         const context = getActiveFolderContext();
-        delete context[itemName];
-        saveFileSystem();
-        refreshOpenExplorer();
+        const item = context[itemName];
+        const isDir = item?.type === 'dir';
+
+        const title = isZdl ? "Confirm System Library Delete" : (isDir ? "Confirm Folder Delete" : "Confirm File Delete");
+        const message = isZdl
+            ? `Are you sure you want to delete '${itemName}'?\n\nWARNING: .zdl files are vital ZebOS System Dynamic Libraries. Deleting system libraries may corrupt system operation!`
+            : `Are you sure you want to delete '${itemName}'?`;
+
+        showOsConfirm(title, message, isZdl, () => {
+            delete context[itemName];
+            saveFileSystem();
+            refreshOpenExplorer();
+            renderDesktopIcons();
+            playSystemSound('close');
+            logKernel(`VFS: Deleted '${itemName}' from storage.`);
+        });
     },
     onRenameFile: (itemName) => {
         showOsPrompt("Rename File", "Enter new filename:", itemName, (newName) => {
