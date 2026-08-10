@@ -1,6 +1,6 @@
 // programs/paint.js - ZebPaint Studio Pro
 import { getIcon } from '../icons.js';
-import { showOsPrompt, showOsConfirm } from '../os.js';
+import { showOsConfirm, showSaveFileDialog, saveFileToVfsPath } from '../os.js';
 
 export class PaintApp {
     constructor(onCloseRequest, saveToVFS) {
@@ -27,7 +27,7 @@ export class PaintApp {
         this.currentSize = 6;
         this.currentOpacity = 100; // 1-100
         this.currentHardness = 80; // 0-100
-        this.currentSmoothness = 30; // 0-100
+        this.currentSmoothness = 0; // 0% default (raw mouse)
 
         // Drawing state
         this.isDrawing = false;
@@ -109,8 +109,11 @@ export class PaintApp {
                     font-size: 11px;
                 }
                 .paint-menu-drop-opt:hover {
-                    background-color: #000080;
-                    color: #ffffff;
+                    background-color: #000080 !important;
+                    color: #ffffff !important;
+                }
+                .paint-menu-drop-opt:hover span {
+                    color: #ffffff !important;
                 }
             </style>
             <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; box-sizing:border-box; user-select:none; font-family:Arial, sans-serif; overflow:hidden;">
@@ -127,7 +130,7 @@ export class PaintApp {
                             <div class="paint-menu-drop-opt opt-save"><span>Save to ZebOS</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+S</span></div>
                             <div class="paint-menu-drop-opt opt-saveas"><span>Save As to ZebOS...</span><span style="font-size:10px; color:#666; margin-left:16px;">F3</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
-                            <div class="paint-menu-drop-opt opt-savepc" style="font-weight:bold; color:#000080;"><span>Save to PC (Export)...</span><span style="font-size:10px; color:#666; margin-left:12px;">Device</span></div>
+                            <div class="paint-menu-drop-opt opt-savepc"><span>Save to PC (Export)...</span><span style="font-size:10px; opacity:0.8; margin-left:12px;">Device</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
                             <div class="paint-menu-drop-opt opt-exit"><span>Exit</span><span style="font-size:10px; color:#666; margin-left:16px;">Esc</span></div>
                         </div>
@@ -170,12 +173,12 @@ export class PaintApp {
                 </div>
 
                 <!-- 2. Retro Property Toolbar (Brush Type, Size, Smoothness, Hardness, Opacity) -->
-                <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:5px 8px; display:flex; align-items:center; gap:12px; font-size:11px; flex-shrink:0; position:relative; z-index:90; overflow-x:auto;">
+                <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:5px 8px; display:flex; align-items:center; gap:12px; font-size:11px; flex-shrink:0; position:relative; z-index:200; overflow:visible;">
                     
                     <!-- Brush Selector Custom Win95 Dropdown -->
                     <div style="display:flex; align-items:center; gap:4px; position:relative; flex-shrink:0;">
                         <span style="font-weight:bold;">Brush:</span>
-                        <div class="w95-dropdown" id="paint-brush-dropdown" data-value="round" style="position:relative; width:140px;">
+                        <div class="w95-dropdown" id="paint-brush-dropdown" data-value="round" style="position:relative; width:140px; z-index:201;">
                             <div class="w95-drop-display" style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:2px 6px; cursor:pointer; font-size:11px; height:22px; box-sizing:border-box;">
                                 <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
                                     <canvas class="brush-preview-thumb-head" width="24" height="14" style="background:#eee; border:1px solid #a0a0a0; flex-shrink:0;"></canvas>
@@ -183,7 +186,7 @@ export class PaintApp {
                                 </div>
                                 <span style="font-size:8px; line-height:1; flex-shrink:0; margin-left:4px;">▼</span>
                             </div>
-                            <div class="w95-drop-list" style="display:none; position:absolute; top:100%; left:0; width:160px; background:#c0c0c0; border:1px solid #000; box-shadow:3px 3px 6px rgba(0,0,0,0.5); z-index:99999; box-sizing:border-box; margin-top:1px;">
+                            <div class="w95-drop-list" style="display:none; position:absolute; top:100%; left:0; width:170px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; box-sizing:border-box; margin-top:1px; padding:2px 0;">
                                 ${[
                                     { value: 'round', label: 'Round Pen', desc: 'Solid continuous pen' },
                                     { value: 'soft', label: 'Soft Brush', desc: 'Feathered soft gradient' },
@@ -215,8 +218,8 @@ export class PaintApp {
                     <!-- Smoothness Slider -->
                     <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;" title="Stroke smoothing">
                         <span style="font-weight:bold;">Smooth:</span>
-                        <input type="range" class="w95-slider" id="paint-smooth-range" min="0" max="100" value="30" style="width:70px;">
-                        <span id="paint-smooth-val" class="w95-sunken-val">30%</span>
+                        <input type="range" class="w95-slider" id="paint-smooth-range" min="0" max="100" value="0" style="width:70px;">
+                        <span id="paint-smooth-val" class="w95-sunken-val">0%</span>
                     </div>
 
                     <!-- Hardness Slider -->
@@ -375,17 +378,12 @@ export class PaintApp {
 
         this.bodyElement.querySelector('.opt-save').addEventListener('click', () => {
             closeAllMenus();
-            this.saveToZebOS(this.activeFileName);
+            this.openSaveAsDialog();
         });
 
         this.bodyElement.querySelector('.opt-saveas').addEventListener('click', () => {
             closeAllMenus();
-            showOsPrompt("Save As to ZebOS", "Enter filename to save artwork to ZebOS storage:", this.activeFileName, (filename) => {
-                if (filename) {
-                    this.activeFileName = filename;
-                    this.saveToZebOS(filename);
-                }
-            });
+            this.openSaveAsDialog();
         });
 
         this.bodyElement.querySelector('.opt-savepc').addEventListener('click', () => {
@@ -415,10 +413,14 @@ export class PaintApp {
         });
     }
 
-    saveToZebOS(filename) {
-        const dataUrl = this.mainCanvas.toDataURL("image/png");
-        if (this.saveToVFS) this.saveToVFS(filename, dataUrl);
-        showOsConfirm("Artwork Saved to ZebOS", `'${filename}' has been saved to your active ZebOS folder.`);
+    openSaveAsDialog() {
+        showSaveFileDialog(this.activeFileName, (filename, vfsFolder) => {
+            this.activeFileName = filename;
+            const dataUrl = this.mainCanvas.toDataURL("image/png");
+            saveFileToVfsPath(vfsFolder, filename, dataUrl);
+            const folderLabel = vfsFolder || "ZebRoot (Z:)";
+            showOsConfirm("Artwork Saved to ZebOS", `'${filename}' has been saved successfully to '${folderLabel}'.`);
+        });
     }
 
     exportToPC() {
@@ -846,9 +848,19 @@ export class PaintApp {
         if (!activeLayer) return;
 
         if (this.currentTool === 'brush' || this.currentTool === 'eraser') {
-            this.drawContinuousStroke(activeLayer.ctx, this.lastX, this.lastY, coords.x, coords.y);
-            this.lastX = coords.x;
-            this.lastY = coords.y;
+            if (this.currentSmoothness > 0) {
+                // Stabilizer lerp factor: 0% = 1.0 (instant), 100% = 0.12 (heavy smooth lazy rope catch-up)
+                const lerpFactor = 1.0 - (this.currentSmoothness / 100) * 0.88;
+                const nextX = this.lastX + (coords.x - this.lastX) * lerpFactor;
+                const nextY = this.lastY + (coords.y - this.lastY) * lerpFactor;
+                this.drawContinuousStroke(activeLayer.ctx, this.lastX, this.lastY, nextX, nextY);
+                this.lastX = nextX;
+                this.lastY = nextY;
+            } else {
+                this.drawContinuousStroke(activeLayer.ctx, this.lastX, this.lastY, coords.x, coords.y);
+                this.lastX = coords.x;
+                this.lastY = coords.y;
+            }
             this.renderComposite();
         } else if (['line', 'rect', 'frect', 'circle', 'fcircle'].includes(this.currentTool)) {
             // Restore snapshot for dynamic preview
@@ -1118,7 +1130,7 @@ export class PaintApp {
             this.redo();
         } else if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
             e.preventDefault();
-            this.saveToZebOS(this.activeFileName);
+            this.openSaveAsDialog();
         } else if (e.ctrlKey && (e.key === 'n' || e.key === 'N')) {
             e.preventDefault();
             this.createNewCanvas();

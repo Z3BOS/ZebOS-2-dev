@@ -1390,6 +1390,8 @@ export function showOsPrompt(title, message, defaultValue = "", onConfirm = null
 }
 
 export function showOsConfirm(title, message, isWarning = false, onConfirm = null) {
+    const isSingleOk = (!onConfirm);
+
     const overlay = document.createElement('div');
     overlay.className = 'os-modal-overlay';
     overlay.style.cssText = `
@@ -1417,12 +1419,17 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
     `;
 
     const iconHtml = isWarning
-        ? `<div style="width:36px;height:36px;flex-shrink:0;color:#ffffff;display:flex;align-items:center;justify-content:center;background:#d32f2f;border:2px solid #800000;border-radius:50%;font-weight:bold;font-size:22px;line-height:1;">!</div>`
-        : `<div style="width:32px;height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${getIcon('winClose')}</div>`;
+        ? `<div style="width:34px;height:34px;flex-shrink:0;color:#ffffff;display:flex;align-items:center;justify-content:center;background:#d32f2f;border:2px solid #800000;border-radius:50%;font-weight:bold;font-size:22px;line-height:1;">!</div>`
+        : `<div style="width:34px;height:34px;flex-shrink:0;color:#ffffff;display:flex;align-items:center;justify-content:center;background:#000080;border:2px solid #000040;border-radius:50%;font-weight:bold;font-family:serif;font-size:22px;line-height:1;font-style:italic;">i</div>`;
 
     const headerStyle = isWarning
         ? `background: linear-gradient(90deg, #800000 0%, #d32f2f 100%); color:#ffffff;`
         : ``;
+
+    const buttonsHtml = isSingleOk
+        ? `<button id="confirm-yes" style="padding:4px 24px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold;">OK</button>`
+        : `<button id="confirm-yes" style="padding:4px 20px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; ${isWarning ? 'color:#800000;' : ''}">Yes</button>
+           <button id="confirm-no" style="padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">No</button>`;
 
     dialog.innerHTML = `
         <div class="window-header" style="${headerStyle}">
@@ -1437,8 +1444,7 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
                 <div style="font-size:12px; color:#000; line-height:1.4; word-break:break-word; white-space:pre-wrap;">${message}</div>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
-                <button id="confirm-yes" style="padding:4px 20px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold; ${isWarning ? 'color:#800000;' : ''}">Yes</button>
-                <button id="confirm-no" style="padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">No</button>
+                ${buttonsHtml}
             </div>
         </div>
     `;
@@ -1459,17 +1465,123 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
         if (onConfirm) onConfirm();
     });
 
-    noBtn.addEventListener('click', cleanup);
+    if (noBtn) noBtn.addEventListener('click', cleanup);
     closeBtn.addEventListener('click', cleanup);
 
     window.addEventListener('keydown', function handleEsc(e) {
-        if (e.key === 'Escape') {
+        if (e.key === 'Escape' || e.key === 'Enter') {
+            e.preventDefault();
             cleanup();
             window.removeEventListener('keydown', handleEsc);
         }
     });
 
     setTimeout(() => yesBtn.focus(), 50);
+}
+
+export function saveFileToVfsPath(vfsPath, filename, dataUrl) {
+    let targetContext = systemState.fileSystem;
+    if (vfsPath && vfsPath !== "") {
+        const node = getVfsNodeByPath(vfsPath);
+        if (node && node.type === 'dir' && node.content) {
+            targetContext = node.content;
+        }
+    }
+    targetContext[filename] = { type: "file", content: dataUrl };
+    saveFileSystem();
+    const activeExp = document.querySelector('.explorer-grid');
+    if (activeExp) renderZebExplorer(activeExp.parentElement);
+}
+
+export function showSaveFileDialog(defaultName, onSaveCallback) {
+    const currentUser = systemState.currentUser || "Guest";
+    const availableFolders = [
+        { label: `Users/${currentUser}/Pictures`, path: `Users/${currentUser}/Pictures` },
+        { label: `Users/${currentUser}/Documents`, path: `Users/${currentUser}/Documents` },
+        { label: `Users/${currentUser}/Desktop`, path: `Users/${currentUser}/Desktop` },
+        { label: `Users/${currentUser}/Downloads`, path: `Users/${currentUser}/Downloads` },
+        { label: `ZebRoot (Z:)`, path: "" }
+    ];
+
+    const overlay = document.createElement('div');
+    overlay.className = 'os-modal-overlay';
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.25);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100010;
+    `;
+
+    const dialog = document.createElement('div');
+    dialog.className = 'os-prompt-modal active-window';
+    dialog.style.cssText = `
+        position: relative !important; width: 440px !important;
+        background-color: #c0c0c0; border: 2px solid #ffffff;
+        border-right-color: #000000; border-bottom-color: #000000;
+        box-shadow: 4px 4px 18px rgba(0,0,0,0.6); font-family: Arial, sans-serif;
+        box-sizing: border-box;
+    `;
+
+    dialog.innerHTML = `
+        <div class="window-header">
+            <div class="window-title">Save As - ZebOS File Allocation</div>
+            <div class="window-controls">
+                <button class="win-btn" id="save-dialog-close">${getIcon('winClose')}</button>
+            </div>
+        </div>
+        <div style="padding:14px; font-size:11px; display:flex; flex-direction:column; gap:10px;">
+            
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:bold; min-width:65px;">Save in:</span>
+                <select id="save-folder-select" style="flex-grow:1; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:3px 6px; font-size:11px; font-weight:bold; color:#000080; outline:none;">
+                    ${availableFolders.map(f => `<option value="${f.path}">${f.label}</option>`).join('')}
+                </select>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:bold; min-width:65px;">File name:</span>
+                <input type="text" id="save-filename-input" value="${defaultName || 'artwork.png'}" style="flex-grow:1; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:3px 6px; font-size:11px; outline:none; font-family:monospace;">
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:bold; min-width:65px;">Save type:</span>
+                <select disabled style="flex-grow:1; background:#e0e0e0; border:1px solid #808080; padding:3px 6px; font-size:11px; color:#555;">
+                    <option>PNG Portable Network Graphics (*.png)</option>
+                </select>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                <button id="save-dialog-ok" style="padding:4px 24px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold;">Save</button>
+                <button id="save-dialog-cancel" style="padding:4px 16px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const filenameInput = dialog.querySelector('#save-filename-input');
+    const folderSelect = dialog.querySelector('#save-folder-select');
+    const okBtn = dialog.querySelector('#save-dialog-ok');
+    const cancelBtn = dialog.querySelector('#save-dialog-cancel');
+    const closeBtn = dialog.querySelector('#save-dialog-close');
+
+    const cleanup = () => {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    okBtn.addEventListener('click', () => {
+        const name = filenameInput.value.trim();
+        const folder = folderSelect.value;
+        if (!name) return;
+        cleanup();
+        if (onSaveCallback) onSaveCallback(name, folder);
+    });
+
+    cancelBtn.addEventListener('click', cleanup);
+    closeBtn.addEventListener('click', cleanup);
+    filenameInput.focus();
+    filenameInput.select();
 }
 
 let currentDesktopViewMode = 'large'; // 'large' or 'small'
