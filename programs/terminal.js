@@ -25,11 +25,11 @@ export class ZebTerminal {
         this.bodyElement.style.height = "100%";
 
         this.bodyElement.innerHTML = `
-            <div class="terminal-container" style="display:flex; flex-direction:column; height:100%; background:#0c0c0c; color:#d0ffd0; font-family:'Consolas','Courier New',monospace; box-sizing:border-box; padding:8px; overflow:hidden;">
-                <div class="term-output" style="flex-grow:1; overflow-y:auto; white-space:pre-wrap; word-break:break-word; font-size:0.95em; line-height:1.4;"></div>
-                <div style="display:flex; align-items:center; gap:6px; font-size:0.95em; flex-shrink:0; margin-top:4px;">
+            <div class="terminal-container" style="display:flex; flex-direction:column; height:100%; background:#0c0c0c; color:#d0ffd0; font-family:'Consolas','Courier New',monospace; box-sizing:border-box; padding:6px; overflow:hidden;">
+                <div class="term-output" style="flex-grow:1; overflow-y:auto; white-space:pre-wrap; word-break:break-word; font-size:11px; line-height:1.35;"></div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:11px; flex-shrink:0; margin-top:4px;">
                     <span class="term-prompt"></span>
-                    <input class="term-input" type="text" autocomplete="off" spellcheck="false" style="flex-grow:1; background:transparent; border:none; outline:none; color:inherit; font-family:inherit; font-size:1em;">
+                    <input class="term-input" type="text" autocomplete="off" spellcheck="false" style="flex-grow:1; background:transparent; border:none; outline:none; color:inherit; font-family:inherit; font-size:11px;">
                 </div>
             </div>
         `;
@@ -38,7 +38,7 @@ export class ZebTerminal {
         this.inputEl = this.bodyElement.querySelector('.term-input');
         this.promptEl = this.bodyElement.querySelector('.term-prompt');
 
-        this.println("ZebOS Terminal Shell [Version 2.6.0]");
+        this.println("ZebOS Terminal Shell [Version 2.5.1]");
         this.println("Type 'help' to view all available commands and CLI apps.\n");
         this.updatePrompt();
 
@@ -116,30 +116,29 @@ export class ZebTerminal {
 
         switch (cmd) {
             case 'help':
-                this.println("========== ZebOS CLI Application Suite ==========", "#55ffff");
-                this.println("  zebfetch / sysinfo   system diagnostics and ASCII logo");
-                this.println("  matrix / cmatrix     digital rain screen animation");
-                this.println("  top / ps             active process task manager");
-                this.println("  calc <expr>          terminal expression calculator");
-                this.println("  ping <host>          network ICMP latency test");
-                this.println("  weather <city>       ASCII weather forecast");
-                this.println("  fortune / quote      fortune of the day");
-                this.println("  color <name>         change terminal text color (green, cyan, amber, white)");
-                this.println("\n========== File & Directory Commands ==========", "#ffff55");
-                this.println("  ls                   list files in current directory");
+                this.println("Available commands:");
+                this.println("  cat <file>           print a file's contents");
                 this.println("  cd <dir|..|/>        change working directory");
-                this.println("  pwd                  print working directory path");
-                this.println("  cat <file>           print a file's text contents");
-                this.println("  mkdir <name>         create a new folder");
-                this.println("  touch <name>         create an empty file");
-                this.println("  rm <name>            delete a file or folder");
-                this.println("  edit <file>          open file in Text Editor");
-                this.println("  whoami               print logged in user");
-                this.println("  ver                  print ZebOS build version");
+                this.println("  calc <expr>          evaluate math expression");
+                this.println("  clear                clear terminal output");
+                this.println("  color <name>         change text color (green, cyan, amber, white)");
                 this.println("  date                 print system date and time");
                 this.println("  echo <text>          print text to output");
-                this.println("  clear                clear terminal screen");
-                this.println("  exit                 close terminal");
+                this.println("  edit <file>          open file in Text Editor");
+                this.println("  exit                 close terminal window");
+                this.println("  fortune              print a fortune quote");
+                this.println("  ls                   list directory contents");
+                this.println("  matrix               digital rain screen animation");
+                this.println("  mkdir <name>         create a new directory");
+                this.println("  ping <host>          network ICMP latency test");
+                this.println("  pwd                  print working directory");
+                this.println("  rm <name>            delete a file or directory");
+                this.println("  touch <name>         create an empty file");
+                this.println("  top / ps             active process task manager");
+                this.println("  ver                  print ZebOS build version");
+                this.println("  weather <city>       ASCII weather forecast");
+                this.println("  whoami               print logged in user");
+                this.println("  zebfetch             system diagnostics & ASCII logo");
                 break;
 
             case 'zebfetch':
@@ -329,9 +328,9 @@ export class ZebTerminal {
  <span style="color:#00aaff; font-weight:bold;">/___/\\_\\/____/ \\____/ \\____//____/ /____/ </span>
 
 <span style="color:#ffff55;">OS:</span>         ZebOS 2 (Alpha Build 2.5.1)
-<span style="color:#ffff55;">Kernel:</span>     ZebOS VFS Hardened Engine v2.6
+<span style="color:#ffff55;">Kernel:</span>     ZebOS VFS Hardened Engine v2.5.1
 <span style="color:#ffff55;">User:</span>       ${this.shell.getUsername()}
-<span style="color:#ffff55;">Shell:</span>      ZebShell (zebsh) v2.5
+<span style="color:#ffff55;">Shell:</span>      ZebShell (zebsh) v2.5.1
 <span style="color:#ffff55;">Uptime:</span>     ${mins}m ${secs}s
 <span style="color:#ffff55;">Memory:</span>     512 MB / 2048 MB (VFS Persistent)
 <span style="color:#ffff55;">Palette:</span>    <span style="color:#000000; background:#000000;">  </span><span style="color:#ff5555; background:#ff5555;">  </span><span style="color:#55ff55; background:#55ff55;">  </span><span style="color:#ffff55; background:#ffff55;">  </span><span style="color:#5555ff; background:#5555ff;">  </span><span style="color:#ff55ff; background:#ff55ff;">  </span><span style="color:#55ffff; background:#55ffff;">  </span><span style="color:#ffffff; background:#ffffff;">  </span>

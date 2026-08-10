@@ -1,4 +1,4 @@
-// programs/editor.js - ZebOS 2 Pro Retro Text Editor (Notepad)
+// programs/editor.js - ZebOS 2 Retro Text Editor (Notepad)
 import { getIcon } from '../icons.js';
 import { showOsPrompt } from '../os.js';
 

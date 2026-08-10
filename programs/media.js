@@ -1,4 +1,4 @@
-// programs/media.js - ZebOS 2 Pro Retro Media Player Application
+// programs/media.js - ZebOS 2 Retro Media Player Application
 import { getIcon } from '../icons.js';
 
 export class MediaPlayer {

@@ -1,4 +1,4 @@
-// programs/calc.js - ZebCalculator Pro (Standard & Scientific)
+// programs/calc.js - ZebOS Calculator (Standard & Scientific)
 export class RetroCalculator {
     constructor(onCloseRequest) {
         this.onCloseRequest = onCloseRequest;
@@ -17,6 +17,7 @@ export class RetroCalculator {
         this.memoryValue = 0;
 
         this.keyHandler = (e) => this.handleKeyDown(e);
+        this.clickHandler = (e) => this.handleClick(e);
     }
 
     open(windowBodyElement) {
@@ -24,7 +25,25 @@ export class RetroCalculator {
         this.bodyElement.style.height = "100%";
 
         this.render();
+
         window.addEventListener('keydown', this.keyHandler);
+        this.bodyElement.addEventListener('click', this.clickHandler);
+    }
+
+    handleClick(e) {
+        const tab = e.target.closest('.calc-mode-tab');
+        if (tab && tab.dataset.mode) {
+            if (this.mode !== tab.dataset.mode) {
+                this.mode = tab.dataset.mode;
+                this.render();
+            }
+            return;
+        }
+
+        const target = e.target.closest('.calc-btn-retro');
+        if (target && target.dataset.action) {
+            this.processAction(target.dataset.action);
+        }
     }
 
     render() {
@@ -98,7 +117,7 @@ export class RetroCalculator {
                         <div class="calc-mode-tab ${!isSci ? 'active-tab' : ''}" data-mode="standard">Standard</div>
                         <div class="calc-mode-tab ${isSci ? 'active-tab' : ''}" data-mode="scientific">Scientific</div>
                     </div>
-                    <span style="font-size:10px; color:#555; font-weight:bold; padding-right:4px;">ZebCalc Pro</span>
+                    <span style="font-size:10px; color:#555; font-weight:bold; padding-right:4px;">Calculator</span>
                 </div>
 
                 <!-- Retro Sunken LCD Display Screen -->
@@ -158,22 +177,6 @@ export class RetroCalculator {
             el.textContent = btn.label;
             el.dataset.action = btn.action;
             grid.appendChild(el);
-        });
-
-        // Mode switch tabs
-        this.bodyElement.querySelectorAll('.calc-mode-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                this.mode = tab.dataset.mode;
-                this.render();
-            });
-        });
-
-        // Keypad button click handlers
-        this.bodyElement.addEventListener('click', (e) => {
-            const target = e.target.closest('.calc-btn-retro');
-            if (target && target.dataset.action) {
-                this.processAction(target.dataset.action);
-            }
         });
 
         this.updateDisplay();
@@ -344,5 +347,6 @@ export class RetroCalculator {
 
     cleanup() {
         window.removeEventListener('keydown', this.keyHandler);
+        if (this.bodyElement) this.bodyElement.removeEventListener('click', this.clickHandler);
     }
 }

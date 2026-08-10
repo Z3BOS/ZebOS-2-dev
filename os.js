@@ -1066,7 +1066,7 @@ async function launchApplication(appId, customFileName = null) {
             const winId = 'app-paint';
             try {
                 const module = await import(`./programs/paint.js?v=${Date.now()}`);
-                const paintBody = createWindow("ZebPaint Studio Pro", "paint", winId);
+                const paintBody = createWindow("Paint Studio", "paint", winId);
                 if (paintBody) {
                     setWindowBounds(paintBody, 920, 620);
                     const paintInstance = new module.PaintApp(

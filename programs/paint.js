@@ -1,4 +1,4 @@
-// programs/paint.js - ZebPaint Studio Pro
+// programs/paint.js - Paint Studio
 import { getIcon } from '../icons.js';
 import { showOsConfirm, showSaveFileDialog, saveFileToVfsPath } from '../os.js';
 
@@ -167,7 +167,7 @@ export class PaintApp {
                     </div>
 
                     <div style="margin-left:auto; display:flex; align-items:center; gap:6px; font-size:11px; color:#555; padding-right:6px;">
-                        <span style="font-weight:bold; color:#000080;">ZebPaint Studio Pro</span>
+                        <span style="font-weight:bold; color:#000080;">Paint Studio</span>
                         <span style="font-size:10px; background:#e0e0e0; padding:1px 4px; border:1px solid #a0a0a0;">v2.6</span>
                     </div>
                 </div>
@@ -409,7 +409,7 @@ export class PaintApp {
         // Help Menu Handler
         this.bodyElement.querySelector('.opt-about').addEventListener('click', () => {
             closeAllMenus();
-            showOsConfirm("About ZebPaint Studio Pro", "ZebPaint Studio Pro v2.6\n\nAdvanced retro image editor with multi-layer rendering, visual brush drop-downs, Bezier curve smoothing, and dual VFS/PC export support.\n\nCreated for ZebOS 2.");
+            showOsConfirm("About Paint Studio", "Paint Studio v2.6\n\nAdvanced retro image editor with multi-layer rendering, visual brush drop-downs, Bezier curve smoothing, and dual VFS/PC export support.\n\nCreated for ZebOS 2.");
         });
     }
 
