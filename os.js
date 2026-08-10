@@ -444,21 +444,40 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
 
     // Offset calculations for UI elements when taskbar is visible vs auto-hidden
     const offset = autoHide ? 0 : sz;
+    const menuOffset = (autoHide ? 4 : sz) + 4;
 
     if (startMenu) {
         startMenu.style.bottom = ''; startMenu.style.top = ''; startMenu.style.left = ''; startMenu.style.right = '';
         if (pos === 'bottom') {
-            startMenu.style.bottom = `${offset}px`;
-            startMenu.style.left = '2px';
+            startMenu.style.bottom = `${menuOffset}px`;
+            startMenu.style.left = '4px';
         } else if (pos === 'top') {
-            startMenu.style.top = `${offset}px`;
-            startMenu.style.left = '2px';
+            startMenu.style.top = `${menuOffset}px`;
+            startMenu.style.left = '4px';
         } else if (pos === 'left') {
-            startMenu.style.bottom = '0px';
-            startMenu.style.left = `${offset}px`;
+            startMenu.style.bottom = '4px';
+            startMenu.style.left = `${menuOffset}px`;
         } else if (pos === 'right') {
-            startMenu.style.bottom = '0px';
-            startMenu.style.right = `${offset}px`;
+            startMenu.style.bottom = '4px';
+            startMenu.style.right = `${menuOffset}px`;
+        }
+    }
+
+    const trayMenu = document.getElementById('tray-menu');
+    if (trayMenu) {
+        trayMenu.style.bottom = ''; trayMenu.style.top = ''; trayMenu.style.left = ''; trayMenu.style.right = '';
+        if (pos === 'bottom') {
+            trayMenu.style.bottom = `${menuOffset}px`;
+            trayMenu.style.right = '4px';
+        } else if (pos === 'top') {
+            trayMenu.style.top = `${menuOffset}px`;
+            trayMenu.style.right = '4px';
+        } else if (pos === 'left') {
+            trayMenu.style.bottom = '4px';
+            trayMenu.style.left = `${menuOffset}px`;
+        } else if (pos === 'right') {
+            trayMenu.style.bottom = '4px';
+            trayMenu.style.right = `${menuOffset}px`;
         }
     }
 

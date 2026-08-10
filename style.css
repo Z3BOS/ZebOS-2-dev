@@ -403,7 +403,7 @@ body.rounded-corners .retro-context-menu {
    ========================================================================== */
 #start-menu {
     position: absolute;
-    bottom: 0; left: 2px;
+    bottom: 44px; left: 4px;
     width: 240px;
     background-color: #c0c0c0;
     border: 2px solid #ffffff;
