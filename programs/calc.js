@@ -121,12 +121,12 @@ export class RetroCalculator {
                 </div>
 
                 <!-- Retro Sunken LCD Display Screen -->
-                <div style="background:#9fbf8f; color:#0b1a08; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:6px 8px; display:flex; flex-direction:column; justify-content:space-between; height:54px; margin-bottom:6px; font-family:'Courier New', monospace; box-sizing:border-box;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; opacity:0.85; min-height:14px;">
+                <div style="background:#9fbf8f; color:#0b1a08; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:5px 8px 4px 8px; display:flex; flex-direction:column; justify-content:space-between; height:60px; margin-bottom:6px; font-family:'Courier New', monospace; box-sizing:border-box; flex-shrink:0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; opacity:0.85; min-height:14px; line-height:1.1;">
                         <span class="calc-mem-tag" style="font-weight:bold; color:#000080; display:${this.memoryValue !== 0 ? 'inline' : 'none'};">M</span>
                         <span class="calc-expr-line" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; flex-grow:1; margin-left:8px;">${this.expressionText}</span>
                     </div>
-                    <div class="calc-display-line" style="text-align:right; font-size:1.6em; font-weight:bold; letter-spacing:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">0</div>
+                    <div class="calc-display-line" style="text-align:right; font-size:1.55em; font-weight:bold; letter-spacing:1px; line-height:1.1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; justify-content:flex-end; align-items:center; padding-bottom:2px;">0</div>
                 </div>
 
                 <!-- Memory Toolbar Strip -->
