@@ -801,7 +801,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-files': {
             const winId = 'explorer-root';
             try {
-                const module = await import('./programs/explorer.js');
+                const module = await import(`./programs/explorer.js?v=${Date.now()}`);
                 const explorerBody = createWindow("Exploring - ZebRoot (Z:)", "explorer", winId);
                 if (explorerBody) {
                     setWindowBounds(explorerBody, 760, 480);
@@ -809,10 +809,7 @@ async function launchApplication(appId, customFileName = null) {
                         () => closeWindow(winId),
                         (fileName) => launchApplication('start-link-text-editor', fileName),
                         () => saveFileSystem(),
-                        (path) => {
-                            if (!path || path === "") return systemState.fileSystem;
-                            return systemState.fileSystem[path]?.content || systemState.fileSystem;
-                        }
+                        (path) => getVfsNodeByPath(path)
                     );
                     registerWindowCleanup(winId, () => {});
                     expInstance.open(explorerBody);
@@ -854,7 +851,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-text-editor':
             const targetEditFile = customFileName || "untitled.txt";
             try {
-                const module = await import('./programs/editor.js');
+                const module = await import(`./programs/editor.js?v=${Date.now()}`);
                 const existingContent = currentContext[targetEditFile] ? currentContext[targetEditFile].content : "";
                 const cleanId = targetEditFile.replace(/[^a-zA-Z0-9]/g, '');
                 const winId = `edit-${cleanId}`;
@@ -1070,15 +1067,12 @@ async function launchApplication(appId, customFileName = null) {
 // ==========================================================================
 async function renderZebExplorer(containerElement) {
     try {
-        const module = await import('./programs/explorer.js');
+        const module = await import(`./programs/explorer.js?v=${Date.now()}`);
         const expInstance = new module.FileExplorerApp(
             () => {},
             (fileName) => launchApplication('start-link-text-editor', fileName),
             () => saveFileSystem(),
-            (path) => {
-                if (!path || path === "") return systemState.fileSystem;
-                return systemState.fileSystem[path]?.content || systemState.fileSystem;
-            }
+            (path) => getVfsNodeByPath(path)
         );
         expInstance.open(containerElement);
     } catch (err) {

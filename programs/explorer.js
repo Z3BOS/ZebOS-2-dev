@@ -293,26 +293,24 @@ export class FileExplorerApp {
         const freeMbStr = (2048 - (usedBytes / (1024 * 1024))).toFixed(0);
 
         mainContainer.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:14px;padding:10px;font-family:Arial,sans-serif;">
+        <div style="display:flex;flex-direction:column;gap:14px;padding:12px;font-family:Arial,sans-serif;box-sizing:border-box;">
             
             <!-- Dashboard Header -->
-            <div style="display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:2px solid #c0c0c0;">
-              <div style="width:36px;height:36px;">${getIcon('computer')}</div>
+            <div style="display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:2px solid #808080;">
+              <div style="width:36px;height:36px;flex-shrink:0;">${getIcon('computer')}</div>
               <div>
                 <div style="font-size:16px;font-weight:bold;color:#000080;">My Computer</div>
-                <div style="font-size:11px;color:#555;">ZebOS System Storage &amp; Virtual Media Drives</div>
+                <div style="font-size:11px;color:#444;">ZebOS System Storage &amp; Virtual Media Drives</div>
               </div>
             </div>
 
             <!-- Hard Disk & Media Drives Section -->
             <div>
-              <div style="font-size:12px;font-weight:bold;color:#000080;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-                <span>Hard Disk &amp; Media Drives</span>
-              </div>
-              <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:10px;">
+              <div style="font-size:12px;font-weight:bold;color:#000080;margin-bottom:8px;">Hard Disk &amp; Media Drives</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));gap:12px;">
                 
                 <!-- Drive Z: -->
-                <div class="exp-drive-card" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:6px;">
+                <div class="exp-drive-card" data-path="" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:6px;">
                   <div style="display:flex;align-items:center;gap:8px;">
                     <div style="width:28px;height:28px;flex-shrink:0;">${getIcon('drive')}</div>
                     <div>
@@ -323,11 +321,11 @@ export class FileExplorerApp {
                   <div style="width:100%;height:12px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;box-sizing:border-box;">
                     <div style="width:${usedPercent}%;height:100%;background:#000080;"></div>
                   </div>
-                  <div style="font-size:10px;color:#333;">${usedStr} used of 2.00 GB (${freeMbStr} MB free)</div>
+                  <div style="font-size:10px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${usedStr} used of 2.00 GB (${freeMbStr} MB free)</div>
                 </div>
 
                 <!-- Drive R: -->
-                <div class="exp-drive-card" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:6px;">
+                <div class="exp-drive-card" data-path="" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:6px;">
                   <div style="display:flex;align-items:center;gap:8px;">
                     <div style="width:28px;height:28px;flex-shrink:0;">${getIcon('drive')}</div>
                     <div>
@@ -338,11 +336,11 @@ export class FileExplorerApp {
                   <div style="width:100%;height:12px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;box-sizing:border-box;">
                     <div style="width:12%;height:100%;background:#000080;"></div>
                   </div>
-                  <div style="font-size:10px;color:#333;">64 MB used of 512 MB (448 MB free)</div>
+                  <div style="font-size:10px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">64 MB used of 512 MB (448 MB free)</div>
                 </div>
 
                 <!-- Drive D: -->
-                <div class="exp-drive-card" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:8px;cursor:default;display:flex;flex-direction:column;gap:6px;">
+                <div class="exp-drive-card" data-path="" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:10px;cursor:default;display:flex;flex-direction:column;gap:6px;">
                   <div style="display:flex;align-items:center;gap:8px;">
                     <div style="width:28px;height:28px;flex-shrink:0;">${getIcon('media')}</div>
                     <div>
@@ -353,7 +351,7 @@ export class FileExplorerApp {
                   <div style="width:100%;height:12px;background:#fff;border:2px solid #808080;border-right-color:#fff;border-bottom-color:#fff;box-sizing:border-box;">
                     <div style="width:100%;height:100%;background:#808080;"></div>
                   </div>
-                  <div style="font-size:10px;color:#333;">650 MB / 650 MB (Optical Disc)</div>
+                  <div style="font-size:10px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">650 MB / 650 MB (Optical Disc)</div>
                 </div>
 
               </div>
@@ -362,7 +360,7 @@ export class FileExplorerApp {
             <!-- Quick Access System Folders -->
             <div>
               <div style="font-size:12px;font-weight:bold;color:#000080;margin-bottom:8px;">System Quick Locations</div>
-              <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:8px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));gap:10px;">
                 ${[
                   { name: 'System32', path: 'System32', icon: 'zdl', desc: 'Core Libraries' },
                   { name: 'Program Files', path: 'Program Files', icon: 'folder', desc: 'Applications' },
@@ -370,20 +368,20 @@ export class FileExplorerApp {
                   { name: 'Windows', path: 'Windows', icon: 'settings', desc: 'System Config' },
                   { name: 'Documents', path: 'Users/Guest/Documents', icon: 'editor', desc: 'My Documents' }
                 ].map(loc => `
-                <div class="exp-quick-loc" data-path="${loc.path}" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:6px;cursor:pointer;display:flex;align-items:center;gap:8px;">
-                  <div style="width:24px;height:24px;flex-shrink:0;">${getIcon(loc.icon)}</div>
-                  <div>
-                    <div style="font-weight:bold;font-size:11px;color:#000;">${loc.name}</div>
-                    <div style="font-size:9px;color:#555;">${loc.desc}</div>
+                <div class="exp-quick-loc" data-path="${loc.path}" style="background:#c0c0c0;border:2px solid #fff;border-right-color:#808080;border-bottom-color:#808080;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                  <div style="width:26px;height:26px;flex-shrink:0;">${getIcon(loc.icon)}</div>
+                  <div style="overflow:hidden;">
+                    <div style="font-weight:bold;font-size:11px;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc.name}</div>
+                    <div style="font-size:10px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc.desc}</div>
                   </div>
                 </div>`).join('')}
               </div>
             </div>
 
             <!-- System Info Summary Card -->
-            <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:8px 12px;background:#c0c0c0;">
+            <fieldset style="border:2px solid #fff;border-left-color:#808080;border-top-color:#808080;padding:10px 14px;background:#c0c0c0;margin-top:4px;">
               <legend style="color:#000080;font-weight:bold;padding:0 4px;">ZebOS System Summary</legend>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;color:#000;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11px;color:#000;">
                 <div>OS Version: <strong>ZebOS 2.5.0 Alpha</strong></div>
                 <div>Processor: <strong>ZebCore™ x86 Virtual CPU</strong></div>
                 <div>System Memory: <strong>1024 MB RAM</strong></div>
@@ -395,7 +393,6 @@ export class FileExplorerApp {
 
         // Bind clicks on drive cards & quick locations
         mainContainer.querySelectorAll('.exp-drive-card').forEach(card => {
-            card.addEventListener('dblclick', () => this.navigateTo(""));
             card.addEventListener('click', () => this.navigateTo(""));
         });
         mainContainer.querySelectorAll('.exp-quick-loc').forEach(loc => {

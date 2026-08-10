@@ -375,7 +375,7 @@ body.rounded-corners .retro-context-menu {
 
 #desktop-build-tag {
     position: absolute;
-    bottom: 15px; right: 20px;
+    bottom: 58px; right: 20px;
     font-family: monospace;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.55); 
@@ -383,7 +383,7 @@ body.rounded-corners .retro-context-menu {
     line-height: 1.4;
     pointer-events: none; 
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    z-index: 1;
+    z-index: 10;
 }
 
 #window-workspace {
