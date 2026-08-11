@@ -534,6 +534,7 @@ body.rounded-corners .retro-context-menu {
     cursor: pointer;
     box-sizing: border-box;
     user-select: none;
+    overflow: hidden;
 }
 
 #start-button:active,
@@ -542,8 +543,6 @@ body.rounded-corners .retro-context-menu {
     border-right-color: #ffffff;
     border-bottom-color: #ffffff;
     background-color: #b0b0b0;
-    padding-top: 3px;
-    padding-left: 11px;
 }
 
 .start-logo {
@@ -790,8 +789,10 @@ body.rounded-corners .retro-context-menu {
 }
 
 .window-maximized {
-    top: 0 !important; left: 0 !important;
-    width: 100vw !important; height: calc(100vh - 40px) !important;
+    top: var(--tb-top-offset, 0px) !important;
+    left: var(--tb-left-offset, 0px) !important;
+    width: calc(100vw - var(--tb-left-offset, 0px) - var(--tb-right-offset, 0px)) !important;
+    height: calc(100vh - var(--tb-height-offset, 40px)) !important;
 }
 
 /* ==========================================================================
