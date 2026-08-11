@@ -20,6 +20,8 @@ let systemState = {
     soundScheme: 'classic',
     taskbarAutoHide: false,
     roundedCorners: false,
+    skipBootAnimation: false,
+    autoDevMode: false,
     fileSystem: {}
 };
 
@@ -114,7 +116,7 @@ function logKernel(message, level = "INFO") {
     return formatted;
 }
 
-// ChromeOS-style dev mode entry: holding Ctrl+Alt during boot engages it.
+// Basic dev mode. Let's expand on this later. 
 function enterDevMode() {
     if (devModeEnabled) return;
     devModeEnabled = true;
@@ -153,6 +155,11 @@ function loadFileSystem() {
             if (s.scheme)         systemState.desktopScheme     = s.scheme;
             if (s.soundScheme)    systemState.soundScheme       = s.soundScheme;
             if (s.roundedCorners !== undefined) systemState.roundedCorners = s.roundedCorners;
+            if (s.autoArrange !== undefined)     systemState.autoArrange     = s.autoArrange;
+            if (s.taskbarAutoHide !== undefined) systemState.taskbarAutoHide = s.taskbarAutoHide;
+            if (s.desktopSortBy)                 systemState.desktopSortBy  = s.desktopSortBy;
+            if (s.skipBootAnimation !== undefined) systemState.skipBootAnimation = s.skipBootAnimation;
+            if (s.autoDevMode !== undefined)       systemState.autoDevMode       = s.autoDevMode;
         } catch(e) { /* ignore */ }
     }
 
@@ -301,11 +308,16 @@ export function saveFileSystem() {
         localStorage.setItem('ZEBOS_V2_DISK', serializedFS);
         // Persist OS appearance settings
         const settings = {
-            color:          systemState.desktopBackground,
-            pattern:        systemState.desktopPattern,
-            scheme:         systemState.desktopScheme,
-            soundScheme:    systemState.soundScheme,
-            roundedCorners: systemState.roundedCorners,
+            color:              systemState.desktopBackground,
+            pattern:            systemState.desktopPattern,
+            scheme:             systemState.desktopScheme,
+            soundScheme:        systemState.soundScheme,
+            roundedCorners:     systemState.roundedCorners,
+            autoArrange:        systemState.autoArrange,
+            taskbarAutoHide:    systemState.taskbarAutoHide,
+            desktopSortBy:      systemState.desktopSortBy,
+            skipBootAnimation:  systemState.skipBootAnimation,
+            autoDevMode:        systemState.autoDevMode,
         };
         localStorage.setItem('ZEBOS_V2_SETTINGS', JSON.stringify(settings));
         logKernel("Storage System: Changes committed to local storage sectors successfully.");
@@ -644,58 +656,95 @@ function initializeBootSequence() {
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
+    if (systemState.autoDevMode && !devModeEnabled) enterDevMode();
+
     let finished = false;
+
+    function proceedToLogon() {
+        logKernel("BOOT COMPLETE: Graphical Desktop Env Core loaded successfully.");
+        (async () => {
+            try {
+                const module = await import('./logon/logon.js');
+                module.showLogonScreen((username) => {
+                    const activeUser = ensureUserProfileFolder(username);
+                    const desktopCanvas = document.getElementById('desktop-canvas');
+                    const taskbar = document.getElementById('system-taskbar');
+                    if (desktopCanvas) {
+                        desktopCanvas.style.display = 'block';
+                        requestAnimationFrame(() => { desktopCanvas.style.opacity = '1'; });
+                        // Apply persisted appearance settings
+                        applyOsSettings({
+                            color:          systemState.desktopBackground,
+                            pattern:        systemState.desktopPattern,
+                            scheme:         systemState.desktopScheme,
+                            soundScheme:    systemState.soundScheme,
+                            roundedCorners: systemState.roundedCorners,
+                        });
+                    }
+                    if (taskbar) {
+                        taskbar.style.display = 'flex';
+                        requestAnimationFrame(() => { taskbar.style.opacity = '1'; });
+                    }
+                    const userTag = document.getElementById('current-user-tag');
+                    if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
+                    logKernel(`Session: User '${username}' signed in.`);
+                });
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount logon/logon.js (${err.message})`, "ERROR");
+                const desktopCanvas = document.getElementById('desktop-canvas');
+                const taskbar = document.getElementById('system-taskbar');
+                if (desktopCanvas) { desktopCanvas.style.display = 'block'; desktopCanvas.style.opacity = '1'; }
+                if (taskbar) { taskbar.style.display = 'flex'; taskbar.style.opacity = '1'; }
+            }
+        })();
+    }
+
     function finishBoot() {
         if (finished) return;
         finished = true;
         window.removeEventListener('keydown', devModeKeyHandler);
         if (bootScreen) {
             bootScreen.style.opacity = "0";
-            setTimeout(async () => {
+            setTimeout(() => {
                 bootScreen.remove();
-                logKernel("BOOT COMPLETE: Graphical Desktop Env Core loaded successfully.");
-                try {
-                    const module = await import('./logon/logon.js');
-                    module.showLogonScreen((username) => {
-                        const activeUser = ensureUserProfileFolder(username);
-                        const desktopCanvas = document.getElementById('desktop-canvas');
-                        const taskbar = document.getElementById('system-taskbar');
-                        if (desktopCanvas) {
-                            desktopCanvas.style.display = 'block';
-                            requestAnimationFrame(() => { desktopCanvas.style.opacity = '1'; });
-                            // Apply persisted appearance settings
-                            applyOsSettings({
-                                color:          systemState.desktopBackground,
-                                pattern:        systemState.desktopPattern,
-                                scheme:         systemState.desktopScheme,
-                                soundScheme:    systemState.soundScheme,
-                                roundedCorners: systemState.roundedCorners,
-                            });
-                        }
-                        if (taskbar) {
-                            taskbar.style.display = 'flex';
-                            requestAnimationFrame(() => { taskbar.style.opacity = '1'; });
-                        }
-                        const userTag = document.getElementById('current-user-tag');
-                        if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
-                        logKernel(`Session: User '${username}' signed in.`);
-                    });
-                } catch (err) {
-                    logKernel(`Kernel Error: Failed to mount logon/logon.js (${err.message})`, "ERROR");
-                    const desktopCanvas = document.getElementById('desktop-canvas');
-                    const taskbar = document.getElementById('system-taskbar');
-                    if (desktopCanvas) { desktopCanvas.style.display = 'block'; desktopCanvas.style.opacity = '1'; }
-                    if (taskbar) { taskbar.style.display = 'flex'; taskbar.style.opacity = '1'; }
-                }
+                proceedToLogon();
             }, 800);
+        } else {
+            proceedToLogon();
         }
     }
 
+    function enterRecoveryMode() {
+        if (finished) return;
+        finished = true;
+        window.removeEventListener('keydown', devModeKeyHandler);
+        if (bootScreen) bootScreen.remove();
+        logKernel("BOOT: Diverting to Recovery Mode.");
+        (async () => {
+            try {
+                const module = await import('./recovery/recovery.js');
+                module.showRecoveryScreen(buildRecoveryApi(proceedToLogon));
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount recovery/recovery.js (${err.message})`, "ERROR");
+                proceedToLogon();
+            }
+        })();
+    }
+
     // Holding Ctrl+Alt during boot skips straight past the log/splash animation.
+    // Holding Ctrl+Shift+R during boot diverts into Recovery Mode instead.
     function devModeKeyHandler(e) {
         if (e.ctrlKey && e.altKey && !devModeEnabled) {
             enterDevMode();
             finishBoot();
+        }
+        if (e.ctrlKey && e.shiftKey && e.key === 'Escape') {
+            e.preventDefault();
+            launchApplication('start-link-taskmgr');
+        }
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'r') {
+            e.preventDefault();
+            enterRecoveryMode();
         }
     }
     window.addEventListener('keydown', devModeKeyHandler);
@@ -723,9 +772,14 @@ function initializeBootSequence() {
             }, 300);
         }
     }
-    printNextBootLine();
 
-    setTimeout(finishBoot, 4000);
+    if (systemState.skipBootAnimation) {
+        if (bootScreen) bootScreen.classList.add('splash-active');
+        setTimeout(finishBoot, 300);
+    } else {
+        printNextBootLine();
+        setTimeout(finishBoot, 4000);
+    }
 }
 
 // Window manager code
@@ -1182,7 +1236,7 @@ async function launchApplication(appId, customFileName = null) {
         case 'start-link-courgette': {
             const winId = 'app-courgette';
             try {
-                const module = await import('./courgette/courgette.js');
+                const module = await import('./programs/courgette.js');
                 const cgBody = createWindow("Courgette Info", "courgette", winId);
                 if (cgBody) {
                     setWindowBounds(cgBody, 660, 440);
@@ -1230,6 +1284,57 @@ async function launchApplication(appId, customFileName = null) {
                 }
             } catch (err) {
                 logKernel(`Kernel Error: Failed to mount personalize.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-taskmgr': {
+            const winId = 'app-taskmgr';
+            try {
+                const module = await import(`./programs/taskmgr.js?v=${Date.now()}`);
+                const taskmgrBody = createWindow("Task Manager", "taskmgr", winId);
+                if (taskmgrBody) {
+                    setWindowBounds(taskmgrBody, 400, 460);
+                    const taskmgrInstance = new module.TaskManagerApp(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => taskmgrInstance.cleanup());
+                    taskmgrInstance.open(taskmgrBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount taskmgr.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-solitaire': {
+            const winId = 'app-solitaire';
+            try {
+                const module = await import(`./programs/solitaire.js?v=${Date.now()}`);
+                const solitaireBody = createWindow("Solitaire", "solitaire", winId);
+                if (solitaireBody) {
+                    setWindowBounds(solitaireBody, 640, 560);
+                    const solitaireInstance = new module.SolitaireGame(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => solitaireInstance.cleanup());
+                    solitaireInstance.open(solitaireBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount solitaire.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-chess': {
+            const winId = 'app-chess';
+            try {
+                const module = await import(`./programs/chess.js?v=${Date.now()}`);
+                const chessBody = createWindow("Chess", "chess", winId);
+                if (chessBody) {
+                    setWindowBounds(chessBody, 780, 600);
+                    const chessInstance = new module.ChessApp(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => chessInstance.cleanup());
+                    chessInstance.open(chessBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount chess.js (${err.message})`, "ERROR");
             }
             break;
         }
@@ -1318,6 +1423,98 @@ function shellRemove(name) {
 }
 
 // ==========================================================================
+// RECOVERY MODE API
+// Callbacks handed to recovery/recovery.js, which knows nothing about
+// systemState directly — only os.js has access to it.
+// ==========================================================================
+const RECOVERY_FLAG_KEYS = ['autoArrange', 'taskbarAutoHide', 'desktopSortBy', 'skipBootAnimation', 'autoDevMode', 'soundScheme', 'desktopScheme', 'roundedCorners'];
+const RECOVERY_DEFAULT_SETTINGS = {
+    desktopSortBy: 'type',
+    autoArrange: true,
+    desktopBackground: '#008080',
+    desktopPattern: 'solid',
+    desktopScheme: 'standard',
+    soundScheme: 'classic',
+    taskbarAutoHide: false,
+    roundedCorners: false,
+    skipBootAnimation: false,
+    autoDevMode: false
+};
+
+function buildRecoveryApi(onExit) {
+    const createBackup = () => JSON.stringify({
+        version: systemState.version,
+        fileSystem: systemState.fileSystem,
+        settings: {
+            color: systemState.desktopBackground,
+            pattern: systemState.desktopPattern,
+            scheme: systemState.desktopScheme,
+            ...Object.fromEntries(RECOVERY_FLAG_KEYS.map(k => [k, systemState[k]]))
+        }
+    }, null, 2);
+
+    const restoreBackup = (jsonText) => {
+        try {
+            const parsed = JSON.parse(jsonText);
+            if (!parsed || typeof parsed !== 'object' || !parsed.fileSystem || typeof parsed.fileSystem !== 'object') {
+                return { ok: false, message: 'Backup file is missing a valid fileSystem section.' };
+            }
+            systemState.fileSystem = parsed.fileSystem;
+            const s = parsed.settings || {};
+            if (s.color) systemState.desktopBackground = s.color;
+            if (s.pattern) systemState.desktopPattern = s.pattern;
+            if (s.scheme) systemState.desktopScheme = s.scheme;
+            RECOVERY_FLAG_KEYS.forEach(k => { if (s[k] !== undefined) systemState[k] = s[k]; });
+            ensureSystemFoldersExist();
+            saveFileSystem();
+            logKernel("Recovery: Restored system state from backup file.");
+            return { ok: true, message: 'Restore complete.' };
+        } catch (err) {
+            return { ok: false, message: `Could not read backup file: ${err.message}` };
+        }
+    };
+
+    const reinstall = () => {
+        Object.assign(systemState, RECOVERY_DEFAULT_SETTINGS);
+        provisionDefaultRootFS();
+        saveFileSystem();
+        logKernel("Recovery: Fresh install provisioned, all prior data erased.", "WARN");
+    };
+
+    const getFlags = () => Object.fromEntries(RECOVERY_FLAG_KEYS.map(k => [k, systemState[k]]));
+    const setFlag = (key, value) => {
+        if (!RECOVERY_FLAG_KEYS.includes(key)) return;
+        systemState[key] = value;
+        saveFileSystem();
+    };
+
+    return {
+        onExit,
+        getVersion: () => systemState.version,
+        createBackup,
+        restoreBackup,
+        reinstall,
+        getFlags,
+        setFlag,
+        shellApi: {
+            getContext: () => getActiveFolderContext(),
+            getPath: () => systemState.currentDirectory === "" ? "/" : `/${systemState.currentDirectory}`,
+            changeDirectory: (target) => shellChangeDirectory(target),
+            mkdir: (name) => shellMkdir(name),
+            touch: (name) => shellTouch(name),
+            remove: (name) => shellRemove(name),
+            openInEditor: () => {},
+            getUsername: () => systemState.currentUser,
+            getVersion: () => systemState.version,
+            backup: createBackup,
+            reinstall,
+            getFlags,
+            setFlag
+        }
+    };
+}
+
+// ==========================================================================
 // DESKTOP SHORTCUT ICONS
 // ==========================================================================
 const DESKTOP_SHORTCUTS = [
@@ -1330,7 +1527,10 @@ const DESKTOP_SHORTCUTS = [
     { id: 'start-link-snake', icon: 'snake', label: 'Snake' },
     { id: 'start-link-media', icon: 'media', label: 'Media Player' },
     { id: 'start-link-vm', icon: 'vm', label: 'ZebVM Manager' },
-    { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette Info' }
+    { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette Info' },
+    { id: 'start-link-taskmgr', icon: 'taskmgr', label: 'Task Manager' },
+    { id: 'start-link-solitaire', icon: 'solitaire', label: 'Solitaire' },
+    { id: 'start-link-chess', icon: 'chess', label: 'Chess' }
 ];
 
 export function showOsPrompt(title, message, defaultValue = "", onConfirm = null) {

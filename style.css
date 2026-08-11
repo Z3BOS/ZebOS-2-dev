@@ -853,3 +853,274 @@ input[type="radio"]:checked::after {
     border-bottom-color: #000000;
     height: 16px;
 }
+
+/* ========================================================================
+   Shared Win95 toolbar button/list chrome (Task Manager, Solitaire, Chess)
+   ======================================================================== */
+.app-toolbar-btn {
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.app-toolbar-btn:active {
+    border: 2px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+.app-toolbar-btn:disabled {
+    color: #808080;
+    cursor: default;
+    border-color: #eeeeee #808080 #808080 #eeeeee;
+}
+.app-list-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+.app-list-row.selected {
+    background-color: #000080;
+    color: #ffffff;
+}
+.app-list-row .sys-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* ========================================================================
+   Chess board
+   ======================================================================== */
+.chess-board {
+    display: grid;
+    grid-template-columns: repeat(8, 52px);
+    grid-template-rows: repeat(8, 52px);
+    border: 3px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    user-select: none;
+}
+.chess-square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    line-height: 1;
+    cursor: pointer;
+    position: relative;
+}
+.chess-square.light { background-color: #f0d9b5; }
+.chess-square.dark { background-color: #b58863; }
+.chess-square.selected { box-shadow: inset 0 0 0 3px #2563eb; }
+.chess-square.in-check { box-shadow: inset 0 0 0 3px #c62828; }
+.chess-square.legal-target::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.32);
+}
+.chess-square.legal-capture::after {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: inset 0 0 0 4px rgba(198, 40, 40, 0.65);
+}
+.chess-piece.white-piece { color: #ffffff; -webkit-text-stroke: 1px #000000; }
+.chess-piece.black-piece { color: #000000; }
+.chess-promo-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+.chess-promo-panel {
+    background: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    padding: 12px;
+    display: flex;
+    gap: 8px;
+}
+.chess-promo-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 32px;
+    background-color: #ffffff;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.chess-promo-btn:hover { background-color: #e0e0e0; }
+
+.chess-square.last-move-from,
+.chess-square.last-move-to {
+    box-shadow: inset 0 0 0 9999px rgba(255, 235, 59, 0.35);
+}
+.chess-square.selected.last-move-to,
+.chess-square.selected.last-move-from {
+    box-shadow: inset 0 0 0 9999px rgba(255, 235, 59, 0.35), inset 0 0 0 3px #2563eb;
+}
+
+.chess-coord-ranks {
+    display: flex;
+    flex-direction: column;
+}
+.chess-coord-ranks span, .chess-coord-files span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #444444;
+}
+.chess-coord-ranks span { width: 16px; height: 52px; }
+.chess-coord-files {
+    display: flex;
+    padding-left: 16px;
+}
+.chess-coord-files span { width: 52px; height: 16px; }
+
+.chess-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    box-sizing: border-box;
+    border-left: 2px solid #808080;
+    overflow-y: auto;
+}
+.chess-panel {
+    background-color: #ffffff;
+    border: 2px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    padding: 6px;
+}
+.chess-panel-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: #000080;
+    margin-bottom: 4px;
+}
+.chess-captured-row {
+    min-height: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    font-size: 18px;
+    line-height: 1;
+}
+.chess-material-diff {
+    font-size: 11px;
+    font-weight: bold;
+    color: #2e7d32;
+    margin-top: 2px;
+}
+.chess-history-panel {
+    flex-grow: 1;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+}
+.chess-history-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+}
+.chess-history-row {
+    display: flex;
+    gap: 6px;
+    padding: 1px 2px;
+}
+.chess-history-row .move-num { color: #808080; width: 22px; flex-shrink: 0; }
+.chess-history-row .move-white, .chess-history-row .move-black { flex: 1; }
+.chess-gameover-banner {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    text-align: center;
+}
+.chess-gameover-panel {
+    background: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000;
+    border-bottom-color: #000;
+    padding: 20px 28px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* ========================================================================
+   Solitaire
+   ======================================================================== */
+.solitaire-table {
+    background-color: #087830;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+}
+.solitaire-card {
+    width: 64px;
+    height: 90px;
+    border-radius: 4px;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    padding: 3px 5px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    position: absolute;
+    cursor: pointer;
+}
+.solitaire-card.red-suit { color: #c62828; }
+.solitaire-card.black-suit { color: #000000; }
+.solitaire-card.face-down {
+    background: repeating-linear-gradient(45deg, #10509c, #10509c 6px, #1565c0 6px, #1565c0 12px);
+    border: 1px solid #06305e;
+}
+.solitaire-card .card-rank-top { font-size: 14px; line-height: 1; }
+.solitaire-card .card-suit-big { font-size: 26px; text-align: center; line-height: 1.6; }
+.solitaire-pile-slot {
+    width: 64px;
+    height: 90px;
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    box-sizing: border-box;
+    position: relative;
+}
+.solitaire-card.drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    opacity: 0.9;
+    z-index: 100010;
+}
