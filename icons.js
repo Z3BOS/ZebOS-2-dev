@@ -375,6 +375,40 @@ const SVGS = {
             <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" fill="none" stroke="#808080" stroke-width="1.5"/>
             <line x1="3" y1="3" x2="21" y2="21" stroke="#d32f2f" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
+    `,
+    taskmgr: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3" width="20" height="18" rx="1" fill="#c0c0c0" stroke="#000000" stroke-width="1.5"/>
+            <rect x="3" y="4" width="18" height="4" fill="#000080"/>
+            <rect x="4" y="9" width="16" height="3" fill="#ffffff" stroke="#808080" stroke-width="0.8"/>
+            <rect x="4" y="13" width="16" height="3" fill="#e0e0e0" stroke="#808080" stroke-width="0.8"/>
+            <rect x="4" y="17" width="10" height="3" fill="#ffffff" stroke="#808080" stroke-width="0.8"/>
+            <rect x="15" y="17" width="5" height="3" fill="#c62828" stroke="#000000" stroke-width="0.8"/>
+        </svg>
+    `,
+    solitaire: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="4" width="12" height="17" rx="1.5" fill="#ffffff" stroke="#000000" stroke-width="1.2" transform="rotate(-8 8 12)"/>
+            <path d="M13 9L14 7L15 9L17 9.5L15 10.5L14 12.5L13 10.5L11 9.5Z" fill="#c62828" transform="rotate(-8 14 9)"/>
+            <rect x="9" y="3" width="12" height="17" rx="1.5" fill="#ffffff" stroke="#000000" stroke-width="1.2"/>
+            <path d="M15 7C15 7 12 9.5 12 12C12 13.5 13.2 14.5 15 14.5C16.8 14.5 18 13.5 18 12C18 9.5 15 7 15 7Z" fill="#000000"/>
+            <rect x="13.5" y="14" width="3" height="4" fill="#000000"/>
+        </svg>
+    `,
+    chess: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="20" height="20" fill="#e0e0e0" stroke="#000000" stroke-width="1.5"/>
+            <rect x="2" y="2" width="5" height="5" fill="#000000"/>
+            <rect x="12" y="2" width="5" height="5" fill="#000000"/>
+            <rect x="7" y="7" width="5" height="5" fill="#000000"/>
+            <rect x="17" y="7" width="5" height="5" fill="#000000"/>
+            <rect x="2" y="12" width="5" height="5" fill="#000000"/>
+            <rect x="12" y="12" width="5" height="5" fill="#000000"/>
+            <rect x="7" y="17" width="5" height="5" fill="#000000"/>
+            <rect x="17" y="17" width="5" height="5" fill="#000000"/>
+            <path d="M12 6C10.9 6 10 6.9 10 8C10 8.6 10.3 9.1 10.7 9.5L9.5 16H14.5L13.3 9.5C13.7 9.1 14 8.6 14 8C14 6.9 13.1 6 12 6Z" fill="#c62828" stroke="#000000" stroke-width="0.8"/>
+            <rect x="9" y="16" width="6" height="2" fill="#c62828" stroke="#000000" stroke-width="0.8"/>
+        </svg>
     `
 };
 
