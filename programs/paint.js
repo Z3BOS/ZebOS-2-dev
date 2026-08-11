@@ -414,16 +414,19 @@ export class PaintApp {
     }
 
     openSaveAsDialog() {
+        this.renderComposite();
         showSaveFileDialog(this.activeFileName, (filename, vfsFolder) => {
-            this.activeFileName = filename;
+            this.renderComposite();
             const dataUrl = this.mainCanvas.toDataURL("image/png");
-            saveFileToVfsPath(vfsFolder, filename, dataUrl);
+            const savedName = saveFileToVfsPath(vfsFolder, filename, dataUrl);
+            this.activeFileName = savedName;
             const folderLabel = vfsFolder || "ZebRoot (Z:)";
-            showOsConfirm("Artwork Saved to ZebOS", `'${filename}' has been saved successfully to '${folderLabel}'.`);
+            showOsConfirm("Artwork Saved to ZebOS", `'${savedName}' has been saved successfully to '${folderLabel}'.`);
         });
     }
 
     exportToPC() {
+        this.renderComposite();
         const dataUrl = this.mainCanvas.toDataURL("image/png");
         const a = document.createElement('a');
         a.href = dataUrl;
