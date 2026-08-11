@@ -211,12 +211,22 @@ export class ZebViewerApp {
     }
 
     loadImage() {
+        if (!this.imageDataUrl && this.getVfsNode) {
+            const searchPaths = ["Users/Guest/Pictures", "Users/Guest/Desktop", "Users/Guest/Documents", "Users/Guest/Downloads", ""];
+            for (const path of searchPaths) {
+                const nodeMap = this.getVfsNode(path);
+                if (nodeMap && nodeMap[this.imageName] && nodeMap[this.imageName].content) {
+                    this.imageDataUrl = nodeMap[this.imageName].content;
+                    break;
+                }
+            }
+        }
+
         if (this.imageDataUrl) {
             this.img.src = this.imageDataUrl;
         } else {
-            // Placeholder checkered canvas if no image provided
             this.imgLoaded = false;
-            this.drawPlaceholder();
+            this.drawPlaceholder("No Image Loaded");
             return;
         }
 

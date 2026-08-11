@@ -944,8 +944,12 @@ function setWindowBounds(bodyElement, width, height) {
     }
 }
 
-function launchFile(fileName) {
+function launchFile(fileName, dirPath = null) {
     if (!fileName) return;
+    const targetPath = dirPath !== null ? dirPath : systemState.currentDirectory;
+    const targetContext = getVfsNodeByPath(targetPath);
+    const item = targetContext ? targetContext[fileName] : null;
+
     if (fileName.endsWith('.zdl')) {
         showOsConfirm(
             "Cannot Open System Library",
@@ -956,9 +960,6 @@ function launchFile(fileName) {
         return;
     }
 
-    const currentContext = getActiveFolderContext();
-    const item = currentContext[fileName];
-
     const isImage = fileName.endsWith('.png') ||
                     fileName.endsWith('.jpg') ||
                     fileName.endsWith('.jpeg') ||
@@ -968,7 +969,7 @@ function launchFile(fileName) {
                     (item && item.content && typeof item.content === 'string' && item.content.startsWith('data:image/'));
 
     if (isImage) {
-        launchApplication('start-link-viewer', fileName);
+        launchApplication('start-link-viewer', fileName, targetPath);
         return;
     }
 
@@ -979,14 +980,15 @@ function launchFile(fileName) {
         else if (lower.includes('cmd') || lower.includes('terminal')) launchApplication('start-link-prompt');
         else if (lower.includes('mines')) launchApplication('start-link-mines');
         else if (lower.includes('player')) launchApplication('start-link-media');
-        else launchApplication('start-link-text-editor', fileName);
+        else launchApplication('start-link-text-editor', fileName, targetPath);
         return;
     }
-    launchApplication('start-link-text-editor', fileName);
+    launchApplication('start-link-text-editor', fileName, targetPath);
 }
 
-async function launchApplication(appId, customFileName = null) {
-    const currentContext = getActiveFolderContext();
+async function launchApplication(appId, customFileName = null, dirPath = null) {
+    const targetPath = dirPath !== null ? dirPath : systemState.currentDirectory;
+    const currentContext = getVfsNodeByPath(targetPath) || getActiveFolderContext();
 
     switch (appId) {
         case 'start-link-files': {
@@ -998,7 +1000,7 @@ async function launchApplication(appId, customFileName = null) {
                     setWindowBounds(explorerBody, 760, 480);
                     const expInstance = new module.FileExplorerApp(
                         () => closeWindow(winId),
-                        (fileName) => launchFile(fileName),
+                        (fileName, fileDirPath) => launchFile(fileName, fileDirPath),
                         () => saveFileSystem(),
                         (path) => getVfsNodeByPath(path)
                     );

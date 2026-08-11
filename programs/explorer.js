@@ -594,7 +594,7 @@ export class FileExplorerApp {
                     const newPath = this.currentPath === "" ? name : `${this.currentPath}/${name}`;
                     this.navigateTo(newPath);
                 } else {
-                    this.launchFileCallback(name);
+                    this.launchFileCallback(name, this.currentPath);
                 }
             });
 
@@ -673,7 +673,7 @@ export class FileExplorerApp {
                     const newPath = this.currentPath === "" ? name : `${this.currentPath}/${name}`;
                     this.navigateTo(newPath);
                 } else {
-                    this.launchFileCallback(name);
+                    this.launchFileCallback(name, this.currentPath);
                 }
             });
 
