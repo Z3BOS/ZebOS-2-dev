@@ -62,12 +62,12 @@ function getContextMenuForElement(target, callbacks) {
         const itemType = explorerItem.dataset.itemType;
         const deleteLabel = itemType === 'dir' ? 'Delete Folder' : (itemName.endsWith('.zdl') ? 'Delete Library' : 'Delete File');
         return [
-            { label: 'Open', icon: itemType === 'dir' ? 'folder' : 'file', bold: true, action: () => callbacks.onOpenExplorerItem?.(itemName, itemType) },
+            { label: 'Open', icon: itemType === 'dir' ? 'folder' : 'file', bold: true, action: () => callbacks.onOpenExplorerItem?.(itemName, itemType, explorerItem) },
             { type: 'separator' },
             { label: 'Cut', icon: 'file', action: () => callbacks.onCopyCutFile?.(itemName, 'cut') },
             { label: 'Copy', icon: 'file', action: () => callbacks.onCopyCutFile?.(itemName, 'copy') },
-            { label: deleteLabel, icon: 'winClose', action: () => callbacks.onDeleteFile?.(itemName) },
-            { label: 'Rename', icon: 'editor', action: () => callbacks.onRenameFile?.(itemName) },
+            { label: deleteLabel, icon: 'winClose', action: () => callbacks.onDeleteFile?.(itemName, explorerItem) },
+            { label: 'Rename', icon: 'editor', action: () => callbacks.onRenameFile?.(itemName, explorerItem) },
             { type: 'separator' },
             { label: 'Properties', icon: 'settings', action: () => showItemPropertiesDialog(itemName, itemType, callbacks) }
         ];

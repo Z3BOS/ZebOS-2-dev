@@ -719,13 +719,17 @@ function provisionDefaultRootFS() {
 // FILE SYSTEM WORKSPACE MANAGER ROUTINES
 // ==========================================================================
 export function getVfsNodeByPath(pathStr) {
-    if (!pathStr || pathStr === "" || pathStr === "/") return systemState.fileSystem;
-    const parts = pathStr.split('/').filter(Boolean);
+    if (pathStr === null || pathStr === undefined) return systemState.fileSystem;
+    let clean = String(pathStr).trim().replace(/^Z:\\?/i, '').replace(/\\/g, '/');
+    if (!clean || clean === "" || clean === "/") return systemState.fileSystem;
+    const parts = clean.split('/').filter(Boolean);
     let curr = systemState.fileSystem;
     for (const part of parts) {
         if (curr[part] && curr[part].type === 'dir') {
             if (!curr[part].content) curr[part].content = {};
             curr = curr[part].content;
+        } else if (curr[part] && typeof curr[part] === 'object' && !curr[part].type) {
+            curr = curr[part];
         } else {
             return systemState.fileSystem;
         }
@@ -733,8 +737,47 @@ export function getVfsNodeByPath(pathStr) {
     return curr;
 }
 
-function getActiveFolderContext() {
-    return getVfsNodeByPath(systemState.currentDirectory);
+export function getActiveFolderContext(explicitPath = null) {
+    if (explicitPath !== null && explicitPath !== undefined) {
+        const ctx = getVfsNodeByPath(explicitPath);
+        if (ctx) return ctx;
+    }
+    const activeWin = document.querySelector('.window-frame.active-window');
+    if (activeWin) {
+        const expEl = activeWin.querySelector('[data-current-path]');
+        if (expEl && expEl.dataset.currentPath && expEl.dataset.currentPath !== 'HOME') {
+            const ctx = getVfsNodeByPath(expEl.dataset.currentPath);
+            if (ctx) return ctx;
+        }
+    }
+    return getVfsNodeByPath(systemState.currentDirectory) || systemState.fileSystem;
+}
+
+export function saveFileToVfsPath(filePathOrName, fileContent, defaultDir = null) {
+    if (!filePathOrName) return false;
+    let cleanPath = String(filePathOrName).trim().replace(/^Z:\\?/i, '').replace(/\\/g, '/');
+    let dirPath = "";
+    let fileName = cleanPath;
+
+    if (cleanPath.includes('/')) {
+        const parts = cleanPath.split('/');
+        fileName = parts.pop();
+        dirPath = parts.join('/');
+    } else if (defaultDir) {
+        dirPath = defaultDir;
+    } else {
+        dirPath = systemState.currentDirectory;
+    }
+
+    const dirNode = getVfsNodeByPath(dirPath);
+    if (dirNode) {
+        dirNode[fileName] = { type: "file", content: fileContent };
+        saveFileSystem();
+        refreshOpenExplorer();
+        renderDesktopIcons();
+        return true;
+    }
+    return false;
 }
 
 // ==========================================================================
@@ -2312,12 +2355,23 @@ initContextMenuSystem({
             : `Are you sure you want to delete '${targetName}'?`;
 
         showOsConfirm(title, message, isZdl, () => {
-            if (vfsName && systemState.fileSystem[vfsName]) {
-                delete systemState.fileSystem[vfsName];
+            const desktopContext = getVfsNodeByPath("Users/Guest/Desktop");
+            let deletedFromVfs = false;
+
+            if (targetName && desktopContext && desktopContext[targetName]) {
+                delete desktopContext[targetName];
+                deletedFromVfs = true;
+            }
+            if (targetName && systemState.fileSystem[targetName]) {
+                delete systemState.fileSystem[targetName];
+                deletedFromVfs = true;
+            }
+
+            if (deletedFromVfs) {
                 saveFileSystem();
-                logKernel(`Desktop: Deleted VFS item '${vfsName}' from disk storage.`);
+                logKernel(`Desktop: Deleted VFS item '${targetName}' from disk storage.`);
             } else {
-                const index = DESKTOP_SHORTCUTS.findIndex(s => s.label === label || s.vfsName === vfsName || s.id === el.dataset.appId);
+                const index = DESKTOP_SHORTCUTS.findIndex(s => s.label === label || s.vfsName === targetName || s.id === el.dataset.appId);
                 if (index !== -1) {
                     DESKTOP_SHORTCUTS.splice(index, 1);
                 }
@@ -2331,9 +2385,22 @@ initContextMenuSystem({
     onRenameAppShortcut: (el) => {
         const label = el.querySelector('.desktop-icon-label, .desktop-shortcut-label');
         const currentName = label ? label.textContent.trim() : "Shortcut";
-        showOsPrompt("Rename Shortcut", "Enter new name for desktop shortcut:", currentName, (newName) => {
+        const vfsName = el.dataset.vfsName;
+        showOsPrompt("Rename Item", "Enter new name:", currentName, (newName) => {
+            if (!newName || newName === currentName) return;
+            const desktopContext = getVfsNodeByPath("Users/Guest/Desktop");
+            if (vfsName && desktopContext && desktopContext[vfsName]) {
+                desktopContext[newName] = desktopContext[vfsName];
+                delete desktopContext[vfsName];
+                saveFileSystem();
+            } else if (vfsName && systemState.fileSystem[vfsName]) {
+                systemState.fileSystem[newName] = systemState.fileSystem[vfsName];
+                delete systemState.fileSystem[vfsName];
+                saveFileSystem();
+            }
             if (label) label.textContent = newName;
-            logKernel(`Desktop: Renamed shortcut to '${newName}'`);
+            renderDesktopIcons();
+            refreshOpenExplorer();
         });
     },
     onRestoreWindow: (winId) => {
@@ -2349,17 +2416,31 @@ initContextMenuSystem({
         if (win) toggleMaximize(win);
     },
     onCloseWindow: (winId) => closeWindow(winId),
-    onOpenExplorerItem: (itemName, itemType) => {
+    onOpenExplorerItem: (itemName, itemType, itemElement = null) => {
+        let dirPath = null;
+        if (itemElement && itemElement.closest) {
+            const expContainer = itemElement.closest('[data-current-path]');
+            if (expContainer && expContainer.dataset.currentPath && expContainer.dataset.currentPath !== 'HOME') {
+                dirPath = expContainer.dataset.currentPath;
+            }
+        }
         if (itemType === 'dir') {
-            launchApplication('start-link-files', itemName);
+            const newPath = dirPath ? `${dirPath}/${itemName}` : itemName;
+            launchApplication('start-link-files', newPath);
         } else {
-            launchApplication('start-link-text-editor', itemName);
+            launchFile(itemName, dirPath);
         }
     },
-    onDeleteFile: (itemName) => {
+    onDeleteFile: (itemName, itemElement = null) => {
         const isZdl = itemName.endsWith('.zdl');
-        const context = getActiveFolderContext();
-        const item = context[itemName];
+        let context = getActiveFolderContext();
+        if (itemElement && itemElement.closest) {
+            const expContainer = itemElement.closest('[data-current-path]');
+            if (expContainer && expContainer.dataset.currentPath && expContainer.dataset.currentPath !== 'HOME') {
+                context = getVfsNodeByPath(expContainer.dataset.currentPath);
+            }
+        }
+        const item = context ? context[itemName] : null;
         const isDir = item?.type === 'dir';
 
         const title = isZdl ? "Confirm System Library Delete" : (isDir ? "Confirm Folder Delete" : "Confirm File Delete");
@@ -2368,22 +2449,33 @@ initContextMenuSystem({
             : `Are you sure you want to delete '${itemName}'?`;
 
         showOsConfirm(title, message, isZdl, () => {
-            delete context[itemName];
-            saveFileSystem();
-            refreshOpenExplorer();
-            renderDesktopIcons();
-            playSystemSound('close');
-            logKernel(`VFS: Deleted '${itemName}' from storage.`);
-        });
-    },
-    onRenameFile: (itemName) => {
-        showOsPrompt("Rename File", "Enter new filename:", itemName, (newName) => {
-            if (newName && newName !== itemName) {
-                const context = getActiveFolderContext();
-                context[newName] = context[itemName];
+            if (context && context[itemName]) {
                 delete context[itemName];
                 saveFileSystem();
                 refreshOpenExplorer();
+                renderDesktopIcons();
+                playSystemSound('close');
+                logKernel(`VFS: Deleted '${itemName}' from storage.`);
+            }
+        });
+    },
+    onRenameFile: (itemName, itemElement = null) => {
+        showOsPrompt("Rename File", "Enter new filename:", itemName, (newName) => {
+            if (newName && newName !== itemName) {
+                let context = getActiveFolderContext();
+                if (itemElement && itemElement.closest) {
+                    const expContainer = itemElement.closest('[data-current-path]');
+                    if (expContainer && expContainer.dataset.currentPath && expContainer.dataset.currentPath !== 'HOME') {
+                        context = getVfsNodeByPath(expContainer.dataset.currentPath);
+                    }
+                }
+                if (context && context[itemName]) {
+                    context[newName] = context[itemName];
+                    delete context[itemName];
+                    saveFileSystem();
+                    refreshOpenExplorer();
+                    renderDesktopIcons();
+                }
             }
         });
     },

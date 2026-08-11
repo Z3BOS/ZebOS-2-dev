@@ -326,6 +326,9 @@ export class FileExplorerApp {
     }
 
     refreshView() {
+        if (this.container) {
+            this.container.dataset.currentPath = this.currentPath;
+        }
         const addressInput = this.container.querySelector('#exp-address-input');
         const addressIcon  = this.container.querySelector('#exp-address-icon');
         const viewDrop     = this.container.querySelector('#exp-view-dropdown');

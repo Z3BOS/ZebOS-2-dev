@@ -57,11 +57,12 @@ export class ChessApp {
                 <div class="chess-toolbar" style="padding:6px 10px; background:#c0c0c0; border-bottom:2px solid #808080; display:flex; align-items:center; gap:10px; flex-shrink:0; flex-wrap:wrap;">
                     <button class="app-toolbar-btn chess-new-game-btn" style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; font-weight:bold; font-size:12px;">${getIcon('refresh')} New Game</button>
                     <button class="app-toolbar-btn chess-resign-btn" style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; font-weight:bold; font-size:12px;" ${isGameOver ? 'disabled' : ''}>${getIcon('winClose')} Resign</button>
-                    <label style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:bold; cursor:pointer; user-select:none; background:#ffffff; padding:4px 10px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
-                        <input type="checkbox" class="chess-vs-computer-toggle" ${this.vsComputer ? 'checked' : ''}> vs Computer
+                    <label class="zeb-checkbox-label" style="background:#c0c0c0; padding:4px 8px; border:2px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; box-shadow:1px 1px 2px rgba(0,0,0,0.1);">
+                        <input type="checkbox" class="chess-vs-computer-toggle" ${this.vsComputer ? 'checked' : ''}>
+                        <span>vs Computer</span>
                     </label>
                     <div style="flex-grow:1;"></div>
-                    <div class="chess-status-badge" style="background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:4px 12px; font-weight:bold; font-size:12px; color:${isGameOver ? '#c62828' : '#000080'}; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">${this.buildStatusText(status)}</div>
+                    <div class="chess-status-badge" style="background:#c0c0c0; color:${isGameOver ? '#c62828' : '#000000'}; padding:4px 14px; font-weight:bold; font-size:12px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; box-shadow:inset 1px 1px 0 #000000;">${this.buildStatusText(status)}</div>
                 </div>
                 <div style="flex-grow:1; display:flex; overflow:hidden;">
                     <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; overflow:auto; padding:12px; position:relative;">
@@ -76,19 +77,25 @@ export class ChessApp {
                         ${isGameOver ? this.renderGameOverBanner(status) : ''}
                     </div>
                     <div class="chess-sidebar" style="width:230px; background:#c0c0c0; border-left:2px solid #ffffff; padding:10px; display:flex; flex-direction:column; gap:10px; box-sizing:border-box;">
-                        <div class="chess-panel" style="background:#c0c0c0; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:6px; box-sizing:border-box;">
-                            <div class="chess-panel-title" style="font-size:11px; font-weight:bold; color:#000080; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Captured by White</div>
-                            <div class="chess-captured-row" style="background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; min-height:36px; padding:4px 8px; display:flex; align-items:center; gap:2px; flex-wrap:wrap; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">${this.capturedByWhite.map(p => `<span class="black-piece" style="font-size:18px;">${PIECE_GLYPH[p]}</span>`).join('')}</div>
-                        </div>
-                        <div class="chess-panel" style="background:#c0c0c0; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:6px; box-sizing:border-box;">
-                            <div class="chess-panel-title" style="font-size:11px; font-weight:bold; color:#000080; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Captured by Black</div>
-                            <div class="chess-captured-row" style="background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; min-height:36px; padding:4px 8px; display:flex; align-items:center; gap:2px; flex-wrap:wrap; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">${this.capturedByBlack.map(p => `<span class="white-piece" style="font-size:18px; -webkit-text-stroke:1px #000000;">${PIECE_GLYPH[p]}</span>`).join('')}</div>
-                        </div>
+                        <fieldset style="border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:6px; margin:0; background:#c0c0c0; box-sizing:border-box;">
+                            <legend style="font-size:11px; font-weight:bold; color:#000000; padding:0 4px; font-family:Arial, sans-serif;">Captured by White</legend>
+                            <div class="chess-captured-row" style="background:#d8d8d8; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; min-height:36px; padding:4px 8px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
+                                ${this.capturedByWhite.length ? this.capturedByWhite.map(p => `<span class="black-piece" style="font-size:18px;">${PIECE_GLYPH[p]}</span>`).join('') : `<span style="color:#666666; font-size:11px; font-style:italic; text-align:center; width:100%;">None</span>`}
+                            </div>
+                        </fieldset>
+                        <fieldset style="border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:6px; margin:0; background:#c0c0c0; box-sizing:border-box;">
+                            <legend style="font-size:11px; font-weight:bold; color:#000000; padding:0 4px; font-family:Arial, sans-serif;">Captured by Black</legend>
+                            <div class="chess-captured-row" style="background:#d8d8d8; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; min-height:36px; padding:4px 8px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
+                                ${this.capturedByBlack.length ? this.capturedByBlack.map(p => `<span class="white-piece" style="font-size:18px; -webkit-text-stroke:1px #000000;">${PIECE_GLYPH[p]}</span>`).join('') : `<span style="color:#666666; font-size:11px; font-style:italic; text-align:center; width:100%;">None</span>`}
+                            </div>
+                        </fieldset>
                         <div class="chess-material-diff" style="font-size:11px; font-weight:bold; color:#008000; text-align:center;">${this.buildMaterialDiffText()}</div>
-                        <div class="chess-panel chess-history-panel" style="background:#c0c0c0; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:6px; flex-grow:1; display:flex; flex-direction:column; min-height:0; box-sizing:border-box;">
-                            <div class="chess-panel-title" style="font-size:11px; font-weight:bold; color:#000080; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Move History</div>
-                            <div class="chess-history-list" style="background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; flex-grow:1; overflow-y:auto; padding:4px; font-size:12px; font-family:monospace; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">${this.renderHistory()}</div>
-                        </div>
+                        <fieldset style="border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:6px; margin:0; background:#c0c0c0; flex-grow:1; display:flex; flex-direction:column; min-height:0; box-sizing:border-box;">
+                            <legend style="font-size:11px; font-weight:bold; color:#000000; padding:0 4px; font-family:Arial, sans-serif;">Move History</legend>
+                            <div class="chess-history-list" style="background:#d8d8d8; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; flex-grow:1; overflow-y:auto; padding:4px; font-size:12px; font-family:monospace; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
+                                ${this.moveHistory.length ? this.renderHistory() : `<div style="color:#666666; font-size:11px; font-style:italic; text-align:center; padding:12px;">No moves played</div>`}
+                            </div>
+                        </fieldset>
                     </div>
                 </div>
             </div>

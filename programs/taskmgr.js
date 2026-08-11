@@ -61,25 +61,68 @@ export class TaskManagerApp {
         }
     }
 
-    // ---- real measurement, sampled once per tick ----
+    // ---- real measurement & dynamic telemetry, sampled once per tick ----
     tick() {
         const now = performance.now();
-        let cpuPct = 0;
+        const windows = this.scanWindows();
+        const activeWindow = document.querySelector('.window-frame.active-window');
+
+        // Dynamic System CPU Load Calculation
+        // Base system load: ~5% + small continuous micro-jitter
+        const jitter = (Math.sin(now / 600) + 1) * 2;
+        let baseCpu = 5 + jitter;
+
+        // Foreground active window load: +12%
+        if (activeWindow) baseCpu += 12;
+
+        // Background windows load: +4% per background app window
+        const backgroundWindowsCount = Math.max(0, windows.length - (activeWindow ? 1 : 0));
+        baseCpu += backgroundWindowsCount * 4;
+
+        // Measured main-thread drift boost (spikes during rendering/drag/heavy tasks)
         if (this.lastTickTime != null) {
             const drift = Math.max(0, (now - this.lastTickTime) - TICK_MS);
-            cpuPct = Math.min(100, (drift / TICK_MS) * 100 * 3);
+            baseCpu += Math.min(45, (drift / TICK_MS) * 100 * 2.5);
         }
         this.lastTickTime = now;
+
+        const cpuPct = Math.min(99, Math.max(4, baseCpu));
         this.cpuHistory.push(cpuPct);
         if (this.cpuHistory.length > HISTORY_LEN) this.cpuHistory.shift();
         this.lastCpuPct = cpuPct;
 
+        // Dynamic System Memory (Virtual RAM) Calculation
+        // Virtual ZebOS RAM Capacity: 512 MB
+        const baseKernelMemMB = 48; // OS Kernel, VFS, Compositor, Shell
+        const perWindowMemMap = {
+            'Paint Studio': 42,
+            'Zeb Explorer': 28,
+            'Zeb Terminal': 24,
+            'Chess': 34,
+            'Solitaire': 26,
+            'Media Player': 32,
+            'Task Manager': 22,
+            'Calculator': 16,
+            'Text Editor': 18
+        };
+
+        let allocatedMemMB = baseKernelMemMB;
+        windows.forEach(w => {
+            const memVal = perWindowMemMap[w.title] || 25;
+            allocatedMemMB += memVal;
+        });
+
+        // Add small browser heap factor if available
         if (this.memSupported) {
-            const m = performance.memory;
-            this.lastMemUsedMB = m.usedJSHeapSize / 1048576;
-            this.lastMemLimitMB = m.jsHeapSizeLimit / 1048576;
-            this.lastMemPct = (m.usedJSHeapSize / m.jsHeapSizeLimit) * 100;
+            const realHeapMB = performance.memory.usedJSHeapSize / 1048576;
+            allocatedMemMB += Math.min(35, realHeapMB * 0.3);
         }
+
+        const totalSystemRamMB = 512;
+        this.lastMemUsedMB = allocatedMemMB;
+        this.lastMemLimitMB = totalSystemRamMB;
+        this.lastMemPct = Math.min(99, (allocatedMemMB / totalSystemRamMB) * 100);
+
         this.memHistory.push(this.lastMemPct);
         if (this.memHistory.length > HISTORY_LEN) this.memHistory.shift();
 
@@ -380,7 +423,7 @@ export class TaskManagerApp {
         ctx.fillStyle = '#040d1a';
         ctx.fillRect(0, 0, cssW, cssH);
 
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.18)';
         ctx.lineWidth = 1;
         const gridRows = 4;
         for (let i = 0; i <= gridRows; i++) {
@@ -399,6 +442,15 @@ export class TaskManagerApp {
             ctx.stroke();
         }
 
+        // Percentage Grid Labels (100%, 75%, 50%, 25%)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('100%', cssW - 6, 12);
+        ctx.fillText('75%', cssW - 6, Math.floor(cssH * 0.25) + 4);
+        ctx.fillText('50%', cssW - 6, Math.floor(cssH * 0.5) + 4);
+        ctx.fillText('25%', cssW - 6, Math.floor(cssH * 0.75) + 4);
+
         if (!data.length) return;
         const stepX = cssW / (HISTORY_LEN - 1);
         const points = data.map((v, i) => {
@@ -407,20 +459,24 @@ export class TaskManagerApp {
             return [x, y];
         });
 
+        const grad = ctx.createLinearGradient(0, 0, 0, cssH);
+        grad.addColorStop(0, colorFill);
+        grad.addColorStop(1, 'rgba(4, 13, 26, 0.05)');
+
         ctx.beginPath();
         ctx.moveTo(points[0][0], cssH);
         points.forEach(([x, y]) => ctx.lineTo(x, y));
         ctx.lineTo(points[points.length - 1][0], cssH);
         ctx.closePath();
-        ctx.fillStyle = colorFill;
+        ctx.fillStyle = grad;
         ctx.fill();
 
         ctx.beginPath();
         points.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y));
         ctx.strokeStyle = colorLine;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.shadowColor = colorLine;
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 8;
         ctx.stroke();
         ctx.shadowBlur = 0;
     }
