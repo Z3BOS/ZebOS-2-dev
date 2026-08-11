@@ -104,6 +104,23 @@ const SVGS = {
             <line x1="5" y1="8" x2="12" y2="8" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
     `,
+    viewer: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3" width="20" height="18" rx="2" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+            <rect x="4" y="5" width="16" height="11" fill="#e0f7fa" stroke="#00838f" stroke-width="1"/>
+            <circle cx="8" cy="8.5" r="1.5" fill="#fbc02d"/>
+            <path d="M4 15L9 10L14 15L16 13L20 16V16H4V15Z" fill="#43a047"/>
+            <rect x="5" y="18" width="14" height="1.5" fill="#000080"/>
+        </svg>
+    `,
+    picture: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3" width="20" height="18" rx="2" fill="#ffffff" stroke="#444444" stroke-width="1.5"/>
+            <rect x="4" y="5" width="16" height="14" fill="#e0f7fa" stroke="#00838f" stroke-width="1"/>
+            <circle cx="8" cy="9" r="1.8" fill="#fbc02d"/>
+            <path d="M4 17L9 11L14 16L16 14L20 18H4V17Z" fill="#43a047"/>
+        </svg>
+    `,
     courgette: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M7 19C4 16 3 11 5 7C7 3 12 2 16 4C19 6 21 11 19 16C17 20 11 21 7 19Z" fill="#2e7d32" stroke="#1b5e20" stroke-width="1.5"/>

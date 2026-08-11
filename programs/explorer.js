@@ -310,7 +310,7 @@ export class FileExplorerApp {
         if (itemType === 'dir') return getIcon('folder');
         if (name.endsWith('.zdl')) return getIcon('zdl');
         if (name.endsWith('.exe')) return getIcon('startLogo');
-        if (name.endsWith('.png') || name.endsWith('.bmp')) return getIcon('paint');
+        if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.bmp') || name.endsWith('.gif') || name.endsWith('.webp')) return getIcon('picture');
         if (name.endsWith('.txt') || name.endsWith('.ini') || name.endsWith('.cfg')) return getIcon('editor');
         return getIcon('file');
     }
@@ -319,7 +319,7 @@ export class FileExplorerApp {
         if (itemType === 'dir') return 'File Folder';
         if (name.endsWith('.zdl')) return 'System Dynamic Library (.zdl)';
         if (name.endsWith('.exe')) return 'Application Executable (.exe)';
-        if (name.endsWith('.png')) return 'Bitmap Image (.png)';
+        if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.bmp') || name.endsWith('.gif') || name.endsWith('.webp')) return 'Picture Image File';
         if (name.endsWith('.txt')) return 'Text Document (.txt)';
         if (name.endsWith('.ini') || name.endsWith('.cfg')) return 'Configuration File';
         return 'System File';

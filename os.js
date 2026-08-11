@@ -955,10 +955,23 @@ function launchFile(fileName) {
         );
         return;
     }
-    if (fileName.endsWith('.png') || fileName.endsWith('.bmp')) {
-        launchApplication('start-link-paint', fileName);
+
+    const currentContext = getActiveFolderContext();
+    const item = currentContext[fileName];
+
+    const isImage = fileName.endsWith('.png') ||
+                    fileName.endsWith('.jpg') ||
+                    fileName.endsWith('.jpeg') ||
+                    fileName.endsWith('.bmp') ||
+                    fileName.endsWith('.gif') ||
+                    fileName.endsWith('.webp') ||
+                    (item && item.content && typeof item.content === 'string' && item.content.startsWith('data:image/'));
+
+    if (isImage) {
+        launchApplication('start-link-viewer', fileName);
         return;
     }
+
     if (fileName.endsWith('.exe')) {
         const lower = fileName.toLowerCase();
         if (lower.includes('paint')) launchApplication('start-link-paint');
@@ -1084,6 +1097,37 @@ async function launchApplication(appId, customFileName = null) {
                 }
             } catch (err) {
                 logKernel(`Kernel Error: Failed to mount paint.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-viewer': {
+            const targetImageFile = customFileName || "image.png";
+            const cleanId = targetImageFile.replace(/[^a-zA-Z0-9]/g, '');
+            const winId = `viewer-${cleanId}`;
+            try {
+                const module = await import(`./programs/viewer.js?v=${Date.now()}`);
+                const appBodyElement = createWindow(`Zeb Viewer - ${targetImageFile}`, "viewer", winId);
+
+                let imageDataUrl = null;
+                const fileObj = currentContext[targetImageFile];
+                if (fileObj && fileObj.content) {
+                    imageDataUrl = fileObj.content;
+                }
+
+                if (appBodyElement) {
+                    setWindowBounds(appBodyElement, 780, 520);
+                    const viewerInstance = new module.ZebViewerApp(
+                        targetImageFile,
+                        imageDataUrl,
+                        () => closeWindow(winId),
+                        (path) => getVfsNodeByPath(path)
+                    );
+                    registerWindowCleanup(winId, () => viewerInstance.cleanup());
+                    viewerInstance.open(appBodyElement);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount viewer.js (${err.message})`, "ERROR");
             }
             break;
         }
@@ -1499,17 +1543,14 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
 }
 
 export function saveFileToVfsPath(vfsPath, filename, dataUrl) {
-    let targetContext = systemState.fileSystem;
-    if (vfsPath && vfsPath !== "") {
-        const node = getVfsNodeByPath(vfsPath);
-        if (node && node.type === 'dir' && node.content) {
-            targetContext = node.content;
-        }
+    const targetContext = getVfsNodeByPath(vfsPath);
+    if (targetContext) {
+        targetContext[filename] = { type: "file", content: dataUrl };
+        saveFileSystem();
     }
-    targetContext[filename] = { type: "file", content: dataUrl };
-    saveFileSystem();
     const activeExp = document.querySelector('.explorer-grid');
     if (activeExp) renderZebExplorer(activeExp.parentElement);
+    renderDesktopIcons();
 }
 
 export function showSaveFileDialog(defaultName, onSaveCallback) {
