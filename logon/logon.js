@@ -14,7 +14,7 @@ const AVATARS = [
     { file: 'avatar-star.svg',   label: 'Star' },
     { file: 'avatar-rocket.svg', label: 'Rocket' }
 ];
-const AVATAR_DIR = 'logon/setup/';
+const AVATAR_DIR = 'logon/avatars/';
 
 export function showLogonScreen(onSignedIn, defaultUsername = 'guest', defaultAvatarPath = null) {
     const screen = document.createElement('div');
