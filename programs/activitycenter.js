@@ -7,7 +7,142 @@ export class ActivityCenterApp {
         this.root = null;
         this.clockTimer = null;
         this.boundHandlers = [];
-        this.selectedAction = null;
+        this.selectedProgram = null;
+
+        this.programs = [
+            {
+                id: 'start-link-activitycenter',
+                icon: 'activitycenter',
+                label: 'Activity Center',
+                desc: 'System activity & launcher dashboard',
+                execPath: 'Z:\\ZebApps\\Activity Center\\activitycenter.exe',
+                category: 'System Utility',
+                version: '2.6.0 Beta',
+                size: '185 KB',
+                ram: '1.4 MB',
+                status: 'Running'
+            },
+            {
+                id: 'start-link-files',
+                icon: 'explorer',
+                label: 'Zeb Explorer',
+                desc: 'Browse virtual file system folders & drives',
+                execPath: 'Z:\\ZebApps\\Zeb Explorer\\explorer.exe',
+                category: 'File Management',
+                version: '2.6.0 Beta',
+                size: '410 KB',
+                ram: '2.2 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-text-editor',
+                icon: 'editor',
+                label: 'Text Editor',
+                desc: 'Edit text, ZDL scripts, & configuration files',
+                execPath: 'Z:\\ZebApps\\Text Editor\\editor.exe',
+                category: 'Productivity',
+                version: '2.5.8',
+                size: '142 KB',
+                ram: '0.9 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-prompt',
+                icon: 'terminal',
+                label: 'Zeb Terminal',
+                desc: 'Command prompt interface for system tasks',
+                execPath: 'Z:\\ZebApps\\Terminal\\cmd.exe',
+                category: 'Developer Tools',
+                version: '2.6.0 Beta',
+                size: '220 KB',
+                ram: '1.1 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-paint',
+                icon: 'paint',
+                label: 'Paint Studio',
+                desc: 'Raster graphics editor & drawing suite',
+                execPath: 'Z:\\ZebApps\\Paint Studio\\paint.exe',
+                category: 'Graphics & Design',
+                version: '2.4.1',
+                size: '512 KB',
+                ram: '3.5 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-calc',
+                icon: 'calc',
+                label: 'Calculator',
+                desc: 'Perform standard & scientific calculations',
+                execPath: 'Z:\\ZebApps\\Calculator\\calc.exe',
+                category: 'Utilities',
+                version: '2.0.0',
+                size: '96 KB',
+                ram: '0.5 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-taskmgr',
+                icon: 'taskmgr',
+                label: 'Task Manager',
+                desc: 'Monitor processes, CPU, & system resources',
+                execPath: 'Z:\\ZebApps\\Task Manager\\taskmgr.exe',
+                category: 'System Diagnostics',
+                version: '2.6.0 Beta',
+                size: '340 KB',
+                ram: '1.6 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-media',
+                icon: 'media',
+                label: 'Media Player',
+                desc: 'Play audio waveforms & retro media streams',
+                execPath: 'Z:\\ZebApps\\Media Player\\player.exe',
+                category: 'Multimedia',
+                version: '2.3.0',
+                size: '620 KB',
+                ram: '4.1 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-solitaire',
+                icon: 'solitaire',
+                label: 'Klondike Solitaire',
+                desc: 'Classic card solitaire engine',
+                execPath: 'Z:\\ZebApps\\Solitaire\\solitaire.exe',
+                category: 'Entertainment',
+                version: '1.9.0',
+                size: '280 KB',
+                ram: '1.7 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-chess',
+                icon: 'chess',
+                label: 'Chess Engine',
+                desc: 'Strategic chess engine vs computer or local P2P',
+                execPath: 'Z:\\ZebApps\\Chess\\chess.exe',
+                category: 'Entertainment',
+                version: '2.1.0',
+                size: '490 KB',
+                ram: '2.8 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-personalize',
+                icon: 'personalize',
+                label: 'Display Properties',
+                desc: 'Customize wallpaper, schemes, & themes',
+                execPath: 'Z:\\ZebApps\\System Info\\desk.cpl',
+                category: 'Control Panel',
+                version: '2.6.0 Beta',
+                size: '150 KB',
+                ram: '1.0 MB',
+                status: 'Ready'
+            }
+        ];
     }
 
     open(container) {
@@ -22,25 +157,32 @@ export class ActivityCenterApp {
         const now = new Date();
 
         this.root.innerHTML = `
-            <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:6px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                <button class="app-toolbar-btn" id="ac-run-selected">${getIcon('play')} Run Selected</button>
+            <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:6px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; box-sizing:border-box;">
+                <button class="app-toolbar-btn" id="ac-run-selected" style="font-weight:bold;">${getIcon('play')} Run Selected</button>
                 <button class="app-toolbar-btn" id="ac-open-props">${getIcon('settings')} Properties</button>
                 <button class="app-toolbar-btn" id="ac-refresh">${getIcon('taskmgr')} Refresh</button>
-                <button class="app-toolbar-btn" id="ac-close">${getIcon('winClose')} Close</button>
+                <button class="app-toolbar-btn" id="ac-close" style="margin-left:auto;">${getIcon('winClose')} Close</button>
             </div>
 
-            <div style="display:flex; gap:6px; padding:6px; flex:1; min-height:0;">
-                <div style="width:44%; min-width:220px; background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; display:flex; flex-direction:column; min-height:0;">
-                    <div style="background:#000080; color:#fff; font-size:12px; font-weight:bold; padding:4px 6px;">
-                        Important Programs
+            <div style="display:flex; gap:6px; padding:6px; flex:1; min-height:0; box-sizing:border-box;">
+                <!-- Left Program Selection Panel -->
+                <div style="width:45%; min-width:230px; background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; display:flex; flex-direction:column; min-height:0;">
+                    <div style="background:linear-gradient(90deg, #000080 0%, #008080 100%); color:#fff; font-size:11px; font-weight:bold; padding:4px 8px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>System Applications</span>
+                        <span style="font-weight:normal; font-size:10px; opacity:0.9;">(${this.programs.length} Registered)</span>
                     </div>
-                    <div id="ac-program-list" style="padding:4px; overflow:auto; flex:1;"></div>
+                    <div id="ac-program-list" style="padding:2px; overflow-y:auto; flex:1;"></div>
                 </div>
 
-                <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:6px; min-height:0;">
+                <!-- Right Telemetry & App Overview Panel -->
+                <div style="flex:1; min-width:270px; display:flex; flex-direction:column; gap:6px; min-height:0;">
+                    <!-- System Status Box -->
                     <div style="background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:8px;">
-                        <div style="font-size:12px; font-weight:bold; margin-bottom:6px;">System Status</div>
-                        <div style="font-size:12px; line-height:1.5;">
+                        <div style="font-size:11px; font-weight:bold; color:#000080; margin-bottom:4px; border-bottom:1px solid #c0c0c0; padding-bottom:2px; display:flex; justify-content:space-between; align-items:center;">
+                            <span>System Diagnostics</span>
+                            <span style="font-size:10px; color:#008000; font-weight:bold;">● ONLINE</span>
+                        </div>
+                        <div style="font-size:11px; line-height:1.5; display:grid; grid-template-columns:1fr 1fr; gap:2px 8px;">
                             <div><b>User:</b> <span id="ac-user">Guest</span></div>
                             <div><b>Date:</b> <span id="ac-date">${now.toLocaleDateString()}</span></div>
                             <div><b>Time:</b> <span id="ac-time">--:--:--</span></div>
@@ -48,9 +190,20 @@ export class ActivityCenterApp {
                         </div>
                     </div>
 
-                    <div style="background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:8px; flex:1; min-height:120px;">
-                        <div style="font-size:12px; font-weight:bold; margin-bottom:6px;">Quick Actions</div>
-                        <div style="display:grid; grid-template-columns:repeat(2,minmax(120px,1fr)); gap:6px;">
+                    <!-- Selected Program Detail Card -->
+                    <div id="ac-selected-detail-card" style="background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:8px; flex:1; display:flex; flex-direction:column; min-height:0;">
+                        <div style="font-size:11px; font-weight:bold; color:#000080; margin-bottom:6px; border-bottom:1px solid #c0c0c0; padding-bottom:2px;">
+                            Application Overview
+                        </div>
+                        <div id="ac-detail-content" style="flex:1; overflow-y:auto; font-size:11px; line-height:1.45;">
+                            <!-- Populated dynamically on selection -->
+                        </div>
+                    </div>
+
+                    <!-- Quick System Actions Box -->
+                    <div style="background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:6px;">
+                        <div style="font-size:11px; font-weight:bold; color:#000080; margin-bottom:4px;">Quick Actions</div>
+                        <div style="display:grid; grid-template-columns:repeat(2, minmax(110px,1fr)); gap:4px;">
                             <button class="app-toolbar-btn" id="ac-action-showdesktop">${getIcon('home')} Show Desktop</button>
                             <button class="app-toolbar-btn" id="ac-action-taskmgr">${getIcon('taskmgr')} Task Manager</button>
                             <button class="app-toolbar-btn" id="ac-action-files">${getIcon('explorer')} File Explorer</button>
@@ -60,18 +213,6 @@ export class ActivityCenterApp {
                 </div>
             </div>
         `;
-
-        this.programs = [
-            { id: 'start-link-activitycenter', icon: 'activitycenter', label: 'Activity Center', desc: 'System activity dashboard' },
-            { id: 'start-link-files',        icon: 'explorer',    label: 'Zeb Explorer',     desc: 'Browse files and folders' },
-            { id: 'start-link-text-editor',  icon: 'editor',      label: 'Text Editor',      desc: 'Edit text documents' },
-            { id: 'start-link-prompt',       icon: 'terminal',    label: 'Zeb Terminal',     desc: 'Command interface' },
-            { id: 'start-link-paint',        icon: 'paint',       label: 'Paint Studio',     desc: 'Create and edit images' },
-            { id: 'start-link-calc',         icon: 'calc',        label: 'Calculator',       desc: 'Perform calculations' },
-            { id: 'start-link-taskmgr',      icon: 'taskmgr',     label: 'Task Manager',     desc: 'View running tasks' },
-            { id: 'start-link-media',        icon: 'media',       label: 'Media Player',     desc: 'Play media files' },
-            { id: 'start-link-personalize',  icon: 'personalize', label: 'Display Properties', desc: 'Theme and desktop settings' }
-        ];
 
         this.renderProgramList();
         this.bindEvents();
@@ -86,32 +227,39 @@ export class ActivityCenterApp {
         list.innerHTML = '';
         this.programs.forEach((p, index) => {
             const row = document.createElement('div');
-            row.className = 'app-list-row';
+            row.className = 'ac-program-row';
             row.dataset.appId = p.id;
-            row.style.justifyContent = 'space-between';
-            row.style.alignItems = 'center';
+            row.style.cssText = `
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 4px 6px;
+                margin-bottom: 2px;
+                border: 1px solid transparent;
+                cursor: pointer;
+                border-radius: 2px;
+            `;
 
             row.innerHTML = `
-                <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-                    ${getIcon(p.icon)}
+                <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+                    <div style="width:20px; height:20px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">${getIcon(p.icon)}</div>
                     <div style="display:flex; flex-direction:column; min-width:0;">
-                        <span style="font-weight:bold; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.label}</span>
-                        <span style="font-size:11px; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.desc}</span>
+                        <span class="ac-row-title" style="font-weight:bold; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.label}</span>
+                        <span class="ac-row-desc" style="font-size:10px; opacity:0.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.desc}</span>
                     </div>
                 </div>
-                <button class="app-toolbar-btn" data-run="${p.id}" style="padding:2px 8px; font-size:11px;">Run</button>
+                <button class="app-toolbar-btn ac-row-run-btn" data-run="${p.id}" style="padding:1px 6px; font-size:10px; flex-shrink:0; margin-left:4px;">Run</button>
             `;
 
             row.addEventListener('click', () => {
-                this.selectProgramRow(row);
-                this.selectedAction = p.id;
+                this.selectProgramRow(row, p);
             });
 
             row.addEventListener('dblclick', () => {
                 this.runApp(p.id);
             });
 
-            const runBtn = row.querySelector(`button[data-run="${p.id}"]`);
+            const runBtn = row.querySelector(`.ac-row-run-btn`);
             if (runBtn) {
                 runBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -120,18 +268,137 @@ export class ActivityCenterApp {
             }
 
             if (index === 0) {
-                this.selectProgramRow(row);
-                this.selectedAction = p.id;
+                this.selectProgramRow(row, p);
             }
 
             list.appendChild(row);
         });
     }
 
-    selectProgramRow(target) {
-        this.root.querySelectorAll('.app-list-row').forEach(r => r.classList.remove('selected'));
-        target.classList.add('selected');
+    selectProgramRow(rowElement, program) {
+        this.root.querySelectorAll('.ac-program-row').forEach(r => {
+            r.style.background = 'transparent';
+            r.style.color = '#000000';
+            r.style.border = '1px solid transparent';
+            const desc = r.querySelector('.ac-row-desc');
+            if (desc) desc.style.opacity = '0.75';
+        });
+
+        rowElement.style.background = '#000080';
+        rowElement.style.color = '#ffffff';
+        rowElement.style.border = '1px dotted #ffffff';
+        const desc = rowElement.querySelector('.ac-row-desc');
+        if (desc) desc.style.opacity = '0.9';
+
+        this.selectedProgram = program;
+        this.updateDetailCard(program);
         playSystemSound('click');
+    }
+
+    updateDetailCard(p) {
+        const detailContainer = this.root.querySelector('#ac-detail-content');
+        if (!detailContainer || !p) return;
+
+        detailContainer.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; background:#f0f0f0; padding:6px; border:1px solid #d0d0d0;">
+                <div style="width:32px; height:32px; flex-shrink:0;">${getIcon(p.icon)}</div>
+                <div style="min-width:0;">
+                    <div style="font-weight:bold; font-size:12px; color:#000080;">${p.label}</div>
+                    <div style="font-size:10px; color:#555555;">${p.category}</div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom:6px;"><b>Description:</b> ${p.desc}</div>
+            <div style="margin-bottom:4px;"><b>Executable Path:</b> <code style="font-family:monospace; background:#e8e8e8; padding:1px 3px; border:1px solid #cccccc; font-size:10px;">${p.execPath}</code></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:8px; background:#fafafa; padding:6px; border:1px solid #e0e0e0;">
+                <div><b>Version:</b> ${p.version}</div>
+                <div><b>Binary Size:</b> ${p.size}</div>
+                <div><b>RAM Footprint:</b> ${p.ram}</div>
+                <div><b>Status:</b> <span style="color:#008000; font-weight:bold;">${p.status}</span></div>
+            </div>
+            
+            <div style="display:flex; gap:6px; margin-top:10px;">
+                <button class="app-toolbar-btn" id="ac-card-run" style="font-weight:bold; padding:3px 10px;">${getIcon('play')} Launch Program</button>
+                <button class="app-toolbar-btn" id="ac-card-props" style="padding:3px 10px;">${getIcon('settings')} View Properties</button>
+            </div>
+        `;
+
+        const cardRun = detailContainer.querySelector('#ac-card-run');
+        if (cardRun) cardRun.addEventListener('click', () => this.runApp(p.id));
+
+        const cardProps = detailContainer.querySelector('#ac-card-props');
+        if (cardProps) cardProps.addEventListener('click', () => this.showProgramProperties(p));
+    }
+
+    showProgramProperties(program) {
+        if (!program) return;
+        playSystemSound('click');
+
+        const existingModal = document.getElementById('ac-properties-modal');
+        if (existingModal) existingModal.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'ac-properties-modal';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100010;
+        `;
+
+        overlay.innerHTML = `
+            <div class="active-window" style="width:340px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:4px 4px 12px rgba(0,0,0,0.5); font-family:Arial, sans-serif; font-size:11px; padding:3px; user-select:none;">
+                <div style="background:linear-gradient(90deg,#000080,#008080); color:#ffffff; font-weight:bold; padding:3px 6px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>${program.label} Properties</span>
+                    <button id="ac-modal-close-x" style="width:16px; height:14px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; font-size:9px; font-weight:bold; line-height:1; cursor:pointer;">✕</button>
+                </div>
+
+                <div style="padding:10px;">
+                    <!-- Tab Header -->
+                    <div style="display:flex; gap:2px; border-bottom:1px solid #808080; margin-bottom:10px;">
+                        <div style="background:#c0c0c0; border:1px solid #ffffff; border-right-color:#808080; border-bottom-color:#c0c0c0; padding:2px 8px; font-weight:bold; position:relative; top:1px;">General</div>
+                    </div>
+
+                    <!-- Header with Icon & Name -->
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                        <div style="width:32px; height:32px; flex-shrink:0;">${getIcon(program.icon)}</div>
+                        <div style="font-weight:bold; font-size:13px;">${program.label}</div>
+                    </div>
+                    <hr style="border:none; border-top:1px solid #808080; border-bottom:1px solid #ffffff; margin:8px 0;">
+
+                    <!-- Properties Grid -->
+                    <div style="line-height:1.6; font-size:11px;">
+                        <div><b>Type of file:</b> Application Executable (.exe)</div>
+                        <div><b>Location:</b> <span style="font-family:monospace;">${program.execPath}</span></div>
+                        <div><b>Size on disk:</b> ${program.size}</div>
+                        <div><b>Memory footprint:</b> ${program.ram}</div>
+                        <div><b>System Group:</b> ${program.category}</div>
+                        <div><b>Kernel Version:</b> ${program.version}</div>
+                        <div><b>Execution Status:</b> <span style="color:#008000; font-weight:bold;">${program.status}</span></div>
+                    </div>
+                    <hr style="border:none; border-top:1px solid #808080; border-bottom:1px solid #ffffff; margin:8px 0;">
+
+                    <!-- Attributes -->
+                    <div style="display:flex; gap:16px; align-items:center;">
+                        <span><b>Attributes:</b></span>
+                        <label><input type="checkbox" checked disabled> Read-only</label>
+                        <label><input type="checkbox" checked disabled> System Binary</label>
+                    </div>
+
+                    <!-- Footer Action Buttons -->
+                    <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:14px;">
+                        <button id="ac-modal-ok" style="background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; padding:3px 14px; cursor:pointer; font-weight:bold; outline:none;">OK</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        overlay.querySelector('#ac-modal-close-x').addEventListener('click', close);
+        overlay.querySelector('#ac-modal-ok').addEventListener('click', close);
     }
 
     runApp(appId) {
@@ -149,11 +416,17 @@ export class ActivityCenterApp {
         };
 
         on('#ac-run-selected', 'click', () => {
-            if (!this.selectedAction) return;
-            this.runApp(this.selectedAction);
+            if (!this.selectedProgram) return;
+            this.runApp(this.selectedProgram.id);
         });
 
-        on('#ac-open-props', 'click', () => this.runApp('start-link-personalize'));
+        // Properties button now opens Properties modal for the selected program!
+        on('#ac-open-props', 'click', () => {
+            if (this.selectedProgram) {
+                this.showProgramProperties(this.selectedProgram);
+            }
+        });
+
         on('#ac-refresh', 'click', () => {
             playSystemSound('click');
             this.refreshStatus();

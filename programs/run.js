@@ -48,6 +48,9 @@ const COMMAND_MAP = {
     'msconfig':        'start-link-sysflags',
     'reinstall':       'start-link-reinstall',
     'factoryreset':    'start-link-reinstall',
+    'activitycenter':  'start-link-activitycenter',
+    'activity':        'start-link-activitycenter',
+    'ac':              'start-link-activitycenter',
     'run':             'start-link-run',
 };
 
@@ -68,7 +71,10 @@ export class RunDialog {
         this.container.style.height = '100%';
         this.render();
         const input = this.container.querySelector('#run-input');
-        if (input) input.focus();
+        if (input) {
+            input.focus();
+            input.select();
+        }
     }
 
     _loadHistory() {
@@ -101,32 +107,39 @@ export class RunDialog {
     render() {
         if (!this.container) return;
         this.container.innerHTML = `
-        <div style="display:flex;flex-direction:column;height:100%;background:#c0c0c0;font-family:Arial,Helvetica,sans-serif;font-size:11px;padding:14px;box-sizing:border-box;user-select:none;">
-            <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="width:32px;height:32px;flex-shrink:0;">${getIcon('run')}</div>
-                <div style="line-height:1.5;color:#000;padding-top:2px;">Type the name of a program, and ZebOS will open it for you.</div>
+        <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size:11px; padding:12px 14px; box-sizing:border-box; user-select:none;">
+            <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:12px;">
+                <div style="width:36px; height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">${getIcon('run')}</div>
+                <div style="line-height:1.4; color:#000000; font-size:11px; padding-top:2px;">
+                    Type the name of a program, folder, document, or Internet resource, and ZebOS will open it for you.
+                </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:18px;">
-                <label for="run-input" style="flex-shrink:0;">Open:</label>
+            
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <label for="run-input" style="flex-shrink:0; font-weight:bold; width:38px; text-align:right;">Open:</label>
                 <input type="text" id="run-input" list="run-history-list" autocomplete="off" spellcheck="false" value=""
-                    style="flex-grow:1;padding:3px 5px;font-size:11px;border:2px solid #808080;border-right-color:#ffffff;border-bottom-color:#ffffff;background:#ffffff;outline:none;">
+                    placeholder="e.g. explorer, notepad, cmd, calc, activitycenter"
+                    style="flex-grow:1; height:22px; padding:2px 6px; font-size:11px; font-family:monospace, Arial, sans-serif; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff; outline:none; box-sizing:border-box;">
                 <datalist id="run-history-list">
                     ${this.history.map(c => `<option value="${this._esc(c)}"></option>`).join('')}
                 </datalist>
             </div>
-            <div id="run-error" style="min-height:26px;margin:6px 0 0 46px;color:#800000;font-size:10px;line-height:1.3;"></div>
+            
+            <div id="run-error" style="min-height:18px; margin-left:46px; color:#a00000; font-size:10px; font-weight:bold; line-height:1.2;"></div>
+            
             <div style="flex-grow:1;"></div>
-            <div style="display:flex;justify-content:flex-end;gap:8px;">
-                <button id="run-ok"     style="${this._btnStyle('font-weight:bold;min-width:70px;')}">OK</button>
-                <button id="run-cancel" style="${this._btnStyle('min-width:70px;')}">Cancel</button>
-                <button id="run-browse" style="${this._btnStyle('min-width:70px;')}">Browse...</button>
+            
+            <div style="display:flex; justify-content:flex-end; gap:6px; border-top:1px solid #a0a0a0; padding-top:10px; margin-top:4px;">
+                <button id="run-ok"     style="${this._btnStyle('font-weight:bold; width:75px;')}">OK</button>
+                <button id="run-cancel" style="${this._btnStyle('width:75px;')}">Cancel</button>
+                <button id="run-browse" style="${this._btnStyle('width:75px;')}">Browse...</button>
             </div>
         </div>`;
         this.bindEvents();
     }
 
     _btnStyle(extra = '') {
-        return `background:#c0c0c0;border:2px solid #ffffff;border-right-color:#000000;border-bottom-color:#000000;padding:3px 10px;cursor:pointer;font-family:Arial,sans-serif;font-size:11px;outline:none;${extra}`;
+        return `background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; padding:3px 12px; cursor:pointer; font-family:Arial, sans-serif; font-size:11px; outline:none; box-shadow: active 1px 1px 0px #000; ${extra}`;
     }
 
     _esc(str) {

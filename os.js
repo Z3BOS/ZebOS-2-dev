@@ -1045,10 +1045,10 @@ function initializeBootSequence() {
             bootScreen.style.opacity = "0";
             setTimeout(() => {
                 bootScreen.remove();
-                showXpLoadingScreen(() => proceedToLogon());
+                proceedToLogon();
             }, 600);
         } else {
-            showXpLoadingScreen(() => proceedToLogon());
+            proceedToLogon();
         }
     }
 
@@ -1109,18 +1109,18 @@ function initializeBootSequence() {
             setTimeout(() => {
                 if (finished) return;
                 if (bootScreen) bootScreen.classList.add('splash-active');
-                bootLog("BOOT: Kernel log complete, splash handoff engaged.");
-                setTimeout(finishBoot, 2200);
+                bootLog("BOOT: Kernel log complete, displaying splash screen.");
+                setTimeout(finishBoot, 4200);
             }, 300);
         }
     }
 
     if (systemState.skipBootAnimation) {
         if (bootScreen) bootScreen.classList.add('splash-active');
-        setTimeout(finishBoot, 1200);
+        setTimeout(finishBoot, 1500);
     } else {
         printNextBootLine();
-        setTimeout(finishBoot, Math.max(5500, fullBootLog.length * 180 + 2500));
+        setTimeout(finishBoot, Math.max(7500, fullBootLog.length * 180 + 4500));
     }
 }
 
@@ -1771,7 +1771,7 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
                 const module = await import(`./programs/run.js?v=${Date.now()}`);
                 const runBody = createWindow("Run", "run", winId);
                 if (runBody) {
-                    setWindowBounds(runBody, 420, 210);
+                    setWindowBounds(runBody, 460, 210);
                     const runInstance = new module.RunDialog(
                         () => closeWindow(winId),
                         (appId, arg) => launchApplication(appId, arg),
