@@ -342,7 +342,7 @@ export class ActivityCenterApp {
         overlay.style.cssText = `
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.3);
+            background: transparent;
             display: flex; align-items: center; justify-content: center;
             z-index: 100010;
         `;
