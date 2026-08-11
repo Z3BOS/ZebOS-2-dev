@@ -1365,7 +1365,7 @@ async function launchApplication(appId, customFileName = null) {
                 const module = await import(`./programs/taskmgr.js?v=${Date.now()}`);
                 const taskmgrBody = createWindow("Task Manager", "taskmgr", winId);
                 if (taskmgrBody) {
-                    setWindowBounds(taskmgrBody, 400, 460);
+                    setWindowBounds(taskmgrBody, 640, 480);
                     const taskmgrInstance = new module.TaskManagerApp(() => closeWindow(winId));
                     registerWindowCleanup(winId, () => taskmgrInstance.cleanup());
                     taskmgrInstance.open(taskmgrBody);
