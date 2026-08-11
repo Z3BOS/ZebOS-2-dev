@@ -192,16 +192,17 @@ export class TaskManagerApp {
             { id: 'services', label: 'Services' },
         ];
         return `
-            <div style="display:flex; flex-shrink:0; background:#c0c0c0; border-bottom:2px solid #808080; padding-top:4px; gap:2px; padding-left:4px;">
+            <div style="display:flex; flex-shrink:0; background:#c0c0c0; border-bottom:2px solid #808080; padding-top:6px; gap:4px; padding-left:6px; user-select:none;">
                 ${tabs.map(t => {
                     const active = this.activeTab === t.id;
                     return `<button class="taskmgr-tab-btn" data-tab="${t.id}" style="
-                        padding:5px 14px; font-size:12px; font-weight:${active ? 'bold' : 'normal'}; cursor:pointer;
+                        padding:5px 16px; font-size:12px; font-weight:${active ? 'bold' : 'normal'}; cursor:pointer;
                         background:${active ? '#ffffff' : '#c0c0c0'};
-                        border:2px solid ${active ? '#ffffff' : '#c0c0c0'};
-                        border-right-color:${active ? '#808080' : '#808080'};
-                        border-bottom:${active ? '2px solid #ffffff' : '2px solid #808080'};
-                        margin-bottom:-2px; position:relative;
+                        border:2px solid #ffffff;
+                        border-right-color:#808080;
+                        border-bottom-color:${active ? '#ffffff' : '#808080'};
+                        margin-bottom:-2px; position:relative; z-index:${active ? '2' : '1'};
+                        box-shadow:${active ? '0 -2px 4px rgba(0,0,0,0.1)' : 'none'};
                     ">${t.label}</button>`;
                 }).join('')}
             </div>
@@ -211,7 +212,7 @@ export class TaskManagerApp {
     renderSortableHeader(key, label, align = 'right') {
         const active = this.sortKey === key;
         const arrow = active ? (this.sortDir === 'asc' ? ' ▲' : ' ▼') : '';
-        return `<th data-sort="${key}" style="text-align:${align}; padding:4px 8px; cursor:pointer; user-select:none; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0; white-space:nowrap;">${label}${arrow}</th>`;
+        return `<th data-sort="${key}" style="text-align:${align}; padding:5px 8px; cursor:pointer; user-select:none; font-weight:bold; font-size:11px; border:1px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; background:#c0c0c0; white-space:nowrap; box-shadow:inset 1px 1px 0 #ffffff;">${label}${arrow}</th>`;
     }
 
     renderProcessesTab(rows) {
@@ -219,35 +220,42 @@ export class TaskManagerApp {
         const apps = this.sortRows(rows.filter(r => r.kind === 'app' && r.name.toLowerCase().includes(search)));
         const svcs = this.sortRows(rows.filter(r => r.kind === 'service' && r.name.toLowerCase().includes(search)));
 
-        const row = (r) => `
-            <tr class="taskmgr-row" data-id="${r.id}" data-endable="${r.endable}" style="cursor:pointer; ${r.id === this.selectedId ? 'background:#000080; color:#ffffff;' : ''}">
-                <td style="padding:3px 8px; display:flex; align-items:center; gap:6px;">
+        const row = (r, idx) => `
+            <tr class="taskmgr-row" data-id="${r.id}" data-endable="${r.endable}" style="cursor:pointer; background:${r.id === this.selectedId ? '#000080' : idx % 2 === 1 ? '#f8fafc' : '#ffffff'}; color:${r.id === this.selectedId ? '#ffffff' : '#000000'};">
+                <td style="padding:4px 8px; display:flex; align-items:center; gap:6px;">
                     <span style="width:16px; height:16px; display:inline-flex; align-items:center; flex-shrink:0;">${r.icon}</span>
-                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.name}</span>
+                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;">${r.name}</span>
                 </td>
-                <td style="padding:3px 8px; text-align:right;">${r.status}</td>
-                <td style="padding:3px 8px; text-align:right;">${r.cpu.toFixed(1)}%</td>
-                <td style="padding:3px 8px; text-align:right;">${r.memory.toFixed(1)} MB</td>
+                <td style="padding:4px 8px; text-align:right;">${r.status}</td>
+                <td style="padding:4px 8px; text-align:right; font-family:monospace;">${r.cpu.toFixed(1)}%</td>
+                <td style="padding:4px 8px; text-align:right; font-family:monospace;">${r.memory.toFixed(1)} MB</td>
             </tr>
         `;
-        const groupHeader = (label, count) => `<tr><td colspan="4" style="padding:4px 8px; font-weight:bold; background:#dddddd; border-top:1px solid #808080; border-bottom:1px solid #808080;">${label} (${count})</td></tr>`;
+        const groupHeader = (label, count) => `
+            <tr style="background:#e2e8f0; color:#334155; font-weight:bold; font-size:11px;">
+                <td colspan="4" style="padding:4px 8px; border-top:1px solid #cbd5e1; border-bottom:1px solid #cbd5e1; letter-spacing:0.5px;">${label} (${count})</td>
+            </tr>
+        `;
 
         return `
-            <div style="padding:6px 8px; flex-shrink:0; background:#c0c0c0; border-bottom:1px solid #808080;">
-                <input type="text" class="taskmgr-search-input" placeholder="Search processes" value="${this.escapeHtml(this.search)}" style="width:100%; box-sizing:border-box; padding:3px 6px; font-size:12px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+            <div style="padding:6px 8px; flex-shrink:0; background:#c0c0c0;">
+                <div style="display:flex; align-items:center; gap:6px; background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:2px 6px; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
+                    <span style="width:14px; height:14px; display:inline-flex; align-items:center; flex-shrink:0; opacity:0.6;">${getIcon('search')}</span>
+                    <input type="text" class="taskmgr-search-input" placeholder="Search processes" value="${this.escapeHtml(this.search)}" style="width:100%; border:none; outline:none; background:transparent; font-size:12px; font-family:inherit;">
+                </div>
             </div>
-            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:0 6px 6px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:0 8px 6px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
                 <table style="width:100%; border-collapse:collapse; font-size:12px;">
                     <thead><tr>${this.renderSortableHeader('name', 'Name', 'left')}${this.renderSortableHeader('status', 'Status')}${this.renderSortableHeader('cpu', 'CPU')}${this.renderSortableHeader('memory', 'Memory')}</tr></thead>
                     <tbody>
-                        ${apps.length ? groupHeader('Apps', apps.length) + apps.map(row).join('') : ''}
-                        ${svcs.length ? groupHeader('Background processes', svcs.length) + svcs.map(row).join('') : ''}
-                        ${!apps.length && !svcs.length ? `<tr><td colspan="4" style="padding:16px; text-align:center; color:#666;">No matching processes.</td></tr>` : ''}
+                        ${apps.length ? groupHeader('Apps', apps.length) + apps.map((r, i) => row(r, i)).join('') : ''}
+                        ${svcs.length ? groupHeader('Background processes', svcs.length) + svcs.map((r, i) => row(r, i)).join('') : ''}
+                        ${!apps.length && !svcs.length ? `<tr><td colspan="4" style="padding:20px; text-align:center; color:#64748b;">No matching processes found.</td></tr>` : ''}
                     </tbody>
                 </table>
             </div>
-            <div style="padding:6px 8px; display:flex; justify-content:flex-end; gap:6px; flex-shrink:0;">
-                <button class="app-toolbar-btn taskmgr-end-task-btn" ${this.canEndSelected() ? '' : 'disabled'}>End Task</button>
+            <div style="padding:6px 8px; display:flex; justify-flex-end; gap:6px; flex-shrink:0; background:#c0c0c0; border-top:1px solid #a0a0a0;">
+                <button class="app-toolbar-btn taskmgr-end-task-btn" style="padding:4px 14px;" ${this.canEndSelected() ? '' : 'disabled'}>End Task</button>
             </div>
         `;
     }
@@ -256,26 +264,29 @@ export class TaskManagerApp {
         const search = this.search.toLowerCase();
         const sorted = this.sortRows(rows.filter(r => r.name.toLowerCase().includes(search)));
 
-        const row = (r) => `
-            <tr class="taskmgr-row" data-id="${r.id}" data-endable="${r.endable}" style="cursor:pointer; ${r.id === this.selectedId ? 'background:#000080; color:#ffffff;' : ''}">
-                <td style="padding:3px 8px;">${r.id}</td>
-                <td style="padding:3px 8px;">${r.name}</td>
-                <td style="padding:3px 8px; text-align:right;">${r.status}</td>
-                <td style="padding:3px 8px; text-align:right;">${r.cpu.toFixed(1)}%</td>
-                <td style="padding:3px 8px; text-align:right;">${r.memory.toFixed(1)} MB</td>
-                <td style="padding:3px 8px;">${r.desc}</td>
+        const row = (r, idx) => `
+            <tr class="taskmgr-row" data-id="${r.id}" data-endable="${r.endable}" style="cursor:pointer; background:${r.id === this.selectedId ? '#000080' : idx % 2 === 1 ? '#f8fafc' : '#ffffff'}; color:${r.id === this.selectedId ? '#ffffff' : '#000000'};">
+                <td style="padding:4px 8px; font-family:monospace;">${r.id}</td>
+                <td style="padding:4px 8px; font-weight:500;">${r.name}</td>
+                <td style="padding:4px 8px; text-align:right;">${r.status}</td>
+                <td style="padding:4px 8px; text-align:right; font-family:monospace;">${r.cpu.toFixed(1)}%</td>
+                <td style="padding:4px 8px; text-align:right; font-family:monospace;">${r.memory.toFixed(1)} MB</td>
+                <td style="padding:4px 8px; color:${r.id === this.selectedId ? '#cbd5e1' : '#64748b'};">${r.desc}</td>
             </tr>
         `;
 
         return `
-            <div style="padding:6px 8px; flex-shrink:0; background:#c0c0c0; border-bottom:1px solid #808080;">
-                <input type="text" class="taskmgr-search-input" placeholder="Search processes" value="${this.escapeHtml(this.search)}" style="width:100%; box-sizing:border-box; padding:3px 6px; font-size:12px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+            <div style="padding:6px 8px; flex-shrink:0; background:#c0c0c0;">
+                <div style="display:flex; align-items:center; gap:6px; background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; padding:2px 6px; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
+                    <span style="width:14px; height:14px; display:inline-flex; align-items:center; flex-shrink:0; opacity:0.6;">${getIcon('search')}</span>
+                    <input type="text" class="taskmgr-search-input" placeholder="Search processes" value="${this.escapeHtml(this.search)}" style="width:100%; border:none; outline:none; background:transparent; font-size:12px; font-family:inherit;">
+                </div>
             </div>
-            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:0 6px 6px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:0 8px 6px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
                 <table style="width:100%; border-collapse:collapse; font-size:12px;">
-                    <thead><tr>${this.renderSortableHeader('id', 'PID', 'left')}${this.renderSortableHeader('name', 'Name', 'left')}${this.renderSortableHeader('status', 'Status')}${this.renderSortableHeader('cpu', 'CPU')}${this.renderSortableHeader('memory', 'Memory')}<th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Description</th></tr></thead>
+                    <thead><tr>${this.renderSortableHeader('id', 'PID', 'left')}${this.renderSortableHeader('name', 'Name', 'left')}${this.renderSortableHeader('status', 'Status')}${this.renderSortableHeader('cpu', 'CPU')}${this.renderSortableHeader('memory', 'Memory')}<th style="text-align:left; padding:5px 8px; font-weight:bold; font-size:11px; border:1px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; background:#c0c0c0;">Description</th></tr></thead>
                     <tbody>
-                        ${sorted.length ? sorted.map(row).join('') : `<tr><td colspan="6" style="padding:16px; text-align:center; color:#666;">No matching processes.</td></tr>`}
+                        ${sorted.length ? sorted.map((r, i) => row(r, i)).join('') : `<tr><td colspan="6" style="padding:20px; text-align:center; color:#64748b;">No matching processes found.</td></tr>`}
                     </tbody>
                 </table>
             </div>
@@ -284,23 +295,23 @@ export class TaskManagerApp {
 
     renderServicesTab() {
         return `
-            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:6px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:8px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
                 <table style="width:100%; border-collapse:collapse; font-size:12px;">
                     <thead>
                         <tr>
-                            <th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Name</th>
-                            <th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Status</th>
-                            <th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Startup Type</th>
-                            <th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Description</th>
+                            <th style="text-align:left; padding:5px 8px; font-weight:bold; font-size:11px; border:1px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; background:#c0c0c0;">Name</th>
+                            <th style="text-align:left; padding:5px 8px; font-weight:bold; font-size:11px; border:1px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; background:#c0c0c0;">Status</th>
+                            <th style="text-align:left; padding:5px 8px; font-weight:bold; font-size:11px; border:1px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; background:#c0c0c0;">Startup Type</th>
+                            <th style="text-align:left; padding:5px 8px; font-weight:bold; font-size:11px; border:1px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; background:#c0c0c0;">Description</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${SERVICES.map(s => `
-                            <tr>
-                                <td style="padding:3px 8px;">${s.name}</td>
-                                <td style="padding:3px 8px; color:#008000;">Running</td>
-                                <td style="padding:3px 8px;">${s.startup}</td>
-                                <td style="padding:3px 8px;">${s.desc}</td>
+                        ${SERVICES.map((s, idx) => `
+                            <tr style="background:${idx % 2 === 1 ? '#f8fafc' : '#ffffff'};">
+                                <td style="padding:4px 8px; font-weight:500;">${s.name}</td>
+                                <td style="padding:4px 8px; color:#16a34a; font-weight:bold;">Running</td>
+                                <td style="padding:4px 8px;">${s.startup}</td>
+                                <td style="padding:4px 8px; color:#64748b;">${s.desc}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -317,22 +328,25 @@ export class TaskManagerApp {
         const active = metrics.find(m => m.id === this.perfMetric) || metrics[0];
 
         return `
-            <div style="display:flex; flex-grow:1; min-height:0;">
-                <div style="width:130px; flex-shrink:0; background:#ffffff; border-right:1px solid #808080; overflow-y:auto;">
-                    ${metrics.map(m => `
-                        <div class="taskmgr-perf-nav-item" data-metric="${m.id}" style="padding:8px; cursor:pointer; ${m.id === this.perfMetric ? 'background:#000080; color:#ffffff;' : ''}">
-                            <div style="font-size:12px; font-weight:bold;">${m.label}</div>
-                            <div style="font-size:11px;">${m.value.toFixed(0)}%</div>
-                        </div>
-                    `).join('')}
+            <div style="display:flex; flex-grow:1; min-height:0; padding:8px; gap:8px; box-sizing:border-box;">
+                <div style="width:140px; flex-shrink:0; background:#c0c0c0; display:flex; flex-direction:column; gap:6px;">
+                    ${metrics.map(m => {
+                        const isAct = m.id === this.perfMetric;
+                        return `
+                            <div class="taskmgr-perf-nav-item" data-metric="${m.id}" style="padding:8px 10px; cursor:pointer; user-select:none; background:${isAct ? '#000080' : '#ffffff'}; color:${isAct ? '#ffffff' : '#000000'}; border:2px solid ${isAct ? '#000000' : '#808080'}; border-right-color:${isAct ? '#ffffff' : '#ffffff'}; border-bottom-color:${isAct ? '#ffffff' : '#ffffff'}; box-shadow:1px 1px 2px rgba(0,0,0,0.15);">
+                                <div style="font-size:12px; font-weight:bold;">${m.label}</div>
+                                <div style="font-size:16px; font-weight:900; margin-top:2px; font-family:monospace;">${m.value.toFixed(0)}%</div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
-                <div style="flex-grow:1; display:flex; flex-direction:column; padding:10px; min-width:0; background:#ffffff;">
-                    <div style="font-size:14px; font-weight:bold; margin-bottom:2px;">${active.label}</div>
-                    <div style="font-size:11px; color:#444; margin-bottom:8px;">${active.sub}</div>
-                    <div style="flex-grow:1; min-height:0; border:1px solid #808080; position:relative;">
+                <div style="flex-grow:1; display:flex; flex-direction:column; padding:10px; min-width:0; background:#ffffff; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; box-shadow:inset 1px 1px 2px rgba(0,0,0,0.1);">
+                    <div style="font-size:14px; font-weight:bold; color:#000080; margin-bottom:2px;">${active.label}</div>
+                    <div style="font-size:11px; color:#64748b; margin-bottom:8px;">${active.sub}</div>
+                    <div style="flex-grow:1; min-height:0; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; position:relative; background:#040d1a;">
                         <canvas class="taskmgr-perf-canvas" style="width:100%; height:100%; display:block;"></canvas>
                     </div>
-                    <div style="font-size:22px; font-weight:bold; margin-top:8px;">${active.value.toFixed(0)}%</div>
+                    <div style="font-size:24px; font-weight:900; color:#000080; margin-top:8px; font-family:monospace;">${active.value.toFixed(0)}%</div>
                 </div>
             </div>
         `;
@@ -345,7 +359,7 @@ export class TaskManagerApp {
             ? `${this.lastMemUsedMB.toFixed(0)} MB / ${this.lastMemLimitMB.toFixed(0)} MB (${this.lastMemPct.toFixed(0)}%)`
             : 'not available';
         return `
-            <div style="flex-shrink:0; padding:4px 10px; font-size:11px; border-top:2px solid #808080; display:flex; justify-content:space-between; background:#c0c0c0;">
+            <div style="flex-shrink:0; padding:4px 10px; font-size:11px; border-top:2px solid #808080; display:flex; justify-content:space-between; background:#c0c0c0; font-weight:bold; color:#334155;">
                 <span>${apps} apps, ${svcs} background processes</span>
                 <span>CPU: ${this.lastCpuPct.toFixed(0)}%&nbsp;&nbsp;&nbsp;Memory: ${memText}</span>
             </div>
@@ -362,9 +376,11 @@ export class TaskManagerApp {
         canvas.height = cssH * dpr;
         const ctx = canvas.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.clearRect(0, 0, cssW, cssH);
 
-        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.fillStyle = '#040d1a';
+        ctx.fillRect(0, 0, cssW, cssH);
+
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
         ctx.lineWidth = 1;
         const gridRows = 4;
         for (let i = 0; i <= gridRows; i++) {
@@ -372,6 +388,14 @@ export class TaskManagerApp {
             ctx.beginPath();
             ctx.moveTo(0, y);
             ctx.lineTo(cssW, y);
+            ctx.stroke();
+        }
+        const gridCols = 8;
+        for (let j = 0; j <= gridCols; j++) {
+            const x = Math.floor((cssW / gridCols) * j) + 0.5;
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, cssH);
             ctx.stroke();
         }
 
@@ -394,14 +418,21 @@ export class TaskManagerApp {
         ctx.beginPath();
         points.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y));
         ctx.strokeStyle = colorLine;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = colorLine;
+        ctx.shadowBlur = 6;
         ctx.stroke();
+        ctx.shadowBlur = 0;
     }
 
     drawPerformanceGraph() {
         const canvas = this.bodyElement.querySelector('.taskmgr-perf-canvas');
         const data = this.perfMetric === 'cpu' ? this.cpuHistory : this.memHistory;
-        this.drawGraph(canvas, data, '#000080', 'rgba(0,0,128,0.15)');
+        if (this.perfMetric === 'cpu') {
+            this.drawGraph(canvas, data, '#38bdf8', 'rgba(14, 165, 233, 0.25)');
+        } else {
+            this.drawGraph(canvas, data, '#22c55e', 'rgba(34, 197, 94, 0.25)');
+        }
     }
 
     bindEvents() {

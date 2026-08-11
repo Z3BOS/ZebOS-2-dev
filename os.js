@@ -882,7 +882,7 @@ function initializeBootSequence() {
                 <div class="zeb-loading-content">
                     <img src="assets/system/z_logo.png" class="zeb-loading-logo" alt="ZebOS Logo" onerror="this.style.display='none'">
                     <div class="zeb-loading-title">Zeb<span class="brand-highlight">OS</span></div>
-                    <div class="zeb-loading-version">Professional 2.5.1</div>
+                    <div class="zeb-loading-version">Professional 2.6.0 Beta</div>
                     <div class="zeb-loading-track">
                         <div class="zeb-loading-blocks">
                             <div class="zeb-loading-block"></div>
@@ -906,7 +906,7 @@ function initializeBootSequence() {
                 loadingScreen.remove();
                 if (onComplete) onComplete();
             }, 600);
-        }, 2800);
+        }, 3200);
     }
 
     function finishBoot() {
@@ -982,19 +982,17 @@ function initializeBootSequence() {
                 if (finished) return;
                 if (bootScreen) bootScreen.classList.add('splash-active');
                 bootLog("BOOT: Kernel log complete, splash handoff engaged.");
+                setTimeout(finishBoot, 2200);
             }, 300);
         }
     }
 
     if (systemState.skipBootAnimation) {
         if (bootScreen) bootScreen.classList.add('splash-active');
-        setTimeout(finishBoot, 300);
+        setTimeout(finishBoot, 1200);
     } else {
         printNextBootLine();
-        // Safety net in case no key is held — sized to the actual log length
-        // (base sequence + dynamic file-load lines) so it never fires before
-        // the animation finishes printing.
-        setTimeout(finishBoot, Math.max(4000, fullBootLog.length * 180 + 1200));
+        setTimeout(finishBoot, Math.max(5500, fullBootLog.length * 180 + 2500));
     }
 }
 
