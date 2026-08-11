@@ -206,7 +206,7 @@ function ensureSystemFoldersExist() {
     });
 
     const defaults = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.6.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Beta Build v2.6.0!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
@@ -546,7 +546,7 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.6.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Beta Build v2.6.0!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
@@ -693,7 +693,7 @@ function initializeBootSequence() {
         if (!systemState.disableKernelLogs) logKernel(message);
     }
 
-    bootLog("SYSTEM START: Initializing Zeb Kernel v2.6.0 Alpha...");
+    bootLog("SYSTEM START: Initializing Zeb Kernel v2.6.0 Beta...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 

@@ -41,7 +41,7 @@ export class CourgetteInfo {
         this.bodyElement.style.height = "100%";
 
         const stats = [
-            ['OS', `ZebOS 2 (Alpha v${this.snapshot.version})`],
+            ['OS', `ZebOS 2 (Beta v${this.snapshot.version})`],
             ['Codename', `"${this.snapshot.codename}"`],
             ['Kernel', `Zeb Kernel v${this.snapshot.version}`],
             ['Uptime', this.formatUptime(this.uptimeSeconds)],

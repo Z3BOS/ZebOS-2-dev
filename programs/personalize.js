@@ -1,4 +1,4 @@
-// programs/personalize.js - ZebOS 2 Alpha Display Properties Applet v2.6.0
+// programs/personalize.js - ZebOS 2 Beta Display Properties Applet v2.6.0
 // All settings actually apply to the live OS. No browser page reloads.
 
 const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;

@@ -297,7 +297,7 @@ export class ZebTerminal {
                 break;
 
             case 'ver':
-                this.println(`ZebOS 2 (Alpha Build 2.6.0 "Fawn")`);
+                this.println(`ZebOS 2 (Beta Build 2.6.0 "Fawn")`);
                 break;
 
             case 'date':
@@ -377,7 +377,7 @@ export class ZebTerminal {
 <span style="color:#0088ff; font-weight:bold;">..█.. █.... █...█ █...█ ....█</span>
 <span style="color:#0066ff; font-weight:bold;">█████ █████ ████. .███. ████.</span>
 
-<span style="color:#ffff55;">OS:</span>         ZebOS 2 (Alpha Build 2.6.0)
+<span style="color:#ffff55;">OS:</span>         ZebOS 2 (Beta Build 2.6.0)
 <span style="color:#ffff55;">Codename:</span>   "${this.shell.getCodename()}"
 <span style="color:#ffff55;">Kernel:</span>     ZebOS VFS Hardened Engine v2.6.0
 <span style="color:#ffff55;">User:</span>       ${this.shell.getUsername()}

@@ -623,7 +623,7 @@ function showDesktopPropertiesDialog(callbacks) {
       </div>
       ${w95Field('Resolution:', res)}
       ${w95Field('Background Color:', bgColor)}
-      ${w95Field('System:', 'ZebOS 2 Kernel v2.6.0 (Alpha)')}
+      ${w95Field('System:', 'ZebOS 2 Kernel v2.6.0 (Beta)')}
       ${w95Separator()}
       <div style="font-size:11px;color:#444;margin-bottom:10px;">To change the wallpaper, color scheme, or display pattern, open the Personalize applet from the context menu or Start menu.</div>
       <div style="flex-grow:1;"></div>
@@ -760,7 +760,7 @@ function showWindowPropertiesDialog(frame, titleText) {
       ${w95Field('Position:', `X: ${l}, Y: ${t}`)}
       ${w95Field('Z-Index:', zi)}
       ${w95Field('Status:', frame.classList.contains('hidden-view') ? 'Minimized' : 'Visible')}
-      ${w95Field('System:', 'ZebOS 2 Kernel v2.6.0 (Alpha)')}
+      ${w95Field('System:', 'ZebOS 2 Kernel v2.6.0 (Beta)')}
       <div style="flex-grow:1;"></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
         ${w95Btn('OK','prop-ok','font-weight:bold;')}
@@ -792,7 +792,7 @@ function showShortcutPropertiesDialog(label, appId) {
       ${w95Field('Target ID:', appId)}
       ${w95Field('Type:', 'Application Shortcut')}
       ${w95Field('Location:', 'ZebOS 2 Desktop')}
-      ${w95Field('System:', 'ZebOS 2 Kernel v2.6.0 (Alpha)')}
+      ${w95Field('System:', 'ZebOS 2 Kernel v2.6.0 (Beta)')}
       <div style="flex-grow:1;"></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
         ${w95Btn('OK','prop-ok','font-weight:bold;')}
@@ -828,7 +828,7 @@ function showExplorerVolumePropertiesDialog(callbacks) {
       ${w95Field('File System:', 'ZebVFS (Virtual)')}
       ${w95Field('Total Capacity:', totalDisk)}
       ${w95Field('Used:', used)}
-      ${w95Field('System:', 'ZebOS 2 Kernel v2.6.0 (Alpha)')}
+      ${w95Field('System:', 'ZebOS 2 Kernel v2.6.0 (Beta)')}
       ${w95Field('Status:', 'Read/Write Accessible')}
       <div style="flex-grow:1;"></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
