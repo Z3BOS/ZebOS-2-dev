@@ -428,33 +428,46 @@ function setupTaskbarEvents() {
 function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
     const tb = document.getElementById('system-taskbar');
     const startMenu = document.getElementById('start-menu');
+    const trayMenu = document.getElementById('tray-menu');
     const buildTag = document.getElementById('desktop-build-tag');
     const iconsZone = document.getElementById('desktop-icons-zone');
+    const startBtn = document.getElementById('start-button');
+    const tabsZone = document.getElementById('taskbar-tabs-zone');
+    const systemTray = document.getElementById('system-tray');
+    const userTag = document.getElementById('current-user-tag');
+    const clockEl = document.getElementById('live-clock');
+
     if (!tb) return;
 
     const sz = parseInt(size, 10) || 40;
     tb.dataset.position = pos;
     tb.dataset.size     = String(sz);
 
-    // Reset position styles
-    tb.style.bottom = ''; tb.style.top = ''; tb.style.left = ''; tb.style.right = '';
+    tb.style.bottom = 'auto'; tb.style.top = 'auto'; tb.style.left = 'auto'; tb.style.right = 'auto';
     tb.style.width  = ''; tb.style.height = '';
-    tb.style.flexDirection = 'row';
+
+    const isVertical = (pos === 'left' || pos === 'right');
 
     if (pos === 'bottom') {
-        tb.style.bottom = '0'; tb.style.left = '0';
+        tb.style.bottom = '0'; tb.style.left = '0'; tb.style.right = 'auto'; tb.style.top = 'auto';
         tb.style.width = '100vw'; tb.style.height = sz + 'px';
+        tb.style.flexDirection = 'row';
+        tb.style.alignItems = 'center';
     } else if (pos === 'top') {
-        tb.style.top = '0'; tb.style.left = '0';
+        tb.style.top = '0'; tb.style.left = '0'; tb.style.right = 'auto'; tb.style.bottom = 'auto';
         tb.style.width = '100vw'; tb.style.height = sz + 'px';
+        tb.style.flexDirection = 'row';
+        tb.style.alignItems = 'center';
     } else if (pos === 'left') {
-        tb.style.top = '0'; tb.style.left = '0';
+        tb.style.top = '0'; tb.style.left = '0'; tb.style.right = 'auto'; tb.style.bottom = 'auto';
         tb.style.width = sz + 'px'; tb.style.height = '100vh';
         tb.style.flexDirection = 'column';
+        tb.style.alignItems = 'stretch';
     } else if (pos === 'right') {
-        tb.style.top = '0'; tb.style.right = '0';
+        tb.style.top = '0'; tb.style.right = '0'; tb.style.left = 'auto'; tb.style.bottom = 'auto';
         tb.style.width = sz + 'px'; tb.style.height = '100vh';
         tb.style.flexDirection = 'column';
+        tb.style.alignItems = 'stretch';
     }
 
     tb.style.zIndex = alwaysTop ? '90000' : '1000';
@@ -470,12 +483,11 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
         tb.style.transition = 'opacity 0.2s';
     }
 
-    // Offset calculations for UI elements when taskbar is visible vs auto-hidden
     const offset = autoHide ? 0 : sz;
     const menuOffset = (autoHide ? 4 : sz) + 4;
 
     if (startMenu) {
-        startMenu.style.bottom = ''; startMenu.style.top = ''; startMenu.style.left = ''; startMenu.style.right = '';
+        startMenu.style.bottom = 'auto'; startMenu.style.top = 'auto'; startMenu.style.left = 'auto'; startMenu.style.right = 'auto';
         if (pos === 'bottom') {
             startMenu.style.bottom = `${menuOffset}px`;
             startMenu.style.left = '4px';
@@ -483,17 +495,16 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
             startMenu.style.top = `${menuOffset}px`;
             startMenu.style.left = '4px';
         } else if (pos === 'left') {
-            startMenu.style.bottom = '4px';
+            startMenu.style.top = '4px';
             startMenu.style.left = `${menuOffset}px`;
         } else if (pos === 'right') {
-            startMenu.style.bottom = '4px';
+            startMenu.style.top = '4px';
             startMenu.style.right = `${menuOffset}px`;
         }
     }
 
-    const trayMenu = document.getElementById('tray-menu');
     if (trayMenu) {
-        trayMenu.style.bottom = ''; trayMenu.style.top = ''; trayMenu.style.left = ''; trayMenu.style.right = '';
+        trayMenu.style.bottom = 'auto'; trayMenu.style.top = 'auto'; trayMenu.style.left = 'auto'; trayMenu.style.right = 'auto';
         if (pos === 'bottom') {
             trayMenu.style.bottom = `${menuOffset}px`;
             trayMenu.style.right = '4px';
@@ -509,36 +520,104 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
         }
     }
 
-    if (buildTag) {
-        buildTag.style.bottom = ''; buildTag.style.top = ''; buildTag.style.left = ''; buildTag.style.right = '';
-        buildTag.style.right = '20px';
-        if (pos === 'bottom') {
-            buildTag.style.bottom = `${offset + 15}px`;
-        } else if (pos === 'top') {
-            buildTag.style.bottom = '15px';
-        } else if (pos === 'right') {
-            buildTag.style.bottom = '15px';
-            buildTag.style.right = `${offset + 20}px`;
+    if (startBtn) {
+        if (isVertical) {
+            startBtn.style.flexDirection = 'column';
+            startBtn.style.width = 'calc(100% - 4px)';
+            startBtn.style.height = '42px';
+            startBtn.style.margin = '2px auto';
+            startBtn.style.padding = '3px 2px';
+            startBtn.style.gap = '1px';
+            startBtn.style.justifyContent = 'center';
+            startBtn.style.alignItems = 'center';
+
+            const logoEl = startBtn.querySelector('.start-logo');
+            const textEl = startBtn.querySelector('.start-text');
+            if (logoEl) { logoEl.style.margin = '0 auto'; }
+            if (textEl) { textEl.style.fontSize = '10px'; textEl.style.lineHeight = '1'; textEl.style.margin = '0'; textEl.style.whiteSpace = 'nowrap'; }
         } else {
-            buildTag.style.bottom = '15px';
+            startBtn.style.flexDirection = 'row';
+            startBtn.style.width = 'auto';
+            startBtn.style.height = '30px';
+            startBtn.style.margin = '0';
+            startBtn.style.padding = '2px 10px';
+            startBtn.style.gap = '6px';
+            startBtn.style.justifyContent = 'flex-start';
+            startBtn.style.alignItems = 'center';
+
+            const logoEl = startBtn.querySelector('.start-logo');
+            const textEl = startBtn.querySelector('.start-text');
+            if (logoEl) { logoEl.style.margin = '0'; }
+            if (textEl) { textEl.style.fontSize = '13px'; textEl.style.lineHeight = 'normal'; textEl.style.margin = '0'; textEl.style.whiteSpace = 'nowrap'; }
         }
     }
 
-    if (iconsZone) {
-        iconsZone.style.padding = '12px';
-        if (!autoHide) {
-            if (pos === 'bottom') iconsZone.style.paddingBottom = `${sz + 12}px`;
-            if (pos === 'top')    iconsZone.style.paddingTop    = `${sz + 12}px`;
-            if (pos === 'left')   iconsZone.style.paddingLeft   = `${sz + 12}px`;
-            if (pos === 'right')  iconsZone.style.paddingRight  = `${sz + 12}px`;
-        }
+    if (tabsZone) {
+        tabsZone.style.flexDirection = isVertical ? 'column' : 'row';
+        tabsZone.style.width = isVertical ? '100%' : 'auto';
+        tabsZone.style.height = isVertical ? 'auto' : '100%';
+        tabsZone.style.flexGrow = '1';
+        tabsZone.style.margin = isVertical ? '4px 0' : '0 10px';
+        tabsZone.style.overflowX = isVertical ? 'hidden' : 'auto';
+        tabsZone.style.overflowY = isVertical ? 'auto' : 'hidden';
+        tabsZone.style.alignItems = isVertical ? 'stretch' : 'center';
+
+        tabsZone.querySelectorAll('.taskbar-tab').forEach(tab => {
+            if (isVertical) {
+                tab.style.flexDirection = 'column';
+                tab.style.width = 'calc(100% - 4px)';
+                tab.style.height = '38px';
+                tab.style.minHeight = '38px';
+                tab.style.margin = '2px auto';
+                tab.style.padding = '2px';
+                tab.style.gap = '2px';
+                tab.style.justifyContent = 'center';
+                tab.style.alignItems = 'center';
+                tab.style.textAlign = 'center';
+            } else {
+                tab.style.flexDirection = 'row';
+                tab.style.width = '120px';
+                tab.style.height = '28px';
+                tab.style.minHeight = '28px';
+                tab.style.margin = '0';
+                tab.style.padding = '0 8px';
+                tab.style.gap = '6px';
+                tab.style.justifyContent = 'flex-start';
+                tab.style.alignItems = 'center';
+                tab.style.textAlign = 'left';
+            }
+        });
     }
 
-    const clockEl = document.getElementById('live-clock');
+    if (systemTray) {
+        systemTray.style.flexDirection = isVertical ? 'column' : 'row';
+        systemTray.style.width = isVertical ? 'calc(100% - 4px)' : 'auto';
+        systemTray.style.height = isVertical ? 'auto' : '30px';
+        systemTray.style.padding = isVertical ? '4px 2px' : '0 10px';
+        systemTray.style.gap = isVertical ? '2px' : '8px';
+        systemTray.style.margin = isVertical ? '2px auto' : '0';
+        systemTray.style.justifyContent = 'center';
+        systemTray.style.alignItems = 'center';
+        systemTray.style.boxSizing = 'border-box';
+    }
+
+    if (userTag) {
+        userTag.style.display = isVertical ? 'none' : 'inline';
+    }
+
     if (clockEl) {
+        clockEl.style.textAlign = 'center';
+        clockEl.style.fontSize = isVertical ? '10px' : '11px';
+        clockEl.style.lineHeight = '1.1';
+        clockEl.style.whiteSpace = 'nowrap';
         const tray = clockEl.closest('#system-tray');
         if (tray) tray.style.display = showClock ? 'flex' : 'none';
     }
+
+    document.documentElement.style.setProperty('--tb-height-offset', `${!autoHide && (pos === 'bottom' || pos === 'top') ? sz : 0}px`);
+    document.documentElement.style.setProperty('--tb-top-offset', `${!autoHide && pos === 'top' ? sz : 0}px`);
+    document.documentElement.style.setProperty('--tb-left-offset', `${!autoHide && pos === 'left' ? sz : 0}px`);
+    document.documentElement.style.setProperty('--tb-right-offset', `${!autoHide && pos === 'right' ? sz : 0}px`);
 
     logKernel(`Taskbar: Applied props — pos:${pos} size:${sz}px autohide:${autoHide} ontop:${alwaysTop}`);
 }
@@ -648,7 +727,13 @@ function startSystemClock() {
         hours = hours ? hours : 12; 
 
         if (clockElement) {
-            clockElement.textContent = `${hours}:${minutes} ${ampm}`;
+            const tb = document.getElementById('system-taskbar');
+            const isVertical = tb && (tb.dataset.position === 'left' || tb.dataset.position === 'right');
+            if (isVertical) {
+                clockElement.innerHTML = `<div>${hours}:${minutes}</div><div style="font-size:9px; opacity:0.85;">${ampm}</div>`;
+            } else {
+                clockElement.textContent = `${hours}:${minutes} ${ampm}`;
+            }
         }
     }
     updateClock();
@@ -1067,8 +1152,12 @@ function setWindowBounds(bodyElement, width, height) {
     }
 }
 
-function launchFile(fileName) {
+function launchFile(fileName, dirPath = null) {
     if (!fileName) return;
+    const targetPath = dirPath !== null ? dirPath : systemState.currentDirectory;
+    const targetContext = getVfsNodeByPath(targetPath);
+    const item = targetContext ? targetContext[fileName] : null;
+
     if (fileName.endsWith('.zdl')) {
         showOsConfirm(
             "Cannot Open System Library",
@@ -1078,10 +1167,20 @@ function launchFile(fileName) {
         );
         return;
     }
-    if (fileName.endsWith('.png') || fileName.endsWith('.bmp')) {
-        launchApplication('start-link-paint', fileName);
+
+    const isImage = fileName.endsWith('.png') ||
+                    fileName.endsWith('.jpg') ||
+                    fileName.endsWith('.jpeg') ||
+                    fileName.endsWith('.bmp') ||
+                    fileName.endsWith('.gif') ||
+                    fileName.endsWith('.webp') ||
+                    (item && item.content && typeof item.content === 'string' && item.content.startsWith('data:image/'));
+
+    if (isImage) {
+        launchApplication('start-link-viewer', fileName, targetPath);
         return;
     }
+
     if (fileName.endsWith('.exe')) {
         const lower = fileName.toLowerCase();
         if (lower.includes('paint')) launchApplication('start-link-paint');
@@ -1089,14 +1188,15 @@ function launchFile(fileName) {
         else if (lower.includes('cmd') || lower.includes('terminal')) launchApplication('start-link-prompt');
         else if (lower.includes('mines')) launchApplication('start-link-mines');
         else if (lower.includes('player')) launchApplication('start-link-media');
-        else launchApplication('start-link-text-editor', fileName);
+        else launchApplication('start-link-text-editor', fileName, targetPath);
         return;
     }
-    launchApplication('start-link-text-editor', fileName);
+    launchApplication('start-link-text-editor', fileName, targetPath);
 }
 
-async function launchApplication(appId, customFileName = null) {
-    const currentContext = getActiveFolderContext();
+async function launchApplication(appId, customFileName = null, dirPath = null) {
+    const targetPath = dirPath !== null ? dirPath : systemState.currentDirectory;
+    const currentContext = getVfsNodeByPath(targetPath) || getActiveFolderContext();
 
     switch (appId) {
         case 'start-link-files': {
@@ -1108,7 +1208,7 @@ async function launchApplication(appId, customFileName = null) {
                     setWindowBounds(explorerBody, 760, 480);
                     const expInstance = new module.FileExplorerApp(
                         () => closeWindow(winId),
-                        (fileName) => launchFile(fileName),
+                        (fileName, fileDirPath) => launchFile(fileName, fileDirPath),
                         () => saveFileSystem(),
                         (path) => getVfsNodeByPath(path)
                     );
@@ -1208,6 +1308,37 @@ async function launchApplication(appId, customFileName = null) {
                 }
             } catch (err) {
                 logKernel(`Kernel Error: Failed to mount paint.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-viewer': {
+            const targetImageFile = customFileName || "image.png";
+            const cleanId = targetImageFile.replace(/[^a-zA-Z0-9]/g, '');
+            const winId = `viewer-${cleanId}`;
+            try {
+                const module = await import(`./programs/viewer.js?v=${Date.now()}`);
+                const appBodyElement = createWindow(`Zeb Viewer - ${targetImageFile}`, "viewer", winId);
+
+                let imageDataUrl = null;
+                const fileObj = currentContext[targetImageFile];
+                if (fileObj && fileObj.content) {
+                    imageDataUrl = fileObj.content;
+                }
+
+                if (appBodyElement) {
+                    setWindowBounds(appBodyElement, 780, 520);
+                    const viewerInstance = new module.ZebViewerApp(
+                        targetImageFile,
+                        imageDataUrl,
+                        () => closeWindow(winId),
+                        (path) => getVfsNodeByPath(path)
+                    );
+                    registerWindowCleanup(winId, () => viewerInstance.cleanup());
+                    viewerInstance.open(appBodyElement);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount viewer.js (${err.message})`, "ERROR");
             }
             break;
         }
@@ -1781,18 +1912,42 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
     setTimeout(() => yesBtn.focus(), 50);
 }
 
-export function saveFileToVfsPath(vfsPath, filename, dataUrl) {
-    let targetContext = systemState.fileSystem;
-    if (vfsPath && vfsPath !== "") {
-        const node = getVfsNodeByPath(vfsPath);
-        if (node && node.type === 'dir' && node.content) {
-            targetContext = node.content;
-        }
+export function getUniqueVfsFilename(targetContext, originalFilename) {
+    if (!targetContext || !targetContext[originalFilename]) return originalFilename;
+
+    const lastDotIndex = originalFilename.lastIndexOf('.');
+    let baseName = originalFilename;
+    let ext = "";
+
+    if (lastDotIndex > 0) {
+        baseName = originalFilename.substring(0, lastDotIndex);
+        ext = originalFilename.substring(lastDotIndex);
     }
-    targetContext[filename] = { type: "file", content: dataUrl };
-    saveFileSystem();
+
+    const match = baseName.match(/^(.*?)(?:\s*\(\d+\))?$/);
+    const rootName = (match && match[1]) ? match[1].trim() : baseName;
+
+    let counter = 1;
+    let newFilename = `${rootName} (${counter})${ext}`;
+    while (targetContext[newFilename]) {
+        counter++;
+        newFilename = `${rootName} (${counter})${ext}`;
+    }
+    return newFilename;
+}
+
+export function saveFileToVfsPath(vfsPath, filename, dataUrl) {
+    const targetContext = getVfsNodeByPath(vfsPath);
+    let finalSavedName = filename;
+    if (targetContext) {
+        finalSavedName = getUniqueVfsFilename(targetContext, filename);
+        targetContext[finalSavedName] = { type: "file", content: dataUrl };
+        saveFileSystem();
+    }
     const activeExp = document.querySelector('.explorer-grid');
     if (activeExp) renderZebExplorer(activeExp.parentElement);
+    renderDesktopIcons();
+    return finalSavedName;
 }
 
 export function showSaveFileDialog(defaultName, onSaveCallback) {
