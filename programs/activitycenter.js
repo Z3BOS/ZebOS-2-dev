@@ -1,4 +1,5 @@
-import { getIcon, playSystemSound, showOsConfirm } from '../os.js';
+import { getIcon } from '../icons.js';
+import { playSystemSound, showOsConfirm } from '../os.js';
 
 export class ActivityCenterApp {
     constructor(onClose) {
@@ -61,6 +62,7 @@ export class ActivityCenterApp {
         `;
 
         this.programs = [
+            { id: 'start-link-activitycenter', icon: 'activitycenter', label: 'Activity Center', desc: 'System activity dashboard' },
             { id: 'start-link-files',        icon: 'explorer',    label: 'Zeb Explorer',     desc: 'Browse files and folders' },
             { id: 'start-link-text-editor',  icon: 'editor',      label: 'Text Editor',      desc: 'Edit text documents' },
             { id: 'start-link-prompt',       icon: 'terminal',    label: 'Zeb Terminal',     desc: 'Command interface' },

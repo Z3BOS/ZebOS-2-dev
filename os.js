@@ -242,7 +242,8 @@ function ensureSystemFoldersExist() {
                 "Solitaire":     { type: "dir", content: { "solitaire.exe": { type: "file", content: "Binary Executable: Klondike Solitaire" } } },
                 "Chess":         { type: "dir", content: { "chess.exe": { type: "file", content: "Binary Executable: ZebOS Chess Engine" } } },
                 "System Info":   { type: "dir", content: { "courgette.exe": { type: "file", content: "Binary Executable: System Info Daemon" } } },
-                "Zeb Viewer":    { type: "dir", content: { "viewer.exe": { type: "file", content: "Binary Executable: Zeb Image Viewer" } } }
+                "Zeb Viewer":    { type: "dir", content: { "viewer.exe": { type: "file", content: "Binary Executable: Zeb Image Viewer" } } },
+                "Activity Center": { type: "dir", content: { "activitycenter.exe": { type: "file", content: "Binary Executable: Activity Center" } } }
             }
         },
         "Users": {
@@ -1383,6 +1384,7 @@ function launchFile(fileName, dirPath = null) {
         else if (lower.includes('courgette') || lower.includes('info')) launchApplication('start-link-courgette');
         else if (lower.includes('viewer')) launchApplication('start-link-viewer');
         else if (lower.includes('vm') || lower.includes('zebvm')) launchApplication('start-link-vm');
+        else if (lower.includes('activity') || lower.includes('center')) launchApplication('start-link-activitycenter');
         else launchApplication('start-link-text-editor', fileName, targetPath);
         return;
     }
@@ -1736,43 +1738,33 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
             break;
         }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-
         case 'start-link-activitycenter': {
-    	const winId = 'app-activitycenter';
-    	try {
-        const module = await import(`./programs/activitycenter.js?v=${Date.now()}`);
-        const acBody = createWindow("Activity Center", "activitycenter", winId);
-        if (acBody) {
-            setWindowBounds(acBody, 860, 560);
+            const winId = 'app-activitycenter';
+            try {
+                const module = await import(`./programs/activitycenter.js?v=${Date.now()}`);
+                const acBody = createWindow("Activity Center", "activitycenter", winId);
+                if (acBody) {
+                    setWindowBounds(acBody, 860, 560);
 
-            window.launchApplicationFromActivityCenter = (targetAppId) => {
-                if (!targetAppId || targetAppId === 'start-link-activitycenter') return;
-                launchApplication(targetAppId);
-            };
+                    window.launchApplicationFromActivityCenter = (targetAppId) => {
+                        if (!targetAppId || targetAppId === 'start-link-activitycenter') return;
+                        launchApplication(targetAppId);
+                    };
 
-            const acInstance = new module.ActivityCenterApp(() => closeWindow(winId));
-            registerWindowCleanup(winId, () => {
-                acInstance.cleanup();
-                if (window.launchApplicationFromActivityCenter) {
-                    delete window.launchApplicationFromActivityCenter;
+                    const acInstance = new module.ActivityCenterApp(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => {
+                        acInstance.cleanup();
+                        if (window.launchApplicationFromActivityCenter) {
+                            delete window.launchApplicationFromActivityCenter;
+                        }
+                    });
+                    acInstance.open(acBody);
                 }
-            });
-            acInstance.open(acBody);
-        }
-    } catch (err) {
-        logKernel(`Kernel Error: Failed to mount activitycenter.js (${err.message})`, "ERROR");
-    }
-    break;
-}
-
-        case 'start-link-shutdown':
-            alert("ZebOS Shutdown Sequence Initiated.");
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount activitycenter.js (${err.message})`, "ERROR");
+            }
             break;
-=======
->>>>>>> Stashed changes
+        }
         case 'start-link-run': {
             const winId = 'app-run';
             try {
@@ -1853,10 +1845,6 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
             }
             break;
         }
-<<<<<<< Updated upstream
-=======
->>>>>>> a8aa7db5b2723a4c70e95c76ede99bb6bb12a506
->>>>>>> Stashed changes
 
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
@@ -2075,7 +2063,7 @@ const DESKTOP_SHORTCUTS = [
     { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette' },
     { id: 'start-link-taskmgr', icon: 'taskmgr', label: 'Task Manager' },
     { id: 'start-link-solitaire', icon: 'solitaire', label: 'Solitaire' },
-    { id: 'start-link-chess', icon: 'chess', label: 'Chess' }
+    { id: 'start-link-chess', icon: 'chess', label: 'Chess' },
     { id: 'start-link-activitycenter', icon: 'activitycenter', label: 'Activity Center' },
 ];
 

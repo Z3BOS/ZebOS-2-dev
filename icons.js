@@ -513,14 +513,17 @@ const SVGS = {
     `,
 activitycenter: `
     <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="3" width="20" height="18" rx="1.5" fill="#c0c0c0" stroke="#000000" stroke-width="1.3"/>
-        <rect x="3.5" y="4.5" width="17" height="4" fill="#000080"/>
-        <rect x="5" y="10" width="6" height="4" fill="#ffffff" stroke="#808080" stroke-width="0.8"/>
-        <rect x="13" y="10" width="6" height="4" fill="#ffffff" stroke="#808080" stroke-width="0.8"/>
-        <rect x="5" y="16" width="14" height="3" fill="#008080" stroke="#004c4c" stroke-width="0.8"/>
-        <circle cx="7" cy="6.5" r="0.9" fill="#55ff55"/>
-        <circle cx="10" cy="6.5" r="0.9" fill="#ffeb3b"/>
-        <circle cx="13" cy="6.5" r="0.9" fill="#ff5555"/>
+        <rect x="2" y="2" width="20" height="20" fill="#c0c0c0" stroke="#000000" stroke-width="1.2"/>
+        <rect x="3" y="3" width="18" height="4" fill="#000080"/>
+        <rect x="4" y="4.5" width="2" height="1" fill="#ffffff"/>
+        <rect x="18" y="4" width="2" height="2" fill="#c0c0c0" stroke="#000000" stroke-width="0.5"/>
+        <rect x="4" y="9" width="7" height="6" fill="#008080" stroke="#000000" stroke-width="0.8"/>
+        <path d="M7.5 10.5L6 12.5H8L6.5 14.5" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="13" y="9" width="7" height="6" fill="#800080" stroke="#000000" stroke-width="0.8"/>
+        <circle cx="16.5" cy="12" r="2" fill="none" stroke="#ffffff" stroke-width="1.2"/>
+        <path d="M16.5 12L17.5 10.5" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+        <rect x="4" y="17" width="16" height="3" fill="#ffffff" stroke="#808080" stroke-width="0.8"/>
+        <rect x="5.5" y="18" width="8" height="1" fill="#008000"/>
     </svg>
 `,
 };
