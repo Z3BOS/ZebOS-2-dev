@@ -78,9 +78,7 @@ export class SolitaireGame {
         this.won = false;
     }
 
-    // ==========================================================================
-    // RENDER
-    // ==========================================================================
+    // Rendering stuff. This took way too long.
     render() {
         if (!this.bodyElement) return;
 
@@ -156,9 +154,7 @@ export class SolitaireGame {
         `;
     }
 
-    // ==========================================================================
-    // EVENTS
-    // ==========================================================================
+    // events
     bindEvents() {
         this.bodyElement.querySelectorAll('.solitaire-new-game-btn, .solitaire-win-newgame-btn').forEach(btn => {
             btn.addEventListener('click', () => { this.dealNewGame(); this.render(); });
@@ -214,9 +210,7 @@ export class SolitaireGame {
         return null;
     }
 
-    // ==========================================================================
-    // DRAG AND DROP
-    // ==========================================================================
+    // d&d 
     beginDrag(e, el) {
         e.preventDefault();
         const sourcePileId = el.dataset.pileSource;
@@ -287,9 +281,7 @@ export class SolitaireGame {
         this.render();
     }
 
-    // ==========================================================================
-    // MOVE VALIDATION
-    // ==========================================================================
+    // move
     tryMove(sourcePileId, cardGroup, targetPileId) {
         if (sourcePileId === targetPileId) return false;
         const movingCard = cardGroup[0];
@@ -352,9 +344,7 @@ export class SolitaireGame {
         return SUITS.every(suit => this.foundations[suit].length === 13);
     }
 
-    // ==========================================================================
-    // LIFECYCLE
-    // ==========================================================================
+
     handleKeyDown(e) {
         if (e.key === 'Escape') {
             e.preventDefault();
