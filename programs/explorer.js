@@ -545,7 +545,7 @@ export class FileExplorerApp {
                     border-radius: 2px;
                 `;
                 card.innerHTML = `
-                    <div style="width:40px; height:40px;">${iconSvg}</div>
+                    <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${iconSvg}</div>
                     <div style="font-size:11px; margin-top:6px; word-break:break-word; max-width:80px; line-height:1.2;">${name}</div>
                 `;
             } else if (this.viewMode === 'small') {

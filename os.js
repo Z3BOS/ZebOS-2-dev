@@ -235,7 +235,14 @@ function ensureSystemFoldersExist() {
                 "Terminal":     { type: "dir", content: { "cmd.exe": { type: "file", content: "Binary Executable: Zeb Terminal Prompt" } } },
                 "Minesweeper":   { type: "dir", content: { "mines.exe": { type: "file", content: "Binary Executable: Minesweeper Game" } } },
                 "Media Player":  { type: "dir", content: { "player.exe": { type: "file", content: "Binary Executable: Retro Media Player" } } },
-                "ZebVM":         { type: "dir", content: { "zebvm.exe": { type: "file", content: "Binary Executable: ZebVM Virtual Machine" } } }
+                "ZebVM":         { type: "dir", content: { "zebvm.exe": { type: "file", content: "Binary Executable: ZebVM Virtual Machine" } } },
+                "Calculator":    { type: "dir", content: { "calc.exe": { type: "file", content: "Binary Executable: ZebOS Calculator" } } },
+                "Snake Game":    { type: "dir", content: { "snake.exe": { type: "file", content: "Binary Executable: Snake Game" } } },
+                "Task Manager":  { type: "dir", content: { "taskmgr.exe": { type: "file", content: "Binary Executable: ZebOS Task Manager" } } },
+                "Solitaire":     { type: "dir", content: { "solitaire.exe": { type: "file", content: "Binary Executable: Klondike Solitaire" } } },
+                "Chess":         { type: "dir", content: { "chess.exe": { type: "file", content: "Binary Executable: ZebOS Chess Engine" } } },
+                "System Info":   { type: "dir", content: { "courgette.exe": { type: "file", content: "Binary Executable: System Info Daemon" } } },
+                "Zeb Viewer":    { type: "dir", content: { "viewer.exe": { type: "file", content: "Binary Executable: Zeb Image Viewer" } } }
             }
         },
         "Users": {
@@ -276,6 +283,18 @@ function ensureSystemFoldersExist() {
             updated = true;
         }
     }
+
+    if (systemState.fileSystem["ZebApps"] && systemState.fileSystem["ZebApps"].content) {
+        const zebAppsContent = systemState.fileSystem["ZebApps"].content;
+        const appDefaults = defaults["ZebApps"].content;
+        for (const appName in appDefaults) {
+            if (!zebAppsContent[appName]) {
+                zebAppsContent[appName] = appDefaults[appName];
+                updated = true;
+            }
+        }
+    }
+
     ensureUserProfileFolder(systemState.currentUser || "Guest");
     if (updated) saveFileSystem();
 }
@@ -654,7 +673,14 @@ function provisionDefaultRootFS() {
                 "Terminal":     { type: "dir", content: { "cmd.exe": { type: "file", content: "Binary Executable: Zeb Terminal Prompt" } } },
                 "Minesweeper":   { type: "dir", content: { "mines.exe": { type: "file", content: "Binary Executable: Minesweeper Game" } } },
                 "Media Player":  { type: "dir", content: { "player.exe": { type: "file", content: "Binary Executable: Retro Media Player" } } },
-                "ZebVM":         { type: "dir", content: { "zebvm.exe": { type: "file", content: "Binary Executable: ZebVM Virtual Machine" } } }
+                "ZebVM":         { type: "dir", content: { "zebvm.exe": { type: "file", content: "Binary Executable: ZebVM Virtual Machine" } } },
+                "Calculator":    { type: "dir", content: { "calc.exe": { type: "file", content: "Binary Executable: ZebOS Calculator" } } },
+                "Snake Game":    { type: "dir", content: { "snake.exe": { type: "file", content: "Binary Executable: Snake Game" } } },
+                "Task Manager":  { type: "dir", content: { "taskmgr.exe": { type: "file", content: "Binary Executable: ZebOS Task Manager" } } },
+                "Solitaire":     { type: "dir", content: { "solitaire.exe": { type: "file", content: "Binary Executable: Klondike Solitaire" } } },
+                "Chess":         { type: "dir", content: { "chess.exe": { type: "file", content: "Binary Executable: ZebOS Chess Engine" } } },
+                "System Info":   { type: "dir", content: { "courgette.exe": { type: "file", content: "Binary Executable: System Info Daemon" } } },
+                "Zeb Viewer":    { type: "dir", content: { "viewer.exe": { type: "file", content: "Binary Executable: Zeb Image Viewer" } } }
             }
         },
         "Users": {
@@ -847,6 +873,42 @@ function initializeBootSequence() {
         })();
     }
 
+    function showXpLoadingScreen(onComplete) {
+        let loadingScreen = document.getElementById('zeb-loading-screen');
+        if (!loadingScreen) {
+            loadingScreen = document.createElement('div');
+            loadingScreen.id = 'zeb-loading-screen';
+            loadingScreen.innerHTML = `
+                <div class="zeb-loading-content">
+                    <img src="assets/system/z_logo.png" class="zeb-loading-logo" alt="ZebOS Logo" onerror="this.style.display='none'">
+                    <div class="zeb-loading-title">Zeb<span class="brand-highlight">OS</span></div>
+                    <div class="zeb-loading-version">Professional 2.5.1</div>
+                    <div class="zeb-loading-track">
+                        <div class="zeb-loading-blocks">
+                            <div class="zeb-loading-block"></div>
+                            <div class="zeb-loading-block"></div>
+                            <div class="zeb-loading-block"></div>
+                        </div>
+                    </div>
+                    <div class="zeb-loading-subtext">Starting ZebOS...</div>
+                </div>
+            `;
+            document.body.appendChild(loadingScreen);
+        }
+
+        requestAnimationFrame(() => {
+            loadingScreen.style.opacity = '1';
+        });
+
+        setTimeout(() => {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.remove();
+                if (onComplete) onComplete();
+            }, 600);
+        }, 2800);
+    }
+
     function finishBoot() {
         if (finished) return;
         finished = true;
@@ -855,10 +917,10 @@ function initializeBootSequence() {
             bootScreen.style.opacity = "0";
             setTimeout(() => {
                 bootScreen.remove();
-                proceedToLogon();
-            }, 800);
+                showXpLoadingScreen(() => proceedToLogon());
+            }, 600);
         } else {
-            proceedToLogon();
+            showXpLoadingScreen(() => proceedToLogon());
         }
     }
 
@@ -1188,6 +1250,14 @@ function launchFile(fileName, dirPath = null) {
         else if (lower.includes('cmd') || lower.includes('terminal')) launchApplication('start-link-prompt');
         else if (lower.includes('mines')) launchApplication('start-link-mines');
         else if (lower.includes('player')) launchApplication('start-link-media');
+        else if (lower.includes('calc')) launchApplication('start-link-calc');
+        else if (lower.includes('snake')) launchApplication('start-link-snake');
+        else if (lower.includes('task') || lower.includes('mgr')) launchApplication('start-link-taskmgr');
+        else if (lower.includes('solitaire')) launchApplication('start-link-solitaire');
+        else if (lower.includes('chess')) launchApplication('start-link-chess');
+        else if (lower.includes('courgette') || lower.includes('info')) launchApplication('start-link-courgette');
+        else if (lower.includes('viewer')) launchApplication('start-link-viewer');
+        else if (lower.includes('vm') || lower.includes('zebvm')) launchApplication('start-link-vm');
         else launchApplication('start-link-text-editor', fileName, targetPath);
         return;
     }
