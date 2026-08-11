@@ -753,29 +753,46 @@ export function getActiveFolderContext(explicitPath = null) {
     return getVfsNodeByPath(systemState.currentDirectory) || systemState.fileSystem;
 }
 
-export function saveFileToVfsPath(filePathOrName, fileContent, defaultDir = null) {
-    if (!filePathOrName) return false;
-    let cleanPath = String(filePathOrName).trim().replace(/^Z:\\?/i, '').replace(/\\/g, '/');
-    let dirPath = "";
-    let fileName = cleanPath;
+export function saveFileToVfsPath(vfsPathOrName, filenameOrContent, dataUrlOrDefaultDir = null) {
+    if (!vfsPathOrName) return false;
 
-    if (cleanPath.includes('/')) {
-        const parts = cleanPath.split('/');
-        fileName = parts.pop();
-        dirPath = parts.join('/');
-    } else if (defaultDir) {
-        dirPath = defaultDir;
+    let dirPath = "";
+    let fileName = "";
+    let content = "";
+
+    // Signature A: saveFileToVfsPath(vfsPath, filename, dataUrl)
+    if (typeof filenameOrContent === 'string' && dataUrlOrDefaultDir && typeof dataUrlOrDefaultDir === 'string' && (dataUrlOrDefaultDir.startsWith('data:') || dataUrlOrDefaultDir.length > 30)) {
+        dirPath = vfsPathOrName;
+        fileName = filenameOrContent;
+        content = dataUrlOrDefaultDir;
     } else {
-        dirPath = systemState.currentDirectory;
+        // Signature B: saveFileToVfsPath(filePathOrName, fileContent, defaultDir)
+        let cleanPath = String(vfsPathOrName).trim().replace(/^Z:\\?/i, '').replace(/\\/g, '/');
+        content = filenameOrContent;
+        if (cleanPath.includes('/')) {
+            const parts = cleanPath.split('/');
+            fileName = parts.pop();
+            dirPath = parts.join('/');
+        } else if (dataUrlOrDefaultDir && typeof dataUrlOrDefaultDir === 'string') {
+            dirPath = dataUrlOrDefaultDir;
+            fileName = cleanPath;
+        } else {
+            dirPath = systemState.currentDirectory;
+            fileName = cleanPath;
+        }
     }
 
     const dirNode = getVfsNodeByPath(dirPath);
     if (dirNode) {
-        dirNode[fileName] = { type: "file", content: fileContent };
+        let finalName = fileName;
+        if (typeof getUniqueVfsFilename === 'function') {
+            finalName = getUniqueVfsFilename(dirNode, fileName);
+        }
+        dirNode[finalName] = { type: "file", content: content };
         saveFileSystem();
         refreshOpenExplorer();
         renderDesktopIcons();
-        return true;
+        return finalName;
     }
     return false;
 }
@@ -2047,19 +2064,7 @@ export function getUniqueVfsFilename(targetContext, originalFilename) {
     return newFilename;
 }
 
-export function saveFileToVfsPath(vfsPath, filename, dataUrl) {
-    const targetContext = getVfsNodeByPath(vfsPath);
-    let finalSavedName = filename;
-    if (targetContext) {
-        finalSavedName = getUniqueVfsFilename(targetContext, filename);
-        targetContext[finalSavedName] = { type: "file", content: dataUrl };
-        saveFileSystem();
-    }
-    const activeExp = document.querySelector('.explorer-grid');
-    if (activeExp) renderZebExplorer(activeExp.parentElement);
-    renderDesktopIcons();
-    return finalSavedName;
-}
+// (saveFileToVfsPath is exported above at VFS section)
 
 export function showSaveFileDialog(defaultName, onSaveCallback) {
     const currentUser = systemState.currentUser || "Guest";
