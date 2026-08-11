@@ -1736,6 +1736,43 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
             break;
         }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+
+        case 'start-link-activitycenter': {
+    	const winId = 'app-activitycenter';
+    	try {
+        const module = await import(`./programs/activitycenter.js?v=${Date.now()}`);
+        const acBody = createWindow("Activity Center", "activitycenter", winId);
+        if (acBody) {
+            setWindowBounds(acBody, 860, 560);
+
+            window.launchApplicationFromActivityCenter = (targetAppId) => {
+                if (!targetAppId || targetAppId === 'start-link-activitycenter') return;
+                launchApplication(targetAppId);
+            };
+
+            const acInstance = new module.ActivityCenterApp(() => closeWindow(winId));
+            registerWindowCleanup(winId, () => {
+                acInstance.cleanup();
+                if (window.launchApplicationFromActivityCenter) {
+                    delete window.launchApplicationFromActivityCenter;
+                }
+            });
+            acInstance.open(acBody);
+        }
+    } catch (err) {
+        logKernel(`Kernel Error: Failed to mount activitycenter.js (${err.message})`, "ERROR");
+    }
+    break;
+}
+
+        case 'start-link-shutdown':
+            alert("ZebOS Shutdown Sequence Initiated.");
+            break;
+=======
+>>>>>>> Stashed changes
         case 'start-link-run': {
             const winId = 'app-run';
             try {
@@ -1816,6 +1853,10 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
             }
             break;
         }
+<<<<<<< Updated upstream
+=======
+>>>>>>> a8aa7db5b2723a4c70e95c76ede99bb6bb12a506
+>>>>>>> Stashed changes
 
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
@@ -2035,6 +2076,7 @@ const DESKTOP_SHORTCUTS = [
     { id: 'start-link-taskmgr', icon: 'taskmgr', label: 'Task Manager' },
     { id: 'start-link-solitaire', icon: 'solitaire', label: 'Solitaire' },
     { id: 'start-link-chess', icon: 'chess', label: 'Chess' }
+    { id: 'start-link-activitycenter', icon: 'activitycenter', label: 'Activity Center' },
 ];
 
 export function showOsPrompt(title, message, defaultValue = "", onConfirm = null) {

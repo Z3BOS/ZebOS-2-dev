@@ -510,7 +510,19 @@ const SVGS = {
             <path d="M12 6C10.9 6 10 6.9 10 8C10 8.6 10.3 9.1 10.7 9.5L9.5 16H14.5L13.3 9.5C13.7 9.1 14 8.6 14 8C14 6.9 13.1 6 12 6Z" fill="#c62828" stroke="#000000" stroke-width="0.8"/>
             <rect x="9" y="16" width="6" height="2" fill="#c62828" stroke="#000000" stroke-width="0.8"/>
         </svg>
-    `
+    `,
+activitycenter: `
+    <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="3" width="20" height="18" rx="1.5" fill="#c0c0c0" stroke="#000000" stroke-width="1.3"/>
+        <rect x="3.5" y="4.5" width="17" height="4" fill="#000080"/>
+        <rect x="5" y="10" width="6" height="4" fill="#ffffff" stroke="#808080" stroke-width="0.8"/>
+        <rect x="13" y="10" width="6" height="4" fill="#ffffff" stroke="#808080" stroke-width="0.8"/>
+        <rect x="5" y="16" width="14" height="3" fill="#008080" stroke="#004c4c" stroke-width="0.8"/>
+        <circle cx="7" cy="6.5" r="0.9" fill="#55ff55"/>
+        <circle cx="10" cy="6.5" r="0.9" fill="#ffeb3b"/>
+        <circle cx="13" cy="6.5" r="0.9" fill="#ff5555"/>
+    </svg>
+`,
 };
 
 export function getIcon(name, customClass = "") {
