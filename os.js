@@ -1542,15 +1542,42 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
     setTimeout(() => yesBtn.focus(), 50);
 }
 
+export function getUniqueVfsFilename(targetContext, originalFilename) {
+    if (!targetContext || !targetContext[originalFilename]) return originalFilename;
+
+    const lastDotIndex = originalFilename.lastIndexOf('.');
+    let baseName = originalFilename;
+    let ext = "";
+
+    if (lastDotIndex > 0) {
+        baseName = originalFilename.substring(0, lastDotIndex);
+        ext = originalFilename.substring(lastDotIndex);
+    }
+
+    const match = baseName.match(/^(.*?)(?:\s*\(\d+\))?$/);
+    const rootName = (match && match[1]) ? match[1].trim() : baseName;
+
+    let counter = 1;
+    let newFilename = `${rootName} (${counter})${ext}`;
+    while (targetContext[newFilename]) {
+        counter++;
+        newFilename = `${rootName} (${counter})${ext}`;
+    }
+    return newFilename;
+}
+
 export function saveFileToVfsPath(vfsPath, filename, dataUrl) {
     const targetContext = getVfsNodeByPath(vfsPath);
+    let finalSavedName = filename;
     if (targetContext) {
-        targetContext[filename] = { type: "file", content: dataUrl };
+        finalSavedName = getUniqueVfsFilename(targetContext, filename);
+        targetContext[finalSavedName] = { type: "file", content: dataUrl };
         saveFileSystem();
     }
     const activeExp = document.querySelector('.explorer-grid');
     if (activeExp) renderZebExplorer(activeExp.parentElement);
     renderDesktopIcons();
+    return finalSavedName;
 }
 
 export function showSaveFileDialog(defaultName, onSaveCallback) {

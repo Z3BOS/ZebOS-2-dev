@@ -121,6 +121,58 @@ const SVGS = {
             <path d="M4 17L9 11L14 16L16 14L20 18H4V17Z" fill="#43a047"/>
         </svg>
     `,
+    zoomIn: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="6" stroke="#000000" stroke-width="2" fill="none"/>
+            <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="#000000" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="10" y1="7" x2="10" y2="13" stroke="#000080" stroke-width="2" stroke-linecap="round"/>
+            <line x1="7" y1="10" x2="13" y2="10" stroke="#000080" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    `,
+    zoomOut: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="6" stroke="#000000" stroke-width="2" fill="none"/>
+            <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="#000000" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="7" y1="10" x2="13" y2="10" stroke="#000080" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    `,
+    zoomFit: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="1" stroke="#000080" stroke-width="1.8" fill="none"/>
+            <path d="M7 10V7H10" stroke="#000000" stroke-width="1.8"/>
+            <path d="M17 10V7H14" stroke="#000000" stroke-width="1.8"/>
+            <path d="M7 14V17H10" stroke="#000000" stroke-width="1.8"/>
+            <path d="M17 14V17H14" stroke="#000000" stroke-width="1.8"/>
+        </svg>
+    `,
+    rotCw: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4C16.4 4 20 7.6 20 12C20 16.4 16.4 20 12 20C8.5 20 5.5 17.8 4.4 14.5" stroke="#000080" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <polygon points="12,1 12,7 17,4" fill="#000080"/>
+        </svg>
+    `,
+    rotCcw: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4C7.6 4 4 7.6 4 12C4 16.4 7.6 20 12 20C15.5 20 18.5 17.8 19.6 14.5" stroke="#000080" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <polygon points="12,1 12,7 7,4" fill="#000080"/>
+        </svg>
+    `,
+    flipH: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="3" x2="12" y2="21" stroke="#808080" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <polygon points="4,12 8,8 8,16" fill="#000080"/>
+            <polygon points="20,12 16,8 16,16" fill="#000080"/>
+            <line x1="7" y1="12" x2="17" y2="12" stroke="#000080" stroke-width="1.8"/>
+        </svg>
+    `,
+    flipV: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="3" y1="12" x2="21" y2="12" stroke="#808080" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <polygon points="12,4 8,8 16,8" fill="#000080"/>
+            <polygon points="12,20 8,16 16,16" fill="#000080"/>
+            <line x1="12" y1="7" x2="12" y2="17" stroke="#000080" stroke-width="1.8"/>
+        </svg>
+    `,
     courgette: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M7 19C4 16 3 11 5 7C7 3 12 2 16 4C19 6 21 11 19 16C17 20 11 21 7 19Z" fill="#2e7d32" stroke="#1b5e20" stroke-width="1.5"/>

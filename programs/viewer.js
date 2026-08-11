@@ -134,10 +134,10 @@ export class ZebViewerApp {
                             <div class="viewer-dropdown-option opt-zoom-100"><span>100% Actual Size</span><span style="opacity:0.6;">1:1</span></div>
                             <div class="viewer-dropdown-option opt-zoom-fit"><span>Fit Window</span><span style="opacity:0.6;">Fit</span></div>
                             <div style="height:1px; background:#808080; margin:2px 0;"></div>
-                            <div class="viewer-dropdown-option opt-rot-cw"><span>Rotate 90° CW</span><span style="opacity:0.6;">↻</span></div>
-                            <div class="viewer-dropdown-option opt-rot-ccw"><span>Rotate 90° CCW</span><span style="opacity:0.6;">↺</span></div>
-                            <div class="viewer-dropdown-option opt-flip-h"><span>Flip Horizontal</span><span style="opacity:0.6;">⇆</span></div>
-                            <div class="viewer-dropdown-option opt-flip-v"><span>Flip Vertical</span><span style="opacity:0.6;">⇅</span></div>
+                            <div class="viewer-dropdown-option opt-rot-cw"><span>Rotate 90° CW</span><span style="opacity:0.6;">[R]</span></div>
+                            <div class="viewer-dropdown-option opt-rot-ccw"><span>Rotate 90° CCW</span><span style="opacity:0.6;">[Shift+R]</span></div>
+                            <div class="viewer-dropdown-option opt-flip-h"><span>Flip Horizontal</span><span style="opacity:0.6;">[H]</span></div>
+                            <div class="viewer-dropdown-option opt-flip-v"><span>Flip Vertical</span><span style="opacity:0.6;">[V]</span></div>
                             <div style="height:1px; background:#808080; margin:2px 0;"></div>
                             <div class="viewer-dropdown-option opt-reset"><span>Reset View</span></div>
                         </div>
@@ -157,15 +157,15 @@ export class ZebViewerApp {
 
                 <!-- 2. Retro Control Toolbar -->
                 <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:3px 6px; display:flex; align-items:center; gap:4px; flex-shrink:0;">
-                    <button class="viewer-tb-btn btn-zoom-in" title="Zoom In (+)">🔍+</button>
-                    <button class="viewer-tb-btn btn-zoom-out" title="Zoom Out (-)">🔍-</button>
+                    <button class="viewer-tb-btn btn-zoom-in" title="Zoom In (+)"><span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('zoomIn')}</span> Zoom In</button>
+                    <button class="viewer-tb-btn btn-zoom-out" title="Zoom Out (-)"><span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('zoomOut')}</span> Zoom Out</button>
                     <button class="viewer-tb-btn btn-zoom-100" title="100% Size">1:1</button>
-                    <button class="viewer-tb-btn btn-zoom-fit" title="Fit to Window">📐 Fit</button>
+                    <button class="viewer-tb-btn btn-zoom-fit" title="Fit to Window"><span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('zoomFit')}</span> Fit</button>
                     <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
-                    <button class="viewer-tb-btn btn-rot-ccw" title="Rotate Left 90°">↺</button>
-                    <button class="viewer-tb-btn btn-rot-cw" title="Rotate Right 90°">↻</button>
-                    <button class="viewer-tb-btn btn-flip-h" title="Flip Horizontal">⇆</button>
-                    <button class="viewer-tb-btn btn-flip-v" title="Flip Vertical">⇅</button>
+                    <button class="viewer-tb-btn btn-rot-ccw" title="Rotate Left 90°"><span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('rotCcw')}</span></button>
+                    <button class="viewer-tb-btn btn-rot-cw" title="Rotate Right 90°"><span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('rotCw')}</span></button>
+                    <button class="viewer-tb-btn btn-flip-h" title="Flip Horizontal"><span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('flipH')}</span></button>
+                    <button class="viewer-tb-btn btn-flip-v" title="Flip Vertical"><span style="width:14px;height:14px;display:inline-flex;align-items:center;">${getIcon('flipV')}</span></button>
                     <div style="width:1px; height:18px; background:#808080; margin:0 2px;"></div>
                     <button class="viewer-tb-btn btn-reset" title="Reset View">Reset</button>
                 </div>
