@@ -1,4 +1,4 @@
-// programs/editor.js - ZebOS 2 Pro Retro Text Editor (Notepad)
+// programs/editor.js - ZebOS 2 Retro Text Editor (Notepad)
 import { getIcon } from '../icons.js';
 import { showOsPrompt } from '../os.js';
 
@@ -524,7 +524,7 @@ export class TextEditor {
                     <div style="width:36px; height:36px; flex-shrink:0;">${getIcon('editor')}</div>
                     <div>
                         <div style="font-weight:bold; font-size:14px; color:#000080;">ZebOS Text Editor</div>
-                        <div style="font-size:11px; color:#555;">Version 2.5.0 (Build 2026)</div>
+                        <div style="font-size:11px; color:#555;">Version 2.6.0 (Build 2026)</div>
                     </div>
                 </div>
                 <div style="height:1px; background:#808080; border-bottom:1px solid #fff;"></div>

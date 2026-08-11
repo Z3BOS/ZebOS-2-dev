@@ -1,6 +1,6 @@
-// programs/paint.js - ZebPaint Studio Pro
+// programs/paint.js - Paint Studio
 import { getIcon } from '../icons.js';
-import { showOsPrompt, showOsConfirm } from '../os.js';
+import { showOsConfirm, showSaveFileDialog, saveFileToVfsPath } from '../os.js';
 
 export class PaintApp {
     constructor(onCloseRequest, saveToVFS) {
@@ -27,7 +27,7 @@ export class PaintApp {
         this.currentSize = 6;
         this.currentOpacity = 100; // 1-100
         this.currentHardness = 80; // 0-100
-        this.currentSmoothness = 30; // 0-100
+        this.currentSmoothness = 0; // 0% default (raw mouse)
 
         // Drawing state
         this.isDrawing = false;
@@ -109,25 +109,28 @@ export class PaintApp {
                     font-size: 11px;
                 }
                 .paint-menu-drop-opt:hover {
-                    background-color: #000080;
-                    color: #ffffff;
+                    background-color: #000080 !important;
+                    color: #ffffff !important;
+                }
+                .paint-menu-drop-opt:hover span {
+                    color: #ffffff !important;
                 }
             </style>
             <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; box-sizing:border-box; user-select:none; font-family:Arial, sans-serif; overflow:hidden;">
                 
                 <!-- 1. Win95 Standard Menubar (File, Edit, Layer, Help) -->
-                <div class="paint-menubar" style="display:flex; gap:2px; padding:2px 4px; background:#c0c0c0; border-bottom:1px solid #808080; font-size:12px; position:relative; z-index:100; flex-shrink:0;">
+                <div class="paint-menubar" style="display:flex; gap:2px; padding:2px 4px; background:#c0c0c0; border-bottom:1px solid #808080; font-size:12px; position:relative; z-index:500; flex-shrink:0;">
                     
                     <!-- File Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="paint-menu-btn" data-menu="file" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>F</u>ile</span>
-                        <div class="paint-dropdown" id="menu-file-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:180px; padding:2px 0;">
+                        <div class="paint-dropdown" id="menu-file-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; min-width:180px; padding:2px 0;">
                             <div class="paint-menu-drop-opt opt-new"><span>New</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+N</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
                             <div class="paint-menu-drop-opt opt-save"><span>Save to ZebOS</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+S</span></div>
                             <div class="paint-menu-drop-opt opt-saveas"><span>Save As to ZebOS...</span><span style="font-size:10px; color:#666; margin-left:16px;">F3</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
-                            <div class="paint-menu-drop-opt opt-savepc" style="font-weight:bold; color:#000080;"><span>Save to PC (Export)...</span><span style="font-size:10px; color:#666; margin-left:12px;">Device</span></div>
+                            <div class="paint-menu-drop-opt opt-savepc"><span>Save to PC (Export)...</span><span style="font-size:10px; opacity:0.8; margin-left:12px;">Device</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
                             <div class="paint-menu-drop-opt opt-exit"><span>Exit</span><span style="font-size:10px; color:#666; margin-left:16px;">Esc</span></div>
                         </div>
@@ -136,7 +139,7 @@ export class PaintApp {
                     <!-- Edit Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="paint-menu-btn" data-menu="edit" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>E</u>dit</span>
-                        <div class="paint-dropdown" id="menu-edit-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                        <div class="paint-dropdown" id="menu-edit-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; min-width:160px; padding:2px 0;">
                             <div class="paint-menu-drop-opt opt-undo"><span>Undo</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+Z</span></div>
                             <div class="paint-menu-drop-opt opt-redo"><span>Redo</span><span style="font-size:10px; color:#666; margin-left:16px;">Ctrl+Y</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
@@ -147,7 +150,7 @@ export class PaintApp {
                     <!-- Layer Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="paint-menu-btn" data-menu="layer" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>L</u>ayer</span>
-                        <div class="paint-dropdown" id="menu-layer-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                        <div class="paint-dropdown" id="menu-layer-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; min-width:160px; padding:2px 0;">
                             <div class="paint-menu-drop-opt opt-add-layer"><span>+ New Layer</span></div>
                             <div class="paint-menu-drop-opt opt-del-layer"><span>- Delete Active Layer</span></div>
                             <div style="height:1px; background:#808080; margin:3px 1px; border-bottom:1px solid #fff;"></div>
@@ -158,24 +161,24 @@ export class PaintApp {
                     <!-- Help Menu -->
                     <div class="menu-item-wrap" style="position:relative;">
                         <span class="paint-menu-btn" data-menu="help" style="padding:2px 8px; cursor:pointer; display:inline-block;"><u>H</u>elp</span>
-                        <div class="paint-dropdown" id="menu-help-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:99999; min-width:160px; padding:2px 0;">
+                        <div class="paint-dropdown" id="menu-help-drop" style="display:none; position:absolute; top:100%; left:0; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; min-width:160px; padding:2px 0;">
                             <div class="paint-menu-drop-opt opt-about"><span>About ZebPaint Studio</span></div>
                         </div>
                     </div>
 
                     <div style="margin-left:auto; display:flex; align-items:center; gap:6px; font-size:11px; color:#555; padding-right:6px;">
-                        <span style="font-weight:bold; color:#000080;">ZebPaint Studio Pro</span>
+                        <span style="font-weight:bold; color:#000080;">Paint Studio</span>
                         <span style="font-size:10px; background:#e0e0e0; padding:1px 4px; border:1px solid #a0a0a0;">v2.6</span>
                     </div>
                 </div>
 
                 <!-- 2. Retro Property Toolbar (Brush Type, Size, Smoothness, Hardness, Opacity) -->
-                <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:5px 8px; display:flex; align-items:center; gap:12px; font-size:11px; flex-shrink:0; position:relative; z-index:90; overflow-x:auto;">
+                <div style="background:#c0c0c0; border-bottom:2px solid #808080; padding:5px 8px; display:flex; align-items:center; gap:12px; font-size:11px; flex-shrink:0; position:relative; z-index:200; overflow:visible;">
                     
                     <!-- Brush Selector Custom Win95 Dropdown -->
                     <div style="display:flex; align-items:center; gap:4px; position:relative; flex-shrink:0;">
                         <span style="font-weight:bold;">Brush:</span>
-                        <div class="w95-dropdown" id="paint-brush-dropdown" data-value="round" style="position:relative; width:140px;">
+                        <div class="w95-dropdown" id="paint-brush-dropdown" data-value="round" style="position:relative; width:140px; z-index:201;">
                             <div class="w95-drop-display" style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:2px 6px; cursor:pointer; font-size:11px; height:22px; box-sizing:border-box;">
                                 <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
                                     <canvas class="brush-preview-thumb-head" width="24" height="14" style="background:#eee; border:1px solid #a0a0a0; flex-shrink:0;"></canvas>
@@ -183,7 +186,7 @@ export class PaintApp {
                                 </div>
                                 <span style="font-size:8px; line-height:1; flex-shrink:0; margin-left:4px;">▼</span>
                             </div>
-                            <div class="w95-drop-list" style="display:none; position:absolute; top:100%; left:0; width:160px; background:#c0c0c0; border:1px solid #000; box-shadow:3px 3px 6px rgba(0,0,0,0.5); z-index:99999; box-sizing:border-box; margin-top:1px;">
+                            <div class="w95-drop-list" style="display:none; position:absolute; top:100%; left:0; width:170px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:3px 3px 8px rgba(0,0,0,0.5); z-index:999999; box-sizing:border-box; margin-top:1px; padding:2px 0;">
                                 ${[
                                     { value: 'round', label: 'Round Pen', desc: 'Solid continuous pen' },
                                     { value: 'soft', label: 'Soft Brush', desc: 'Feathered soft gradient' },
@@ -215,8 +218,8 @@ export class PaintApp {
                     <!-- Smoothness Slider -->
                     <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;" title="Stroke smoothing">
                         <span style="font-weight:bold;">Smooth:</span>
-                        <input type="range" class="w95-slider" id="paint-smooth-range" min="0" max="100" value="30" style="width:70px;">
-                        <span id="paint-smooth-val" class="w95-sunken-val">30%</span>
+                        <input type="range" class="w95-slider" id="paint-smooth-range" min="0" max="100" value="0" style="width:70px;">
+                        <span id="paint-smooth-val" class="w95-sunken-val">0%</span>
                     </div>
 
                     <!-- Hardness Slider -->
@@ -375,17 +378,12 @@ export class PaintApp {
 
         this.bodyElement.querySelector('.opt-save').addEventListener('click', () => {
             closeAllMenus();
-            this.saveToZebOS(this.activeFileName);
+            this.openSaveAsDialog();
         });
 
         this.bodyElement.querySelector('.opt-saveas').addEventListener('click', () => {
             closeAllMenus();
-            showOsPrompt("Save As to ZebOS", "Enter filename to save artwork to ZebOS storage:", this.activeFileName, (filename) => {
-                if (filename) {
-                    this.activeFileName = filename;
-                    this.saveToZebOS(filename);
-                }
-            });
+            this.openSaveAsDialog();
         });
 
         this.bodyElement.querySelector('.opt-savepc').addEventListener('click', () => {
@@ -411,14 +409,18 @@ export class PaintApp {
         // Help Menu Handler
         this.bodyElement.querySelector('.opt-about').addEventListener('click', () => {
             closeAllMenus();
-            showOsConfirm("About ZebPaint Studio Pro", "ZebPaint Studio Pro v2.6\n\nAdvanced retro image editor with multi-layer rendering, visual brush drop-downs, Bezier curve smoothing, and dual VFS/PC export support.\n\nCreated for ZebOS 2.");
+            showOsConfirm("About Paint Studio", "Paint Studio v2.6\n\nAdvanced retro image editor with multi-layer rendering, visual brush drop-downs, Bezier curve smoothing, and dual VFS/PC export support.\n\nCreated for ZebOS 2.");
         });
     }
 
-    saveToZebOS(filename) {
-        const dataUrl = this.mainCanvas.toDataURL("image/png");
-        if (this.saveToVFS) this.saveToVFS(filename, dataUrl);
-        showOsConfirm("Artwork Saved to ZebOS", `'${filename}' has been saved to your active ZebOS folder.`);
+    openSaveAsDialog() {
+        showSaveFileDialog(this.activeFileName, (filename, vfsFolder) => {
+            this.activeFileName = filename;
+            const dataUrl = this.mainCanvas.toDataURL("image/png");
+            saveFileToVfsPath(vfsFolder, filename, dataUrl);
+            const folderLabel = vfsFolder || "ZebRoot (Z:)";
+            showOsConfirm("Artwork Saved to ZebOS", `'${filename}' has been saved successfully to '${folderLabel}'.`);
+        });
     }
 
     exportToPC() {
@@ -672,6 +674,16 @@ export class PaintApp {
                 brushWrap.dataset.value = item.dataset.value;
                 brushLabel.textContent = item.querySelector('span').textContent.trim();
                 brushList.style.display = 'none';
+
+                // Synchronize active tool button with selected brush type
+                const toolBtns = this.bodyElement.querySelectorAll('.paint-tool-btn');
+                if (item.dataset.value === 'eraser') {
+                    this.currentTool = 'eraser';
+                    toolBtns.forEach(b => b.classList.toggle('active-tool', b.dataset.tool === 'eraser'));
+                } else {
+                    this.currentTool = 'brush';
+                    toolBtns.forEach(b => b.classList.toggle('active-tool', b.dataset.tool === 'brush'));
+                }
                 this.renderBrushHeadThumb();
             });
         });
@@ -810,15 +822,27 @@ export class PaintApp {
 
     handleMouseDown(e) {
         if (e.button !== 0) return;
-        const activeLayer = this.getActiveLayer();
-        if (!activeLayer || !activeLayer.visible) return;
+        
+        this.isDrawing = false;
+        let activeLayer = this.getActiveLayer();
+        if (!activeLayer) {
+            this.addLayer("Layer 1");
+            activeLayer = this.getActiveLayer();
+        }
 
-        this.isDrawing = true;
+        // Auto-enable visibility if drawing on a hidden layer so strokes are never lost
+        if (!activeLayer.visible) {
+            activeLayer.visible = true;
+            this.renderComposite();
+            this.renderLayersUI();
+        }
+
         const coords = this.getCanvasCoords(e);
         this.lastX = coords.x;
         this.lastY = coords.y;
         this.startX = coords.x;
         this.startY = coords.y;
+        this.isDrawing = true;
 
         if (this.currentTool === 'fill') {
             this.floodFill(Math.floor(coords.x), Math.floor(coords.y), this.currentColor);
@@ -846,9 +870,19 @@ export class PaintApp {
         if (!activeLayer) return;
 
         if (this.currentTool === 'brush' || this.currentTool === 'eraser') {
-            this.drawContinuousStroke(activeLayer.ctx, this.lastX, this.lastY, coords.x, coords.y);
-            this.lastX = coords.x;
-            this.lastY = coords.y;
+            if (this.currentSmoothness > 0) {
+                // Stabilizer lerp factor: 0% = 1.0 (instant), 100% = 0.12 (heavy smooth lazy rope catch-up)
+                const lerpFactor = 1.0 - (this.currentSmoothness / 100) * 0.88;
+                const nextX = this.lastX + (coords.x - this.lastX) * lerpFactor;
+                const nextY = this.lastY + (coords.y - this.lastY) * lerpFactor;
+                this.drawContinuousStroke(activeLayer.ctx, this.lastX, this.lastY, nextX, nextY);
+                this.lastX = nextX;
+                this.lastY = nextY;
+            } else {
+                this.drawContinuousStroke(activeLayer.ctx, this.lastX, this.lastY, coords.x, coords.y);
+                this.lastX = coords.x;
+                this.lastY = coords.y;
+            }
             this.renderComposite();
         } else if (['line', 'rect', 'frect', 'circle', 'fcircle'].includes(this.currentTool)) {
             // Restore snapshot for dynamic preview
@@ -866,13 +900,15 @@ export class PaintApp {
 
     // High-Density Sub-Pixel Interpolated Stroke Rendering (100% Solid & Gapless)
     drawContinuousStroke(ctx, x1, y1, x2, y2) {
-        const tool = (this.currentTool === 'eraser') ? 'eraser' : this.currentBrushType;
-        const size = this.currentSize;
-        const opacity = (this.currentOpacity / 100);
-        const hardness = (this.currentHardness / 100);
-        const color = this.currentColor;
+        if (!ctx) return;
+        const tool = (this.currentTool === 'eraser') ? 'eraser' : (this.currentBrushType || 'round');
+        const size = Math.max(1, isNaN(this.currentSize) ? 6 : Number(this.currentSize));
+        const opacity = Math.max(0.01, Math.min(1.0, isNaN(this.currentOpacity) ? 1.0 : (Number(this.currentOpacity) / 100)));
+        const hardness = Math.max(0, Math.min(1.0, isNaN(this.currentHardness) ? 0.8 : (Number(this.currentHardness) / 100)));
+        const color = this.currentColor || '#000000';
 
         ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
 
         if (tool === 'eraser') {
             ctx.globalCompositeOperation = 'destination-out';
@@ -1118,7 +1154,7 @@ export class PaintApp {
             this.redo();
         } else if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
             e.preventDefault();
-            this.saveToZebOS(this.activeFileName);
+            this.openSaveAsDialog();
         } else if (e.ctrlKey && (e.key === 'n' || e.key === 'N')) {
             e.preventDefault();
             this.createNewCanvas();

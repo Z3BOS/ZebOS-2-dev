@@ -1,4 +1,4 @@
-// programs/mines.js - ZebOS 2 Pro Retro Minesweeper Application
+// programs/mines.js - ZebOS 2 Retro Minesweeper Application
 import { getIcon } from '../icons.js';
 
 export class MinesweeperGame {
