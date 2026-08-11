@@ -297,7 +297,7 @@ export class ZebTerminal {
                 break;
 
             case 'ver':
-                this.println(`ZebOS 2 (Alpha Build 2.6.0)`);
+                this.println(`ZebOS 2 (Beta Build 2.6.0 "Fawn")`);
                 break;
 
             case 'date':
@@ -371,12 +371,13 @@ export class ZebTerminal {
         const secs = uptimeSec % 60;
 
         const ascii = `
- <span style="color:#00ffff; font-weight:bold;">  _____  ______ _____   ____   _____  ___ </span>
- <span style="color:#00ffff; font-weight:bold;"> / _  / / __  // __  \\ / __ \\ / ___/ |__ \\</span>
- <span style="color:#00aaff; font-weight:bold;">/ /_/ / / ___// /_/ // /_/ /(____ \\  __/ /</span>
- <span style="color:#00aaff; font-weight:bold;">/___/\\_\\/____/ \\____/ \\____//____/ /____/ </span>
+<span style="color:#00ffff; font-weight:bold;">█████ █████ ████. .███. .████</span>
+<span style="color:#00ccff; font-weight:bold;">....█ █.... █...█ █...█ █....</span>
+<span style="color:#00aaff; font-weight:bold;">...█. ████. ████. █...█ .███.</span>
+<span style="color:#0088ff; font-weight:bold;">..█.. █.... █...█ █...█ ....█</span>
+<span style="color:#0066ff; font-weight:bold;">█████ █████ ████. .███. ████.</span>
 
-<span style="color:#ffff55;">OS:</span>         ZebOS 2 (Alpha Build 2.6.0)
+<span style="color:#ffff55;">OS:</span>         ZebOS 2 (Beta Build 2.6.0)
 <span style="color:#ffff55;">Codename:</span>   "${this.shell.getCodename()}"
 <span style="color:#ffff55;">Kernel:</span>     ZebOS VFS Hardened Engine v2.6.0
 <span style="color:#ffff55;">User:</span>       ${this.shell.getUsername()}
@@ -389,17 +390,21 @@ export class ZebTerminal {
     }
 
     renderTaskManager() {
-        const windows = Array.from(document.querySelectorAll('.app-window')).map((w, idx) => {
-            const title = w.querySelector('.window-title')?.textContent || 'App Window';
-            return `  ${1000 + idx * 4}  ${title.padEnd(24)}  Running   0.${Math.floor(Math.random()*9)}%   ${12 + idx * 4} MB`;
+        const rows = Array.from(document.querySelectorAll('.window-frame')).map((w, idx) => {
+            const title = w.querySelector('.window-title')?.textContent.trim() || '(Untitled)';
+            const status = w.classList.contains('active-window') ? 'Running' : 'Background';
+            const pid = w.id ? w.id.slice(4) : `app-${idx}`;
+            return `  ${pid.padEnd(13)} ${title.padEnd(24)}  ${status.padEnd(9)} 0.${Math.floor(Math.random()*9)}%   ${12 + idx * 4} MB`;
         });
 
-        this.println("PID   PROCESS NAME              STATUS    CPU%    RAM", "#55ffff");
-        this.println("-------------------------------------------------------");
-        this.println("  1000  Desktop Shell Engine      Running   0.2%    18 MB");
-        this.println("  1004  VFS LocalStorage Daemon   Running   0.1%     8 MB");
-        if (windows.length) windows.forEach(w => this.println(w));
-        this.println("-------------------------------------------------------");
+        this.println("PID           PROCESS NAME              STATUS    CPU%    RAM", "#55ffff");
+        this.println("---------------------------------------------------------------");
+        if (rows.length) {
+            rows.forEach(r => this.println(r));
+        } else {
+            this.println("  No application windows are currently open.");
+        }
+        this.println("---------------------------------------------------------------");
     }
 
     startMatrix() {
