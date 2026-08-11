@@ -38,7 +38,7 @@ export class ZebTerminal {
         this.inputEl = this.bodyElement.querySelector('.term-input');
         this.promptEl = this.bodyElement.querySelector('.term-prompt');
 
-        this.println("ZebOS Terminal Shell [Version 2.5.1]");
+        this.println("ZebOS Terminal Shell [Version 2.6.0]");
         this.println("Type 'help' to view all available commands and CLI apps.\n");
         this.updatePrompt();
 
@@ -126,7 +126,6 @@ export class ZebTerminal {
                 this.println("  echo <text>          print text to output");
                 this.println("  edit <file>          open file in Text Editor");
                 this.println("  exit                 close terminal window");
-                this.println("  fortune              print a fortune quote");
                 this.println("  ls                   list directory contents");
                 this.println("  matrix               digital rain screen animation");
                 this.println("  mkdir <name>         create a new directory");
@@ -136,9 +135,14 @@ export class ZebTerminal {
                 this.println("  touch <name>         create an empty file");
                 this.println("  top / ps             active process task manager");
                 this.println("  ver                  print ZebOS build version");
-                this.println("  weather <city>       ASCII weather forecast");
                 this.println("  whoami               print logged in user");
-                this.println("  zebfetch             system diagnostics & ASCII logo");
+                this.println("  zebfetch             system diagnostics & ASCII logo, sort of like a subsitute for courgette");
+                if (this.shell.backup) {
+                    this.println("  backup                download a full system backup");
+                    this.println("  reinstall --confirm   wipe and reinstall ZebOS");
+                    this.println("  flags                 list system flags");
+                    this.println("  flag <name> <value>   set a system flag");
+                }
                 break;
 
             case 'zebfetch':
@@ -186,6 +190,7 @@ export class ZebTerminal {
                 break;
             }
 
+            /* We don't need these anymore.
             case 'weather': {
                 const city = args.join(' ') || 'New York';
                 this.println(`Weather report for ${city}:`, "#55ffff");
@@ -212,7 +217,7 @@ export class ZebTerminal {
                 this.println(choice, "#ff88ff");
                 break;
             }
-
+            */
             case 'color':
             case 'theme': {
                 const col = args[0]?.toLowerCase();
@@ -292,7 +297,7 @@ export class ZebTerminal {
                 break;
 
             case 'ver':
-                this.println(`ZebOS 2 (Alpha Build 2.5.1)`);
+                this.println(`ZebOS 2 (Beta Build 2.6.0 "Fawn")`);
                 break;
 
             case 'date':
@@ -311,6 +316,50 @@ export class ZebTerminal {
                 this.onCloseRequest();
                 break;
 
+            case 'backup': {
+                if (!this.shell.backup) { this.println(`zebsh: command not found: ${cmd}. Type 'help' for command list.`, "#ff5555"); break; }
+                const blob = new Blob([this.shell.backup()], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'zebos-backup.json';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+                this.println("Backup downloaded.", "#55ff55");
+                break;
+            }
+
+            case 'reinstall': {
+                if (!this.shell.reinstall) { this.println(`zebsh: command not found: ${cmd}. Type 'help' for command list.`, "#ff5555"); break; }
+                if (args[0] !== '--confirm') {
+                    this.println("This permanently erases all data. Re-run as: reinstall --confirm", "#ff5555");
+                    break;
+                }
+                this.shell.reinstall();
+                this.println("Fresh install complete.", "#55ff55");
+                break;
+            }
+
+            case 'flags': {
+                if (!this.shell.getFlags) { this.println(`zebsh: command not found: ${cmd}. Type 'help' for command list.`, "#ff5555"); break; }
+                Object.entries(this.shell.getFlags()).forEach(([k, v]) => this.println(`  ${k} = ${v}`));
+                break;
+            }
+
+            case 'flag': {
+                if (!this.shell.setFlag) { this.println(`zebsh: command not found: ${cmd}. Type 'help' for command list.`, "#ff5555"); break; }
+                if (args.length < 2) { this.println("usage: flag <name> <true|false|value>"); break; }
+                const [name, ...rest] = args;
+                let value = rest.join(' ');
+                if (value === 'true' || value === 'on') value = true;
+                else if (value === 'false' || value === 'off') value = false;
+                this.shell.setFlag(name, value);
+                this.println(`${name} set to ${value}`);
+                break;
+            }
+
             default:
                 this.println(`zebsh: command not found: ${cmd}. Type 'help' for command list.`, "#ff5555");
         }
@@ -322,15 +371,17 @@ export class ZebTerminal {
         const secs = uptimeSec % 60;
 
         const ascii = `
- <span style="color:#00ffff; font-weight:bold;">  _____  ______ _____   ____   _____  ___ </span>
- <span style="color:#00ffff; font-weight:bold;"> / _  / / __  // __  \\ / __ \\ / ___/ |__ \\</span>
- <span style="color:#00aaff; font-weight:bold;">/ /_/ / / ___// /_/ // /_/ /(____ \\  __/ /</span>
- <span style="color:#00aaff; font-weight:bold;">/___/\\_\\/____/ \\____/ \\____//____/ /____/ </span>
+<span style="color:#00ffff; font-weight:bold;">█████ █████ ████. .███. .████</span>
+<span style="color:#00ccff; font-weight:bold;">....█ █.... █...█ █...█ █....</span>
+<span style="color:#00aaff; font-weight:bold;">...█. ████. ████. █...█ .███.</span>
+<span style="color:#0088ff; font-weight:bold;">..█.. █.... █...█ █...█ ....█</span>
+<span style="color:#0066ff; font-weight:bold;">█████ █████ ████. .███. ████.</span>
 
-<span style="color:#ffff55;">OS:</span>         ZebOS 2 (Alpha Build 2.5.1)
-<span style="color:#ffff55;">Kernel:</span>     ZebOS VFS Hardened Engine v2.5.1
+<span style="color:#ffff55;">OS:</span>         ZebOS 2 (Beta Build 2.6.0)
+<span style="color:#ffff55;">Codename:</span>   "${this.shell.getCodename()}"
+<span style="color:#ffff55;">Kernel:</span>     ZebOS VFS Hardened Engine v2.6.0
 <span style="color:#ffff55;">User:</span>       ${this.shell.getUsername()}
-<span style="color:#ffff55;">Shell:</span>      ZebShell (zebsh) v2.5.1
+<span style="color:#ffff55;">Shell:</span>      ZebShell (zebsh) v2.6.0
 <span style="color:#ffff55;">Uptime:</span>     ${mins}m ${secs}s
 <span style="color:#ffff55;">Memory:</span>     512 MB / 2048 MB (VFS Persistent)
 <span style="color:#ffff55;">Palette:</span>    <span style="color:#000000; background:#000000;">  </span><span style="color:#ff5555; background:#ff5555;">  </span><span style="color:#55ff55; background:#55ff55;">  </span><span style="color:#ffff55; background:#ffff55;">  </span><span style="color:#5555ff; background:#5555ff;">  </span><span style="color:#ff55ff; background:#ff55ff;">  </span><span style="color:#55ffff; background:#55ffff;">  </span><span style="color:#ffffff; background:#ffffff;">  </span>
@@ -339,17 +390,21 @@ export class ZebTerminal {
     }
 
     renderTaskManager() {
-        const windows = Array.from(document.querySelectorAll('.app-window')).map((w, idx) => {
-            const title = w.querySelector('.window-title')?.textContent || 'App Window';
-            return `  ${1000 + idx * 4}  ${title.padEnd(24)}  Running   0.${Math.floor(Math.random()*9)}%   ${12 + idx * 4} MB`;
+        const rows = Array.from(document.querySelectorAll('.window-frame')).map((w, idx) => {
+            const title = w.querySelector('.window-title')?.textContent.trim() || '(Untitled)';
+            const status = w.classList.contains('active-window') ? 'Running' : 'Background';
+            const pid = w.id ? w.id.slice(4) : `app-${idx}`;
+            return `  ${pid.padEnd(13)} ${title.padEnd(24)}  ${status.padEnd(9)} 0.${Math.floor(Math.random()*9)}%   ${12 + idx * 4} MB`;
         });
 
-        this.println("PID   PROCESS NAME              STATUS    CPU%    RAM", "#55ffff");
-        this.println("-------------------------------------------------------");
-        this.println("  1000  Desktop Shell Engine      Running   0.2%    18 MB");
-        this.println("  1004  VFS LocalStorage Daemon   Running   0.1%     8 MB");
-        if (windows.length) windows.forEach(w => this.println(w));
-        this.println("-------------------------------------------------------");
+        this.println("PID           PROCESS NAME              STATUS    CPU%    RAM", "#55ffff");
+        this.println("---------------------------------------------------------------");
+        if (rows.length) {
+            rows.forEach(r => this.println(r));
+        } else {
+            this.println("  No application windows are currently open.");
+        }
+        this.println("---------------------------------------------------------------");
     }
 
     startMatrix() {

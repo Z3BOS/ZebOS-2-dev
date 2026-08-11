@@ -1,0 +1,470 @@
+// programs/taskmgr.js - ZebOS 2 Task Manager
+// Processes/Details tabs list real open app windows (scraped from the DOM, since
+// the shell keeps no central window registry) plus the OS's real always-on
+// subsystems (compositor, VFS engine, audio, clock, shell). CPU is a genuine
+// main-thread lag measurement (setInterval drift) and Memory is the browser's
+// real JS heap usage (performance.memory) - both sampled, never randomized.
+import { closeWindow } from '../os.js';
+import { getIcon } from '../icons.js';
+
+const SERVICES = [
+    { id: 'svc-compositor', name: 'Desktop Window Compositor', startup: 'Automatic', desc: 'Manages window rendering, dragging, resizing, and z-order' },
+    { id: 'svc-vfs', name: 'VFS Storage Engine', startup: 'Automatic', desc: 'Persists the virtual file system to browser storage' },
+    { id: 'svc-audio', name: 'System Audio Engine', startup: 'Automatic', desc: 'Plays UI sound effects' },
+    { id: 'svc-clock', name: 'System Clock Service', startup: 'Automatic', desc: 'Drives the taskbar clock' },
+    { id: 'svc-shell', name: 'Shell Controller', startup: 'Automatic', desc: 'Handles the Start Menu, taskbar, and window switching' },
+];
+
+const HISTORY_LEN = 60;
+const TICK_MS = 1000;
+
+export class TaskManagerApp {
+    constructor(onCloseRequest) {
+        this.onCloseRequest = onCloseRequest;
+        this.bodyElement = null;
+        this.activeTab = 'processes';
+        this.selectedId = null;
+        this.selectedEndable = false;
+        this.search = '';
+        this.sortKey = 'memory';
+        this.sortDir = 'desc';
+        this.perfMetric = 'cpu';
+        this.pollInterval = null;
+        this.boundKeyDown = (e) => this.handleKeyDown(e);
+        this.lastTickTime = null;
+        this.cpuHistory = [];
+        this.memHistory = [];
+        this.memSupported = typeof performance !== 'undefined' && !!performance.memory;
+        this.lastCpuPct = 0;
+        this.lastMemPct = 0;
+        this.lastMemUsedMB = 0;
+        this.lastMemLimitMB = 0;
+    }
+
+    open(bodyElement) {
+        this.bodyElement = bodyElement;
+        this.bodyElement.style.height = "100%";
+        window.addEventListener('keydown', this.boundKeyDown);
+        this.tick();
+        this.pollInterval = setInterval(() => this.tick(), TICK_MS);
+    }
+
+    cleanup() {
+        clearInterval(this.pollInterval);
+        window.removeEventListener('keydown', this.boundKeyDown);
+    }
+
+    handleKeyDown(e) {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            this.onCloseRequest();
+        }
+    }
+
+    // ---- real measurement, sampled once per tick ----
+    tick() {
+        const now = performance.now();
+        let cpuPct = 0;
+        if (this.lastTickTime != null) {
+            const drift = Math.max(0, (now - this.lastTickTime) - TICK_MS);
+            cpuPct = Math.min(100, (drift / TICK_MS) * 100 * 3);
+        }
+        this.lastTickTime = now;
+        this.cpuHistory.push(cpuPct);
+        if (this.cpuHistory.length > HISTORY_LEN) this.cpuHistory.shift();
+        this.lastCpuPct = cpuPct;
+
+        if (this.memSupported) {
+            const m = performance.memory;
+            this.lastMemUsedMB = m.usedJSHeapSize / 1048576;
+            this.lastMemLimitMB = m.jsHeapSizeLimit / 1048576;
+            this.lastMemPct = (m.usedJSHeapSize / m.jsHeapSizeLimit) * 100;
+        }
+        this.memHistory.push(this.lastMemPct);
+        if (this.memHistory.length > HISTORY_LEN) this.memHistory.shift();
+
+        this.render();
+    }
+
+    scanWindows() {
+        return Array.from(document.querySelectorAll('.window-frame')).map(el => {
+            const iconEl = el.querySelector('.win-title-icon');
+            const titleEl = el.querySelector('.window-title');
+            return {
+                id: el.id.slice(4),
+                icon: iconEl ? iconEl.innerHTML : '',
+                title: titleEl ? titleEl.textContent.trim() : '(Untitled)',
+                active: el.classList.contains('active-window')
+            };
+        });
+    }
+
+    // Splits the real measured CPU/Memory totals across rows by a fixed weight
+    // (foreground app > background app > background service). This is an
+    // allocation of a genuinely sampled total, not per-row randomness.
+    buildRows() {
+        const windows = this.scanWindows();
+        const appRows = windows.map(w => ({
+            kind: 'app', id: w.id, name: w.title, icon: w.icon,
+            status: w.active ? 'Running' : 'Suspended', weight: w.active ? 3 : 1, endable: true, desc: 'User application'
+        }));
+        const svcRows = SERVICES.map(s => ({
+            kind: 'service', id: s.id, name: s.name, icon: getIcon('settings'),
+            status: 'Running', weight: 0.4, endable: false, desc: s.desc
+        }));
+        const all = [...appRows, ...svcRows];
+        const totalWeight = all.reduce((sum, r) => sum + r.weight, 0) || 1;
+        all.forEach(r => {
+            r.cpu = this.lastCpuPct * (r.weight / totalWeight);
+            r.memory = this.lastMemUsedMB * (r.weight / totalWeight);
+        });
+        return all;
+    }
+
+    sortRows(rows) {
+        const dir = this.sortDir === 'asc' ? 1 : -1;
+        return [...rows].sort((a, b) => {
+            switch (this.sortKey) {
+                case 'name': return a.name.toLowerCase() < b.name.toLowerCase() ? -dir : a.name.toLowerCase() > b.name.toLowerCase() ? dir : 0;
+                case 'status': return a.status < b.status ? -dir : a.status > b.status ? dir : 0;
+                case 'id': return String(a.id) < String(b.id) ? -dir : String(a.id) > String(b.id) ? dir : 0;
+                case 'cpu': return (a.cpu - b.cpu) * dir;
+                case 'memory': return (a.memory - b.memory) * dir;
+                default: return 0;
+            }
+        });
+    }
+
+    escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    canEndSelected() {
+        return !!this.selectedId && !!this.selectedEndable;
+    }
+
+    // ---- render ----
+    render() {
+        if (!this.bodyElement) return;
+        const rows = this.buildRows();
+        const focusState = this.captureFocusState();
+
+        this.bodyElement.innerHTML = `
+            <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; font-family:Arial, sans-serif; box-sizing:border-box;">
+                ${this.renderTabBar()}
+                <div style="flex-grow:1; overflow:hidden; display:flex; flex-direction:column; min-height:0;">
+                    ${this.activeTab === 'processes' ? this.renderProcessesTab(rows) : ''}
+                    ${this.activeTab === 'performance' ? this.renderPerformanceTab() : ''}
+                    ${this.activeTab === 'details' ? this.renderDetailsTab(rows) : ''}
+                    ${this.activeTab === 'services' ? this.renderServicesTab() : ''}
+                </div>
+                ${this.renderStatusBar(rows)}
+            </div>
+        `;
+
+        this.bindEvents();
+        this.restoreFocusState(focusState);
+        if (this.activeTab === 'performance') this.drawPerformanceGraph();
+    }
+
+    captureFocusState() {
+        const el = this.bodyElement.querySelector('.taskmgr-search-input');
+        if (el && document.activeElement === el) {
+            return { selectionStart: el.selectionStart, selectionEnd: el.selectionEnd };
+        }
+        return null;
+    }
+
+    restoreFocusState(state) {
+        if (!state) return;
+        const el = this.bodyElement.querySelector('.taskmgr-search-input');
+        if (el) {
+            el.focus();
+            el.setSelectionRange(state.selectionStart, state.selectionEnd);
+        }
+    }
+
+    renderTabBar() {
+        const tabs = [
+            { id: 'processes', label: 'Processes' },
+            { id: 'performance', label: 'Performance' },
+            { id: 'details', label: 'Details' },
+            { id: 'services', label: 'Services' },
+        ];
+        return `
+            <div style="display:flex; flex-shrink:0; background:#c0c0c0; border-bottom:2px solid #808080; padding-top:4px; gap:2px; padding-left:4px;">
+                ${tabs.map(t => {
+                    const active = this.activeTab === t.id;
+                    return `<button class="taskmgr-tab-btn" data-tab="${t.id}" style="
+                        padding:5px 14px; font-size:12px; font-weight:${active ? 'bold' : 'normal'}; cursor:pointer;
+                        background:${active ? '#ffffff' : '#c0c0c0'};
+                        border:2px solid ${active ? '#ffffff' : '#c0c0c0'};
+                        border-right-color:${active ? '#808080' : '#808080'};
+                        border-bottom:${active ? '2px solid #ffffff' : '2px solid #808080'};
+                        margin-bottom:-2px; position:relative;
+                    ">${t.label}</button>`;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    renderSortableHeader(key, label, align = 'right') {
+        const active = this.sortKey === key;
+        const arrow = active ? (this.sortDir === 'asc' ? ' ▲' : ' ▼') : '';
+        return `<th data-sort="${key}" style="text-align:${align}; padding:4px 8px; cursor:pointer; user-select:none; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0; white-space:nowrap;">${label}${arrow}</th>`;
+    }
+
+    renderProcessesTab(rows) {
+        const search = this.search.toLowerCase();
+        const apps = this.sortRows(rows.filter(r => r.kind === 'app' && r.name.toLowerCase().includes(search)));
+        const svcs = this.sortRows(rows.filter(r => r.kind === 'service' && r.name.toLowerCase().includes(search)));
+
+        const row = (r) => `
+            <tr class="taskmgr-row" data-id="${r.id}" data-endable="${r.endable}" style="cursor:pointer; ${r.id === this.selectedId ? 'background:#000080; color:#ffffff;' : ''}">
+                <td style="padding:3px 8px; display:flex; align-items:center; gap:6px;">
+                    <span style="width:16px; height:16px; display:inline-flex; align-items:center; flex-shrink:0;">${r.icon}</span>
+                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.name}</span>
+                </td>
+                <td style="padding:3px 8px; text-align:right;">${r.status}</td>
+                <td style="padding:3px 8px; text-align:right;">${r.cpu.toFixed(1)}%</td>
+                <td style="padding:3px 8px; text-align:right;">${r.memory.toFixed(1)} MB</td>
+            </tr>
+        `;
+        const groupHeader = (label, count) => `<tr><td colspan="4" style="padding:4px 8px; font-weight:bold; background:#dddddd; border-top:1px solid #808080; border-bottom:1px solid #808080;">${label} (${count})</td></tr>`;
+
+        return `
+            <div style="padding:6px 8px; flex-shrink:0; background:#c0c0c0; border-bottom:1px solid #808080;">
+                <input type="text" class="taskmgr-search-input" placeholder="Search processes" value="${this.escapeHtml(this.search)}" style="width:100%; box-sizing:border-box; padding:3px 6px; font-size:12px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+            </div>
+            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:0 6px 6px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead><tr>${this.renderSortableHeader('name', 'Name', 'left')}${this.renderSortableHeader('status', 'Status')}${this.renderSortableHeader('cpu', 'CPU')}${this.renderSortableHeader('memory', 'Memory')}</tr></thead>
+                    <tbody>
+                        ${apps.length ? groupHeader('Apps', apps.length) + apps.map(row).join('') : ''}
+                        ${svcs.length ? groupHeader('Background processes', svcs.length) + svcs.map(row).join('') : ''}
+                        ${!apps.length && !svcs.length ? `<tr><td colspan="4" style="padding:16px; text-align:center; color:#666;">No matching processes.</td></tr>` : ''}
+                    </tbody>
+                </table>
+            </div>
+            <div style="padding:6px 8px; display:flex; justify-content:flex-end; gap:6px; flex-shrink:0;">
+                <button class="app-toolbar-btn taskmgr-end-task-btn" ${this.canEndSelected() ? '' : 'disabled'}>End Task</button>
+            </div>
+        `;
+    }
+
+    renderDetailsTab(rows) {
+        const search = this.search.toLowerCase();
+        const sorted = this.sortRows(rows.filter(r => r.name.toLowerCase().includes(search)));
+
+        const row = (r) => `
+            <tr class="taskmgr-row" data-id="${r.id}" data-endable="${r.endable}" style="cursor:pointer; ${r.id === this.selectedId ? 'background:#000080; color:#ffffff;' : ''}">
+                <td style="padding:3px 8px;">${r.id}</td>
+                <td style="padding:3px 8px;">${r.name}</td>
+                <td style="padding:3px 8px; text-align:right;">${r.status}</td>
+                <td style="padding:3px 8px; text-align:right;">${r.cpu.toFixed(1)}%</td>
+                <td style="padding:3px 8px; text-align:right;">${r.memory.toFixed(1)} MB</td>
+                <td style="padding:3px 8px;">${r.desc}</td>
+            </tr>
+        `;
+
+        return `
+            <div style="padding:6px 8px; flex-shrink:0; background:#c0c0c0; border-bottom:1px solid #808080;">
+                <input type="text" class="taskmgr-search-input" placeholder="Search processes" value="${this.escapeHtml(this.search)}" style="width:100%; box-sizing:border-box; padding:3px 6px; font-size:12px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+            </div>
+            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:0 6px 6px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead><tr>${this.renderSortableHeader('id', 'PID', 'left')}${this.renderSortableHeader('name', 'Name', 'left')}${this.renderSortableHeader('status', 'Status')}${this.renderSortableHeader('cpu', 'CPU')}${this.renderSortableHeader('memory', 'Memory')}<th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Description</th></tr></thead>
+                    <tbody>
+                        ${sorted.length ? sorted.map(row).join('') : `<tr><td colspan="6" style="padding:16px; text-align:center; color:#666;">No matching processes.</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    renderServicesTab() {
+        return `
+            <div style="flex-grow:1; overflow-y:auto; background:#ffffff; margin:6px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Name</th>
+                            <th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Status</th>
+                            <th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Startup Type</th>
+                            <th style="text-align:left; padding:4px 8px; font-weight:bold; border-bottom:1px solid #808080; background:#c0c0c0;">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${SERVICES.map(s => `
+                            <tr>
+                                <td style="padding:3px 8px;">${s.name}</td>
+                                <td style="padding:3px 8px; color:#008000;">Running</td>
+                                <td style="padding:3px 8px;">${s.startup}</td>
+                                <td style="padding:3px 8px;">${s.desc}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    renderPerformanceTab() {
+        const metrics = [
+            { id: 'cpu', label: 'CPU', value: this.lastCpuPct, sub: 'Main-thread responsiveness (measured tick drift)' },
+            { id: 'memory', label: 'Memory', value: this.lastMemPct, sub: this.memSupported ? `${this.lastMemUsedMB.toFixed(0)} MB / ${this.lastMemLimitMB.toFixed(0)} MB used` : 'Not available in this browser' },
+        ];
+        const active = metrics.find(m => m.id === this.perfMetric) || metrics[0];
+
+        return `
+            <div style="display:flex; flex-grow:1; min-height:0;">
+                <div style="width:130px; flex-shrink:0; background:#ffffff; border-right:1px solid #808080; overflow-y:auto;">
+                    ${metrics.map(m => `
+                        <div class="taskmgr-perf-nav-item" data-metric="${m.id}" style="padding:8px; cursor:pointer; ${m.id === this.perfMetric ? 'background:#000080; color:#ffffff;' : ''}">
+                            <div style="font-size:12px; font-weight:bold;">${m.label}</div>
+                            <div style="font-size:11px;">${m.value.toFixed(0)}%</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; padding:10px; min-width:0; background:#ffffff;">
+                    <div style="font-size:14px; font-weight:bold; margin-bottom:2px;">${active.label}</div>
+                    <div style="font-size:11px; color:#444; margin-bottom:8px;">${active.sub}</div>
+                    <div style="flex-grow:1; min-height:0; border:1px solid #808080; position:relative;">
+                        <canvas class="taskmgr-perf-canvas" style="width:100%; height:100%; display:block;"></canvas>
+                    </div>
+                    <div style="font-size:22px; font-weight:bold; margin-top:8px;">${active.value.toFixed(0)}%</div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderStatusBar(rows) {
+        const apps = rows.filter(r => r.kind === 'app').length;
+        const svcs = rows.filter(r => r.kind === 'service').length;
+        const memText = this.memSupported
+            ? `${this.lastMemUsedMB.toFixed(0)} MB / ${this.lastMemLimitMB.toFixed(0)} MB (${this.lastMemPct.toFixed(0)}%)`
+            : 'not available';
+        return `
+            <div style="flex-shrink:0; padding:4px 10px; font-size:11px; border-top:2px solid #808080; display:flex; justify-content:space-between; background:#c0c0c0;">
+                <span>${apps} apps, ${svcs} background processes</span>
+                <span>CPU: ${this.lastCpuPct.toFixed(0)}%&nbsp;&nbsp;&nbsp;Memory: ${memText}</span>
+            </div>
+        `;
+    }
+
+    drawGraph(canvas, data, colorLine, colorFill) {
+        if (!canvas) return;
+        const dpr = window.devicePixelRatio || 1;
+        const cssW = canvas.clientWidth;
+        const cssH = canvas.clientHeight;
+        if (cssW === 0 || cssH === 0) return;
+        canvas.width = cssW * dpr;
+        canvas.height = cssH * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, cssW, cssH);
+
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.lineWidth = 1;
+        const gridRows = 4;
+        for (let i = 0; i <= gridRows; i++) {
+            const y = Math.floor((cssH / gridRows) * i) + 0.5;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(cssW, y);
+            ctx.stroke();
+        }
+
+        if (!data.length) return;
+        const stepX = cssW / (HISTORY_LEN - 1);
+        const points = data.map((v, i) => {
+            const x = cssW - (data.length - 1 - i) * stepX;
+            const y = cssH - (Math.min(100, Math.max(0, v)) / 100) * cssH;
+            return [x, y];
+        });
+
+        ctx.beginPath();
+        ctx.moveTo(points[0][0], cssH);
+        points.forEach(([x, y]) => ctx.lineTo(x, y));
+        ctx.lineTo(points[points.length - 1][0], cssH);
+        ctx.closePath();
+        ctx.fillStyle = colorFill;
+        ctx.fill();
+
+        ctx.beginPath();
+        points.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y));
+        ctx.strokeStyle = colorLine;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+    }
+
+    drawPerformanceGraph() {
+        const canvas = this.bodyElement.querySelector('.taskmgr-perf-canvas');
+        const data = this.perfMetric === 'cpu' ? this.cpuHistory : this.memHistory;
+        this.drawGraph(canvas, data, '#000080', 'rgba(0,0,128,0.15)');
+    }
+
+    bindEvents() {
+        this.bodyElement.querySelectorAll('.taskmgr-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.activeTab = btn.dataset.tab;
+                this.render();
+            });
+        });
+
+        this.bodyElement.querySelectorAll('[data-sort]').forEach(th => {
+            th.addEventListener('click', () => {
+                const key = th.dataset.sort;
+                if (this.sortKey === key) {
+                    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.sortKey = key;
+                    this.sortDir = (key === 'name' || key === 'status' || key === 'id') ? 'asc' : 'desc';
+                }
+                this.render();
+            });
+        });
+
+        this.bodyElement.querySelectorAll('.taskmgr-row').forEach(tr => {
+            tr.addEventListener('click', () => {
+                this.selectedId = tr.dataset.id;
+                this.selectedEndable = tr.dataset.endable === 'true';
+                this.render();
+            });
+            tr.addEventListener('dblclick', () => {
+                if (tr.dataset.endable === 'true') {
+                    closeWindow(tr.dataset.id);
+                    this.selectedId = null;
+                    this.selectedEndable = false;
+                    this.render();
+                }
+            });
+        });
+
+        const endBtn = this.bodyElement.querySelector('.taskmgr-end-task-btn');
+        if (endBtn) {
+            endBtn.addEventListener('click', () => {
+                if (!this.canEndSelected()) return;
+                closeWindow(this.selectedId);
+                this.selectedId = null;
+                this.selectedEndable = false;
+                this.render();
+            });
+        }
+
+        const searchInput = this.bodyElement.querySelector('.taskmgr-search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                this.search = searchInput.value;
+                this.render();
+            });
+        }
+
+        this.bodyElement.querySelectorAll('.taskmgr-perf-nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                this.perfMetric = item.dataset.metric;
+                this.render();
+            });
+        });
+    }
+}
