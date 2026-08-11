@@ -299,6 +299,13 @@ body.rounded-corners .retro-context-menu {
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
 }
 
+.explorer-item div > .sys-icon,
+.explorer-table-row .sys-icon,
+.exp-drive-card .sys-icon {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .start-menu-item .sys-icon {
     width: 20px;
     height: 20px;
@@ -1269,4 +1276,114 @@ input[type="radio"]:checked::after {
     display: flex;
     justify-content: flex-end;
     flex-shrink: 0;
+}
+
+/* ==========================================================================
+   XP-STYLE ZEBOS LOADING SCREEN
+   ========================================================================== */
+#zeb-loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    user-select: none;
+}
+
+.zeb-loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.zeb-loading-logo {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 16px rgba(16, 132, 208, 0.6));
+}
+
+.zeb-loading-title {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.zeb-loading-title .brand-highlight {
+    color: #1084d0;
+}
+
+.zeb-loading-version {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #ff8c00;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.zeb-loading-track {
+    width: 180px;
+    height: 16px;
+    border: 2px solid #555555;
+    border-radius: 6px;
+    background-color: #050505;
+    overflow: hidden;
+    position: relative;
+    margin-top: 36px;
+    box-shadow: inset 0 0 5px #000000, 0 0 8px rgba(0, 0, 0, 0.8);
+    box-sizing: border-box;
+}
+
+.zeb-loading-blocks {
+    display: flex;
+    gap: 3px;
+    position: absolute;
+    top: 1px;
+    left: -60px;
+    height: 10px;
+    animation: xpLoadingSweep 1.8s infinite linear;
+}
+
+.zeb-loading-block {
+    width: 10px;
+    height: 10px;
+    border-radius: 1px;
+    background: linear-gradient(180deg, #64b5f6 0%, #1976d2 50%, #0d47a1 100%);
+    box-shadow: 0 0 4px #1e88e5;
+}
+
+@keyframes xpLoadingSweep {
+    0% {
+        left: -50px;
+    }
+    100% {
+        left: 180px;
+    }
+}
+
+.zeb-loading-subtext {
+    font-size: 11px;
+    color: #888888;
+    margin-top: 16px;
+    letter-spacing: 1px;
 }
