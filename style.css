@@ -534,6 +534,7 @@ body.rounded-corners .retro-context-menu {
     cursor: pointer;
     box-sizing: border-box;
     user-select: none;
+    overflow: hidden;
 }
 
 #start-button:active,
@@ -542,8 +543,6 @@ body.rounded-corners .retro-context-menu {
     border-right-color: #ffffff;
     border-bottom-color: #ffffff;
     background-color: #b0b0b0;
-    padding-top: 3px;
-    padding-left: 11px;
 }
 
 .start-logo {

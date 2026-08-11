@@ -407,6 +407,7 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
     const tabsZone = document.getElementById('taskbar-tabs-zone');
     const systemTray = document.getElementById('system-tray');
     const userTag = document.getElementById('current-user-tag');
+    const clockEl = document.getElementById('live-clock');
 
     if (!tb) return;
 
@@ -492,10 +493,35 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
     }
 
     if (startBtn) {
-        startBtn.style.width = isVertical ? 'calc(100% - 4px)' : 'auto';
-        startBtn.style.height = '30px';
-        startBtn.style.margin = isVertical ? '2px auto' : '0';
-        startBtn.style.justifyContent = isVertical ? 'center' : 'flex-start';
+        if (isVertical) {
+            startBtn.style.flexDirection = 'column';
+            startBtn.style.width = 'calc(100% - 4px)';
+            startBtn.style.height = '42px';
+            startBtn.style.margin = '2px auto';
+            startBtn.style.padding = '3px 2px';
+            startBtn.style.gap = '1px';
+            startBtn.style.justifyContent = 'center';
+            startBtn.style.alignItems = 'center';
+
+            const logoEl = startBtn.querySelector('.start-logo');
+            const textEl = startBtn.querySelector('.start-text');
+            if (logoEl) { logoEl.style.margin = '0 auto'; }
+            if (textEl) { textEl.style.fontSize = '10px'; textEl.style.lineHeight = '1'; textEl.style.margin = '0'; textEl.style.whiteSpace = 'nowrap'; }
+        } else {
+            startBtn.style.flexDirection = 'row';
+            startBtn.style.width = 'auto';
+            startBtn.style.height = '30px';
+            startBtn.style.margin = '0';
+            startBtn.style.padding = '2px 10px';
+            startBtn.style.gap = '6px';
+            startBtn.style.justifyContent = 'flex-start';
+            startBtn.style.alignItems = 'center';
+
+            const logoEl = startBtn.querySelector('.start-logo');
+            const textEl = startBtn.querySelector('.start-text');
+            if (logoEl) { logoEl.style.margin = '0'; }
+            if (textEl) { textEl.style.fontSize = '13px'; textEl.style.lineHeight = 'normal'; textEl.style.margin = '0'; textEl.style.whiteSpace = 'nowrap'; }
+        }
     }
 
     if (tabsZone) {
@@ -509,8 +535,29 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
         tabsZone.style.alignItems = isVertical ? 'stretch' : 'center';
 
         tabsZone.querySelectorAll('.taskbar-tab').forEach(tab => {
-            tab.style.width = isVertical ? 'calc(100% - 4px)' : '120px';
-            tab.style.margin = isVertical ? '2px auto' : '0';
+            if (isVertical) {
+                tab.style.flexDirection = 'column';
+                tab.style.width = 'calc(100% - 4px)';
+                tab.style.height = '38px';
+                tab.style.minHeight = '38px';
+                tab.style.margin = '2px auto';
+                tab.style.padding = '2px';
+                tab.style.gap = '2px';
+                tab.style.justifyContent = 'center';
+                tab.style.alignItems = 'center';
+                tab.style.textAlign = 'center';
+            } else {
+                tab.style.flexDirection = 'row';
+                tab.style.width = '120px';
+                tab.style.height = '28px';
+                tab.style.minHeight = '28px';
+                tab.style.margin = '0';
+                tab.style.padding = '0 8px';
+                tab.style.gap = '6px';
+                tab.style.justifyContent = 'flex-start';
+                tab.style.alignItems = 'center';
+                tab.style.textAlign = 'left';
+            }
         });
     }
 
@@ -522,39 +569,19 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
         systemTray.style.gap = isVertical ? '2px' : '8px';
         systemTray.style.margin = isVertical ? '2px auto' : '0';
         systemTray.style.justifyContent = 'center';
+        systemTray.style.alignItems = 'center';
+        systemTray.style.boxSizing = 'border-box';
     }
 
     if (userTag) {
         userTag.style.display = isVertical ? 'none' : 'inline';
     }
 
-    if (buildTag) {
-        buildTag.style.bottom = 'auto'; buildTag.style.top = 'auto'; buildTag.style.left = 'auto'; buildTag.style.right = 'auto';
-        buildTag.style.right = '20px';
-        if (pos === 'bottom') {
-            buildTag.style.bottom = `${offset + 15}px`;
-        } else if (pos === 'top') {
-            buildTag.style.bottom = '15px';
-        } else if (pos === 'right') {
-            buildTag.style.bottom = '15px';
-            buildTag.style.right = `${offset + 20}px`;
-        } else {
-            buildTag.style.bottom = '15px';
-        }
-    }
-
-    if (iconsZone) {
-        iconsZone.style.padding = '12px';
-        if (!autoHide) {
-            if (pos === 'bottom') iconsZone.style.paddingBottom = `${sz + 12}px`;
-            if (pos === 'top')    iconsZone.style.paddingTop    = `${sz + 12}px`;
-            if (pos === 'left')   iconsZone.style.paddingLeft   = `${sz + 12}px`;
-            if (pos === 'right')  iconsZone.style.paddingRight  = `${sz + 12}px`;
-        }
-    }
-
-    const clockEl = document.getElementById('live-clock');
     if (clockEl) {
+        clockEl.style.textAlign = 'center';
+        clockEl.style.fontSize = isVertical ? '10px' : '11px';
+        clockEl.style.lineHeight = '1.1';
+        clockEl.style.whiteSpace = 'nowrap';
         const tray = clockEl.closest('#system-tray');
         if (tray) tray.style.display = showClock ? 'flex' : 'none';
     }
@@ -672,7 +699,13 @@ function startSystemClock() {
         hours = hours ? hours : 12; 
 
         if (clockElement) {
-            clockElement.textContent = `${hours}:${minutes} ${ampm}`;
+            const tb = document.getElementById('system-taskbar');
+            const isVertical = tb && (tb.dataset.position === 'left' || tb.dataset.position === 'right');
+            if (isVertical) {
+                clockElement.innerHTML = `<div>${hours}:${minutes}</div><div style="font-size:9px; opacity:0.85;">${ampm}</div>`;
+            } else {
+                clockElement.textContent = `${hours}:${minutes} ${ampm}`;
+            }
         }
     }
     updateClock();
