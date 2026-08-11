@@ -339,6 +339,7 @@ export class ActivityCenterApp {
 
         const overlay = document.createElement('div');
         overlay.id = 'ac-properties-modal';
+        overlay.className = 'os-modal-overlay';
         overlay.style.cssText = `
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -348,47 +349,75 @@ export class ActivityCenterApp {
         `;
 
         overlay.innerHTML = `
-            <div class="active-window" style="width:340px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; box-shadow:4px 4px 12px rgba(0,0,0,0.5); font-family:Arial, sans-serif; font-size:11px; padding:3px; user-select:none;">
-                <div style="background:linear-gradient(90deg,#000080,#008080); color:#ffffff; font-weight:bold; padding:3px 6px; display:flex; justify-content:space-between; align-items:center;">
-                    <span>${program.label} Properties</span>
-                    <button id="ac-modal-close-x" style="width:16px; height:14px; background:#c0c0c0; border:1px solid #fff; border-right-color:#000; border-bottom-color:#000; font-size:9px; font-weight:bold; line-height:1; cursor:pointer;">✕</button>
+            <div class="window-frame active-window" style="width:360px; height:auto; position:relative; left:auto; top:auto; transform:none; box-shadow:4px 4px 16px rgba(0,0,0,0.5);">
+                <div class="window-header">
+                    <div class="window-title" style="display:flex; align-items:center; gap:6px;">
+                        <span style="width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center;">${getIcon(program.icon)}</span>
+                        <span>${program.label} Properties</span>
+                    </div>
+                    <div class="window-controls">
+                        <button class="win-btn" id="ac-modal-close-x">${getIcon('winClose')}</button>
+                    </div>
                 </div>
 
-                <div style="padding:10px;">
-                    <!-- Tab Header -->
-                    <div style="display:flex; gap:2px; border-bottom:1px solid #808080; margin-bottom:10px;">
-                        <div style="background:#c0c0c0; border:1px solid #ffffff; border-right-color:#808080; border-bottom-color:#c0c0c0; padding:2px 8px; font-weight:bold; position:relative; top:1px;">General</div>
+                <div class="window-body" style="padding:10px; background:#c0c0c0; display:flex; flex-direction:column; gap:8px; user-select:none;">
+                    <!-- Win95 Tab Header -->
+                    <div style="display:flex; align-items:flex-end; padding-left:4px; gap:2px;">
+                        <div style="background:#c0c0c0; border:2px solid #ffffff; border-right-color:#808080; border-bottom:none; padding:3px 12px; font-weight:bold; font-size:11px; z-index:2; margin-bottom:-2px; border-top-left-radius:2px; border-top-right-radius:2px;">
+                            General
+                        </div>
                     </div>
 
-                    <!-- Header with Icon & Name -->
-                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-                        <div style="width:32px; height:32px; flex-shrink:0;">${getIcon(program.icon)}</div>
-                        <div style="font-weight:bold; font-size:13px;">${program.label}</div>
-                    </div>
-                    <hr style="border:none; border-top:1px solid #808080; border-bottom:1px solid #ffffff; margin:8px 0;">
+                    <!-- Main Tab Content Box -->
+                    <div style="background:#c0c0c0; border:2px solid #ffffff; border-right-color:#808080; border-bottom-color:#808080; padding:10px; display:flex; flex-direction:column; gap:8px;">
+                        
+                        <!-- Header Icon & Name -->
+                        <div style="display:flex; align-items:center; gap:12px; padding-bottom:6px; border-bottom:1px solid #808080;">
+                            <div style="width:32px; height:32px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">${getIcon(program.icon)}</div>
+                            <div style="display:flex; flex-direction:column;">
+                                <span style="font-weight:bold; font-size:12px; color:#000080;">${program.label}</span>
+                                <span style="font-size:10px; color:#555555;">${program.category}</span>
+                            </div>
+                        </div>
 
-                    <!-- Properties Grid -->
-                    <div style="line-height:1.6; font-size:11px;">
-                        <div><b>Type of file:</b> Application Executable (.exe)</div>
-                        <div><b>Location:</b> <span style="font-family:monospace;">${program.execPath}</span></div>
-                        <div><b>Size on disk:</b> ${program.size}</div>
-                        <div><b>Memory footprint:</b> ${program.ram}</div>
-                        <div><b>System Group:</b> ${program.category}</div>
-                        <div><b>Kernel Version:</b> ${program.version}</div>
-                        <div><b>Execution Status:</b> <span style="color:#008000; font-weight:bold;">${program.status}</span></div>
-                    </div>
-                    <hr style="border:none; border-top:1px solid #808080; border-bottom:1px solid #ffffff; margin:8px 0;">
+                        <!-- Grid Properties Details -->
+                        <div style="font-size:11px; line-height:1.6; display:grid; grid-template-columns:105px 1fr; gap:4px 6px; align-items:center;">
+                            <span style="font-weight:bold; text-align:right; color:#333333;">Type of file:</span>
+                            <span>Application Executable (.exe)</span>
 
-                    <!-- Attributes -->
-                    <div style="display:flex; gap:16px; align-items:center;">
-                        <span><b>Attributes:</b></span>
-                        <label><input type="checkbox" checked disabled> Read-only</label>
-                        <label><input type="checkbox" checked disabled> System Binary</label>
+                            <span style="font-weight:bold; text-align:right; color:#333333;">Location:</span>
+                            <code style="font-family:monospace; font-size:10px; background:#ffffff; border:1px solid #808080; border-right-color:#fff; border-bottom-color:#fff; padding:1px 4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${program.execPath}</code>
+
+                            <span style="font-weight:bold; text-align:right; color:#333333;">Size on disk:</span>
+                            <span>${program.size}</span>
+
+                            <span style="font-weight:bold; text-align:right; color:#333333;">Memory footprint:</span>
+                            <span>${program.ram}</span>
+
+                            <span style="font-weight:bold; text-align:right; color:#333333;">Kernel Version:</span>
+                            <span>${program.version}</span>
+
+                            <span style="font-weight:bold; text-align:right; color:#333333;">Execution Status:</span>
+                            <span style="color:#008000; font-weight:bold;">${program.status}</span>
+                        </div>
+
+                        <hr style="border:none; border-top:1px solid #808080; border-bottom:1px solid #ffffff; margin:2px 0;">
+
+                        <!-- Attributes -->
+                        <div style="display:flex; align-items:center; gap:10px; font-size:11px;">
+                            <span style="font-weight:bold; width:105px; text-align:right; color:#333333;">Attributes:</span>
+                            <label style="display:inline-flex; align-items:center; gap:4px; cursor:default;">
+                                <input type="checkbox" checked disabled style="margin:0;"> Read-only
+                            </label>
+                            <label style="display:inline-flex; align-items:center; gap:4px; cursor:default;">
+                                <input type="checkbox" checked disabled style="margin:0;"> System Binary
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Footer Action Buttons -->
-                    <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:14px;">
-                        <button id="ac-modal-ok" style="background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; padding:3px 14px; cursor:pointer; font-weight:bold; outline:none;">OK</button>
+                    <div style="display:flex; justify-content:flex-end; gap:6px; padding-top:2px;">
+                        <button id="ac-modal-ok" class="app-toolbar-btn" style="padding:3px 22px; font-weight:bold;">OK</button>
                     </div>
                 </div>
             </div>
