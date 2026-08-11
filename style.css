@@ -448,17 +448,24 @@ body.rounded-corners .retro-context-menu {
     padding: 4px;
     display: flex;
     flex-direction: column;
+    width: calc(100% - 35px);
+    box-sizing: border-box;
 }
 
 .start-menu-item {
-    height: 32px;
+    height: 30px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0 10px;
-    font-size: 13px;
+    gap: 8px;
+    padding: 0 8px;
+    font-size: 12px;
     color: #000000;
     cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .start-menu-item:hover {
@@ -468,6 +475,12 @@ body.rounded-corners .retro-context-menu {
 
 .menu-icon {
     font-size: 16px;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .start-menu-divider {

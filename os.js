@@ -2050,7 +2050,7 @@ export function reinstallAndRestart() {
 // ==========================================================================
 // DESKTOP SHORTCUT ICONS
 // ==========================================================================
-const DESKTOP_SHORTCUTS = [
+const INITIAL_DESKTOP_SHORTCUTS = [
     { id: 'start-link-files', icon: 'explorer', label: 'Zeb Explorer' },
     { id: 'start-link-text-editor', icon: 'editor', label: 'Text Editor' },
     { id: 'start-link-prompt', icon: 'terminal', label: 'Zeb Terminal' },
@@ -2066,6 +2066,8 @@ const DESKTOP_SHORTCUTS = [
     { id: 'start-link-chess', icon: 'chess', label: 'Chess' },
     { id: 'start-link-activitycenter', icon: 'activitycenter', label: 'Activity Center' },
 ];
+
+let DESKTOP_SHORTCUTS = [...INITIAL_DESKTOP_SHORTCUTS];
 
 export function showOsPrompt(title, message, defaultValue = "", onConfirm = null) {
     const overlay = document.createElement('div');
@@ -2356,7 +2358,32 @@ function renderDesktopIcons() {
     if (!zone) return;
     zone.innerHTML = '';
 
+    if (!DESKTOP_SHORTCUTS || DESKTOP_SHORTCUTS.length === 0) {
+        DESKTOP_SHORTCUTS = [...INITIAL_DESKTOP_SHORTCUTS];
+    }
+
     const shortcuts = [...DESKTOP_SHORTCUTS];
+
+    // Include custom VFS items inside Users/Guest/Desktop
+    const desktopVfs = getVfsNodeByPath("Users/Guest/Desktop");
+    if (desktopVfs && typeof desktopVfs === 'object') {
+        Object.keys(desktopVfs).forEach(name => {
+            if (!shortcuts.some(s => s.label === name || s.vfsName === name)) {
+                const item = desktopVfs[name];
+                const isDir = item?.type === 'dir';
+                const iconName = isDir ? 'folder' : (name.endsWith('.zdl') ? 'zdl' : (name.endsWith('.png') || name.endsWith('.jpg') ? 'picture' : 'file'));
+                shortcuts.push({
+                    id: isDir ? 'start-link-files' : 'start-link-text-editor',
+                    icon: iconName,
+                    label: name,
+                    vfsName: name,
+                    isCustomVfs: true,
+                    itemType: item?.type
+                });
+            }
+        });
+    }
+
     if (systemState.desktopSortBy === 'name') {
         shortcuts.sort((a, b) => a.label.localeCompare(b.label));
     } else if (systemState.desktopSortBy === 'type') {
