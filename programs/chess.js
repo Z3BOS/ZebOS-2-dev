@@ -1,5 +1,4 @@
 // programs/chess.js - ZebOS 2 Chess Application (UI layer over the cherry/ rules engine)
-import { getIcon } from '../icons.js';
 import { createInitialState, squareName } from '../cherry/board.js';
 import { getLegalMovesForSquare, getGameStatus, makeMove } from '../cherry/rules.js';
 import { getBestMove } from '../cherry/engine.js';
@@ -55,7 +54,7 @@ export class ChessApp {
         this.bodyElement.innerHTML = `
             <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; font-family:Arial, sans-serif; box-sizing:border-box;">
                 <div style="padding:6px 8px; border-bottom:2px solid #808080; display:flex; align-items:center; gap:10px; flex-shrink:0; flex-wrap:wrap;">
-                    <button class="app-toolbar-btn chess-new-game-btn">${getIcon('mines')} New Game</button>
+                    <button class="app-toolbar-btn chess-new-game-btn">New Game</button>
                     <button class="app-toolbar-btn chess-resign-btn" ${isGameOver ? 'disabled' : ''}>Resign</button>
                     <label style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">
                         <input type="checkbox" class="chess-vs-computer-toggle" ${this.vsComputer ? 'checked' : ''}> vs Computer

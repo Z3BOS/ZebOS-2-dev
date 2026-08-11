@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.5.1 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.6.0 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,8 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.5.1",
+    version: "2.6.0",
+    codename: "Fawn",
     currentUser: "guest",
     uptime: 0,
     activeApp: null,
@@ -22,6 +23,11 @@ let systemState = {
     roundedCorners: false,
     skipBootAnimation: false,
     autoDevMode: false,
+    hasLoggedInBefore: false,
+    savedUsername: null,
+    savedAvatar: null,
+    alwaysShowSetup: false,
+    disableKernelLogs: false,
     fileSystem: {}
 };
 
@@ -160,6 +166,11 @@ function loadFileSystem() {
             if (s.desktopSortBy)                 systemState.desktopSortBy  = s.desktopSortBy;
             if (s.skipBootAnimation !== undefined) systemState.skipBootAnimation = s.skipBootAnimation;
             if (s.autoDevMode !== undefined)       systemState.autoDevMode       = s.autoDevMode;
+            if (s.hasLoggedInBefore !== undefined) systemState.hasLoggedInBefore = s.hasLoggedInBefore;
+            if (s.savedUsername)                   systemState.savedUsername     = s.savedUsername;
+            if (s.savedAvatar)                      systemState.savedAvatar      = s.savedAvatar;
+            if (s.alwaysShowSetup !== undefined)   systemState.alwaysShowSetup   = s.alwaysShowSetup;
+            if (s.disableKernelLogs !== undefined) systemState.disableKernelLogs = s.disableKernelLogs;
         } catch(e) { /* ignore */ }
     }
 
@@ -195,11 +206,11 @@ function ensureSystemFoldersExist() {
     });
 
     const defaults = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.1!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.6.0!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
-                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.5.1.8f31b40" },
+                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.6.0.8f31b40" },
                 "shell32.zdl":   { type: "file", content: "ZebOS Desktop User Interface Shell Controller" },
                 "user32.zdl":    { type: "file", content: "ZebOS Windowing & Event Management Subsystem" },
                 "gdi32.zdl":     { type: "file", content: "ZebOS Graphics Device Interface Subsystem" },
@@ -251,7 +262,7 @@ function ensureSystemFoldersExist() {
             type: "dir",
             content: {
                 "system.ini": { type: "file", content: "[boot]\nshell=shell32.zdl\ndrivers=display.zdl,mouse.zdl,sound32.zdl\n" },
-                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=2.5.1\nTheme=Standard\n" },
+                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=2.6.0\nTheme=Standard\n" },
                 "zebos.cfg":   { type: "file", content: "CONFIG_DEV_MODE=0\nCONFIG_VFS_QUOTA=2097152\n" }
             }
         }
@@ -318,6 +329,11 @@ export function saveFileSystem() {
             desktopSortBy:      systemState.desktopSortBy,
             skipBootAnimation:  systemState.skipBootAnimation,
             autoDevMode:        systemState.autoDevMode,
+            hasLoggedInBefore:  systemState.hasLoggedInBefore,
+            savedUsername:      systemState.savedUsername,
+            savedAvatar:        systemState.savedAvatar,
+            alwaysShowSetup:    systemState.alwaysShowSetup,
+            disableKernelLogs:  systemState.disableKernelLogs,
         };
         localStorage.setItem('ZEBOS_V2_SETTINGS', JSON.stringify(settings));
         logKernel("Storage System: Changes committed to local storage sectors successfully.");
@@ -530,11 +546,11 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.5.1!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Alpha Build v2.6.0!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
-                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.5.1.8f31b40" },
+                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.6.0.8f31b40" },
                 "shell32.zdl":   { type: "file", content: "ZebOS Desktop User Interface Shell Controller" },
                 "user32.zdl":    { type: "file", content: "ZebOS Windowing & Event Management Subsystem" },
                 "gdi32.zdl":     { type: "file", content: "ZebOS Graphics Device Interface Subsystem" },
@@ -586,7 +602,7 @@ function provisionDefaultRootFS() {
             type: "dir",
             content: {
                 "system.ini": { type: "file", content: "[boot]\nshell=shell32.zdl\ndrivers=display.zdl,mouse.zdl,sound32.zdl\n" },
-                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=2.5.1\nTheme=Standard\n" },
+                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=2.6.0\nTheme=Standard\n" },
                 "zebos.cfg":   { type: "file", content: "CONFIG_DEV_MODE=0\nCONFIG_VFS_QUOTA=2097152\n" }
             }
         }
@@ -651,8 +667,33 @@ const BOOT_LOG_SEQUENCE = [
     "KERN: Handing off to Graphical Desktop Environment..."
 ];
 
+// Turns the real Zeb32/ system files already sitting in the VFS into
+// "LOAD: Loading file <file>" boot log lines, so the flavor text tracks
+// whatever's actually on disk instead of being hardcoded.
+function buildFileLoadLines() {
+    const zeb32 = systemState.fileSystem?.Zeb32?.content;
+    if (!zeb32) return [];
+    const lines = [];
+    Object.entries(zeb32).forEach(([name, entry]) => {
+        if (entry.type === 'file') {
+            lines.push(`LOAD: Loading file ${name}`);
+        } else if (entry.type === 'dir' && entry.content) {
+            Object.keys(entry.content).forEach(subName => {
+                lines.push(`LOAD: Loading file ${name}/${subName}`);
+            });
+        }
+    });
+    return lines;
+}
+
 function initializeBootSequence() {
-    logKernel("SYSTEM START: Initializing Zeb Kernel v2.5.1 Alpha...");
+    // Routine startup chatter is gated behind disableKernelLogs; real errors
+    // (logged directly via logKernel(..., "ERROR")) are never suppressed.
+    function bootLog(message) {
+        if (!systemState.disableKernelLogs) logKernel(message);
+    }
+
+    bootLog("SYSTEM START: Initializing Zeb Kernel v2.6.0 Alpha...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -660,35 +701,57 @@ function initializeBootSequence() {
 
     let finished = false;
 
+    function revealDesktop(username) {
+        systemState.currentUser = username;
+        const activeUser = ensureUserProfileFolder(username);
+        const desktopCanvas = document.getElementById('desktop-canvas');
+        const taskbar = document.getElementById('system-taskbar');
+        if (desktopCanvas) {
+            desktopCanvas.style.display = 'block';
+            requestAnimationFrame(() => { desktopCanvas.style.opacity = '1'; });
+            // Apply persisted appearance settings
+            applyOsSettings({
+                color:          systemState.desktopBackground,
+                pattern:        systemState.desktopPattern,
+                scheme:         systemState.desktopScheme,
+                soundScheme:    systemState.soundScheme,
+                roundedCorners: systemState.roundedCorners,
+            });
+        }
+        if (taskbar) {
+            taskbar.style.display = 'flex';
+            requestAnimationFrame(() => { taskbar.style.opacity = '1'; });
+        }
+        const userTag = document.getElementById('current-user-tag');
+        const avatarHtml = systemState.savedAvatar
+            ? `<img src="${systemState.savedAvatar}" style="width:16px; height:16px; border-radius:50%; display:block;" alt="">`
+            : getIcon('user');
+        if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${avatarHtml} ${username}</span>`;
+        bootLog(`Session: User '${username}' signed in.`);
+    }
+
     function proceedToLogon() {
-        logKernel("BOOT COMPLETE: Graphical Desktop Env Core loaded successfully.");
+        bootLog("BOOT COMPLETE: Graphical Desktop Env Core loaded successfully.");
+
+        // Recognized returning user: skip the sign-in screen entirely and
+        // go straight to the desktop under their saved username — unless
+        // System Flags has "always show setup screen" turned on.
+        if (!systemState.alwaysShowSetup && systemState.hasLoggedInBefore && systemState.savedUsername) {
+            bootLog(`Session: Recognized returning user '${systemState.savedUsername}', skipping sign-in screen.`);
+            revealDesktop(systemState.savedUsername);
+            return;
+        }
+
         (async () => {
             try {
                 const module = await import('./logon/logon.js');
-                module.showLogonScreen((username) => {
-                    const activeUser = ensureUserProfileFolder(username);
-                    const desktopCanvas = document.getElementById('desktop-canvas');
-                    const taskbar = document.getElementById('system-taskbar');
-                    if (desktopCanvas) {
-                        desktopCanvas.style.display = 'block';
-                        requestAnimationFrame(() => { desktopCanvas.style.opacity = '1'; });
-                        // Apply persisted appearance settings
-                        applyOsSettings({
-                            color:          systemState.desktopBackground,
-                            pattern:        systemState.desktopPattern,
-                            scheme:         systemState.desktopScheme,
-                            soundScheme:    systemState.soundScheme,
-                            roundedCorners: systemState.roundedCorners,
-                        });
-                    }
-                    if (taskbar) {
-                        taskbar.style.display = 'flex';
-                        requestAnimationFrame(() => { taskbar.style.opacity = '1'; });
-                    }
-                    const userTag = document.getElementById('current-user-tag');
-                    if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
-                    logKernel(`Session: User '${username}' signed in.`);
-                });
+                module.showLogonScreen((username, avatarPath) => {
+                    systemState.savedUsername = username;
+                    systemState.savedAvatar = avatarPath;
+                    systemState.hasLoggedInBefore = true;
+                    saveFileSystem();
+                    revealDesktop(username);
+                }, systemState.savedUsername || 'guest', systemState.savedAvatar);
             } catch (err) {
                 logKernel(`Kernel Error: Failed to mount logon/logon.js (${err.message})`, "ERROR");
                 const desktopCanvas = document.getElementById('desktop-canvas');
@@ -749,18 +812,21 @@ function initializeBootSequence() {
     }
     window.addEventListener('keydown', devModeKeyHandler);
 
+    const fullBootLog = BOOT_LOG_SEQUENCE.concat(buildFileLoadLines());
     let lineIndex = 0;
     function printNextBootLine() {
         if (finished) return;
-        if (lineIndex < BOOT_LOG_SEQUENCE.length) {
-            const message = BOOT_LOG_SEQUENCE[lineIndex];
-            logKernel(message);
-            if (logConsole) {
-                const lineEl = document.createElement('div');
-                lineEl.className = 'boot-log-line';
-                lineEl.textContent = `> ${message}`;
-                logConsole.appendChild(lineEl);
-                logConsole.scrollTop = logConsole.scrollHeight;
+        if (lineIndex < fullBootLog.length) {
+            const message = fullBootLog[lineIndex];
+            if (!systemState.disableKernelLogs) {
+                logKernel(message);
+                if (logConsole) {
+                    const lineEl = document.createElement('div');
+                    lineEl.className = 'boot-log-line';
+                    lineEl.textContent = `> ${message}`;
+                    logConsole.appendChild(lineEl);
+                    logConsole.scrollTop = logConsole.scrollHeight;
+                }
             }
             lineIndex++;
             setTimeout(printNextBootLine, 180);
@@ -768,7 +834,7 @@ function initializeBootSequence() {
             setTimeout(() => {
                 if (finished) return;
                 if (bootScreen) bootScreen.classList.add('splash-active');
-                logKernel("BOOT: Kernel log complete, splash handoff engaged.");
+                bootLog("BOOT: Kernel log complete, splash handoff engaged.");
             }, 300);
         }
     }
@@ -778,7 +844,10 @@ function initializeBootSequence() {
         setTimeout(finishBoot, 300);
     } else {
         printNextBootLine();
-        setTimeout(finishBoot, 4000);
+        // Safety net in case no key is held — sized to the actual log length
+        // (base sequence + dynamic file-load lines) so it never fires before
+        // the animation finishes printing.
+        setTimeout(finishBoot, Math.max(4000, fullBootLog.length * 180 + 1200));
     }
 }
 
@@ -1068,7 +1137,8 @@ async function launchApplication(appId, customFileName = null) {
                         remove: (name) => shellRemove(name),
                         openInEditor: (name) => launchApplication('start-link-text-editor', name),
                         getUsername: () => systemState.currentUser,
-                        getVersion: () => systemState.version
+                        getVersion: () => systemState.version,
+                        getCodename: () => systemState.codename
                     };
                     const termInstance = new module.ZebTerminal(() => closeWindow(winId), shellApi);
                     registerWindowCleanup(winId, () => termInstance.cleanup());
@@ -1237,13 +1307,14 @@ async function launchApplication(appId, customFileName = null) {
             const winId = 'app-courgette';
             try {
                 const module = await import('./programs/courgette.js');
-                const cgBody = createWindow("Courgette Info", "courgette", winId);
+                const cgBody = createWindow("Courgette", "courgette", winId);
                 if (cgBody) {
                     setWindowBounds(cgBody, 660, 440);
                     const counts = countFilesystemEntries(systemState.fileSystem);
                     const diskBytes = new Blob([JSON.stringify(systemState.fileSystem)]).size;
                     const cgInstance = new module.CourgetteInfo(() => closeWindow(winId), {
                         version: systemState.version,
+                        codename: systemState.codename,
                         uptimeSeconds: systemState.uptime,
                         fileCount: counts.files,
                         dirCount: counts.dirs,
@@ -1427,7 +1498,7 @@ function shellRemove(name) {
 // Callbacks handed to recovery/recovery.js, which knows nothing about
 // systemState directly — only os.js has access to it.
 // ==========================================================================
-const RECOVERY_FLAG_KEYS = ['autoArrange', 'taskbarAutoHide', 'desktopSortBy', 'skipBootAnimation', 'autoDevMode', 'soundScheme', 'desktopScheme', 'roundedCorners'];
+const RECOVERY_FLAG_KEYS = ['autoArrange', 'taskbarAutoHide', 'desktopSortBy', 'skipBootAnimation', 'autoDevMode', 'alwaysShowSetup', 'disableKernelLogs', 'soundScheme', 'desktopScheme', 'roundedCorners'];
 const RECOVERY_DEFAULT_SETTINGS = {
     desktopSortBy: 'type',
     autoArrange: true,
@@ -1438,7 +1509,12 @@ const RECOVERY_DEFAULT_SETTINGS = {
     taskbarAutoHide: false,
     roundedCorners: false,
     skipBootAnimation: false,
-    autoDevMode: false
+    autoDevMode: false,
+    alwaysShowSetup: false,
+    disableKernelLogs: false,
+    hasLoggedInBefore: false,
+    savedUsername: null,
+    savedAvatar: null
 };
 
 function buildRecoveryApi(onExit) {
@@ -1449,6 +1525,9 @@ function buildRecoveryApi(onExit) {
             color: systemState.desktopBackground,
             pattern: systemState.desktopPattern,
             scheme: systemState.desktopScheme,
+            hasLoggedInBefore: systemState.hasLoggedInBefore,
+            savedUsername: systemState.savedUsername,
+            savedAvatar: systemState.savedAvatar,
             ...Object.fromEntries(RECOVERY_FLAG_KEYS.map(k => [k, systemState[k]]))
         }
     }, null, 2);
@@ -1464,6 +1543,9 @@ function buildRecoveryApi(onExit) {
             if (s.color) systemState.desktopBackground = s.color;
             if (s.pattern) systemState.desktopPattern = s.pattern;
             if (s.scheme) systemState.desktopScheme = s.scheme;
+            if (s.hasLoggedInBefore !== undefined) systemState.hasLoggedInBefore = s.hasLoggedInBefore;
+            if (s.savedUsername) systemState.savedUsername = s.savedUsername;
+            if (s.savedAvatar) systemState.savedAvatar = s.savedAvatar;
             RECOVERY_FLAG_KEYS.forEach(k => { if (s[k] !== undefined) systemState[k] = s[k]; });
             ensureSystemFoldersExist();
             saveFileSystem();
@@ -1506,6 +1588,7 @@ function buildRecoveryApi(onExit) {
             openInEditor: () => {},
             getUsername: () => systemState.currentUser,
             getVersion: () => systemState.version,
+            getCodename: () => systemState.codename,
             backup: createBackup,
             reinstall,
             getFlags,
@@ -1527,7 +1610,7 @@ const DESKTOP_SHORTCUTS = [
     { id: 'start-link-snake', icon: 'snake', label: 'Snake' },
     { id: 'start-link-media', icon: 'media', label: 'Media Player' },
     { id: 'start-link-vm', icon: 'vm', label: 'ZebVM Manager' },
-    { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette Info' },
+    { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette' },
     { id: 'start-link-taskmgr', icon: 'taskmgr', label: 'Task Manager' },
     { id: 'start-link-solitaire', icon: 'solitaire', label: 'Solitaire' },
     { id: 'start-link-chess', icon: 'chess', label: 'Chess' }
@@ -1901,7 +1984,12 @@ function setupStartMenuController() {
 
             // Update tray info dynamically
             const trayUser = document.getElementById('tray-user-name');
-            if (trayUser) trayUser.textContent = `User: ${systemState.currentUser}`;
+            if (trayUser) {
+                const avatarHtml = systemState.savedAvatar
+                    ? `<img src="${systemState.savedAvatar}" style="width:20px; height:20px; border-radius:50%; display:block; flex-shrink:0;" alt="">`
+                    : getIcon('user');
+                trayUser.innerHTML = `<span style="display:inline-flex; align-items:center; gap:6px;">${avatarHtml} User: ${systemState.currentUser}</span>`;
+            }
 
             const trayDate = document.getElementById('tray-date-text');
             if (trayDate) {
@@ -1942,8 +2030,11 @@ function setupStartMenuController() {
 
                 try {
                     const module = await import('./logon/logon.js');
-                    module.showLogonScreen((username) => {
+                    module.showLogonScreen((username, avatarPath) => {
                         systemState.currentUser = username;
+                        systemState.savedUsername = username;
+                        systemState.savedAvatar = avatarPath;
+                        saveFileSystem();
                         if (desktopCanvas) {
                             desktopCanvas.style.display = 'block';
                             requestAnimationFrame(() => { desktopCanvas.style.opacity = '1'; });
@@ -1952,9 +2043,12 @@ function setupStartMenuController() {
                             taskbar.style.display = 'flex';
                             requestAnimationFrame(() => { taskbar.style.opacity = '1'; });
                         }
-                        if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${username}</span>`;
+                        const avatarHtml = avatarPath
+                            ? `<img src="${avatarPath}" style="width:16px; height:16px; border-radius:50%; display:block;" alt="">`
+                            : getIcon('user');
+                        if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${avatarHtml} ${username}</span>`;
                         logKernel(`Session: User '${username}' signed in.`);
-                    });
+                    }, systemState.savedUsername || 'guest', systemState.savedAvatar);
                 } catch (err) {
                     logKernel(`Logon Error: (${err.message})`, "ERROR");
                     if (desktopCanvas) { desktopCanvas.style.display = 'block'; desktopCanvas.style.opacity = '1'; }

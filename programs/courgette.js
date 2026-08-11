@@ -42,7 +42,8 @@ export class CourgetteInfo {
 
         const stats = [
             ['OS', `ZebOS 2 (Alpha v${this.snapshot.version})`],
-            ['Kernel', `Zeb Kernel v${this.snapshot.version}`], 
+            ['Codename', `"${this.snapshot.codename}"`],
+            ['Kernel', `Zeb Kernel v${this.snapshot.version}`],
             ['Uptime', this.formatUptime(this.uptimeSeconds)],
             ['Resolution', `${window.innerWidth}x${window.innerHeight}`],
             ['Files', `${this.snapshot.fileCount} file(s), ${this.snapshot.dirCount} folder(s)`],
@@ -68,9 +69,10 @@ export class CourgetteInfo {
         this.renderStats();
 
         window.addEventListener('keydown', this.keyHandler);
+        const uptimeRow = this.stats.find(row => row[0] === 'Uptime');
         this.tickInterval = setInterval(() => {
             this.uptimeSeconds += 1;
-            this.stats[2][1] = this.formatUptime(this.uptimeSeconds);
+            if (uptimeRow) uptimeRow[1] = this.formatUptime(this.uptimeSeconds);
             this.renderStats();
         }, 1000);
     }

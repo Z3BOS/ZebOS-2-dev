@@ -492,7 +492,7 @@ export class FileExplorerApp {
             <div style="position:relative; margin-top:14px; padding:16px 14px 12px 14px; border:2px solid #ffffff; border-left-color:#808080; border-top-color:#808080; background:#c0c0c0; box-sizing:border-box;">
               <span style="position:absolute; top:-9px; left:12px; background:#c0c0c0; padding:0 6px; font-weight:bold; font-size:11px; color:#000080;">ZebOS System Summary</span>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px 16px; font-size:11px; color:#000;">
-                <div>OS Version: <strong>ZebOS 2.5.1 Alpha</strong></div>
+                <div>OS Version: <strong>ZebOS 2.6.0 Alpha</strong></div>
                 <div>Processor: <strong>ZebCore™ x86 Virtual CPU</strong></div>
                 <div>System Memory: <strong>1024 MB RAM</strong></div>
                 <div>Graphics: <strong>SVGA TrueColor (32-bit)</strong></div>
