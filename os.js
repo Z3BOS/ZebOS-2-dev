@@ -400,33 +400,45 @@ function setupTaskbarEvents() {
 function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
     const tb = document.getElementById('system-taskbar');
     const startMenu = document.getElementById('start-menu');
+    const trayMenu = document.getElementById('tray-menu');
     const buildTag = document.getElementById('desktop-build-tag');
     const iconsZone = document.getElementById('desktop-icons-zone');
+    const startBtn = document.getElementById('start-button');
+    const tabsZone = document.getElementById('taskbar-tabs-zone');
+    const systemTray = document.getElementById('system-tray');
+    const userTag = document.getElementById('current-user-tag');
+
     if (!tb) return;
 
     const sz = parseInt(size, 10) || 40;
     tb.dataset.position = pos;
     tb.dataset.size     = String(sz);
 
-    // Reset position styles
-    tb.style.bottom = ''; tb.style.top = ''; tb.style.left = ''; tb.style.right = '';
+    tb.style.bottom = 'auto'; tb.style.top = 'auto'; tb.style.left = 'auto'; tb.style.right = 'auto';
     tb.style.width  = ''; tb.style.height = '';
-    tb.style.flexDirection = 'row';
+
+    const isVertical = (pos === 'left' || pos === 'right');
 
     if (pos === 'bottom') {
-        tb.style.bottom = '0'; tb.style.left = '0';
+        tb.style.bottom = '0'; tb.style.left = '0'; tb.style.right = 'auto'; tb.style.top = 'auto';
         tb.style.width = '100vw'; tb.style.height = sz + 'px';
+        tb.style.flexDirection = 'row';
+        tb.style.alignItems = 'center';
     } else if (pos === 'top') {
-        tb.style.top = '0'; tb.style.left = '0';
+        tb.style.top = '0'; tb.style.left = '0'; tb.style.right = 'auto'; tb.style.bottom = 'auto';
         tb.style.width = '100vw'; tb.style.height = sz + 'px';
+        tb.style.flexDirection = 'row';
+        tb.style.alignItems = 'center';
     } else if (pos === 'left') {
-        tb.style.top = '0'; tb.style.left = '0';
+        tb.style.top = '0'; tb.style.left = '0'; tb.style.right = 'auto'; tb.style.bottom = 'auto';
         tb.style.width = sz + 'px'; tb.style.height = '100vh';
         tb.style.flexDirection = 'column';
+        tb.style.alignItems = 'stretch';
     } else if (pos === 'right') {
-        tb.style.top = '0'; tb.style.right = '0';
+        tb.style.top = '0'; tb.style.right = '0'; tb.style.left = 'auto'; tb.style.bottom = 'auto';
         tb.style.width = sz + 'px'; tb.style.height = '100vh';
         tb.style.flexDirection = 'column';
+        tb.style.alignItems = 'stretch';
     }
 
     tb.style.zIndex = alwaysTop ? '90000' : '1000';
@@ -442,12 +454,11 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
         tb.style.transition = 'opacity 0.2s';
     }
 
-    // Offset calculations for UI elements when taskbar is visible vs auto-hidden
     const offset = autoHide ? 0 : sz;
     const menuOffset = (autoHide ? 4 : sz) + 4;
 
     if (startMenu) {
-        startMenu.style.bottom = ''; startMenu.style.top = ''; startMenu.style.left = ''; startMenu.style.right = '';
+        startMenu.style.bottom = 'auto'; startMenu.style.top = 'auto'; startMenu.style.left = 'auto'; startMenu.style.right = 'auto';
         if (pos === 'bottom') {
             startMenu.style.bottom = `${menuOffset}px`;
             startMenu.style.left = '4px';
@@ -455,17 +466,16 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
             startMenu.style.top = `${menuOffset}px`;
             startMenu.style.left = '4px';
         } else if (pos === 'left') {
-            startMenu.style.bottom = '4px';
+            startMenu.style.top = '4px';
             startMenu.style.left = `${menuOffset}px`;
         } else if (pos === 'right') {
-            startMenu.style.bottom = '4px';
+            startMenu.style.top = '4px';
             startMenu.style.right = `${menuOffset}px`;
         }
     }
 
-    const trayMenu = document.getElementById('tray-menu');
     if (trayMenu) {
-        trayMenu.style.bottom = ''; trayMenu.style.top = ''; trayMenu.style.left = ''; trayMenu.style.right = '';
+        trayMenu.style.bottom = 'auto'; trayMenu.style.top = 'auto'; trayMenu.style.left = 'auto'; trayMenu.style.right = 'auto';
         if (pos === 'bottom') {
             trayMenu.style.bottom = `${menuOffset}px`;
             trayMenu.style.right = '4px';
@@ -481,8 +491,45 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
         }
     }
 
+    if (startBtn) {
+        startBtn.style.width = isVertical ? 'calc(100% - 4px)' : 'auto';
+        startBtn.style.height = '30px';
+        startBtn.style.margin = isVertical ? '2px auto' : '0';
+        startBtn.style.justifyContent = isVertical ? 'center' : 'flex-start';
+    }
+
+    if (tabsZone) {
+        tabsZone.style.flexDirection = isVertical ? 'column' : 'row';
+        tabsZone.style.width = isVertical ? '100%' : 'auto';
+        tabsZone.style.height = isVertical ? 'auto' : '100%';
+        tabsZone.style.flexGrow = '1';
+        tabsZone.style.margin = isVertical ? '4px 0' : '0 10px';
+        tabsZone.style.overflowX = isVertical ? 'hidden' : 'auto';
+        tabsZone.style.overflowY = isVertical ? 'auto' : 'hidden';
+        tabsZone.style.alignItems = isVertical ? 'stretch' : 'center';
+
+        tabsZone.querySelectorAll('.taskbar-tab').forEach(tab => {
+            tab.style.width = isVertical ? 'calc(100% - 4px)' : '120px';
+            tab.style.margin = isVertical ? '2px auto' : '0';
+        });
+    }
+
+    if (systemTray) {
+        systemTray.style.flexDirection = isVertical ? 'column' : 'row';
+        systemTray.style.width = isVertical ? 'calc(100% - 4px)' : 'auto';
+        systemTray.style.height = isVertical ? 'auto' : '30px';
+        systemTray.style.padding = isVertical ? '4px 2px' : '0 10px';
+        systemTray.style.gap = isVertical ? '2px' : '8px';
+        systemTray.style.margin = isVertical ? '2px auto' : '0';
+        systemTray.style.justifyContent = 'center';
+    }
+
+    if (userTag) {
+        userTag.style.display = isVertical ? 'none' : 'inline';
+    }
+
     if (buildTag) {
-        buildTag.style.bottom = ''; buildTag.style.top = ''; buildTag.style.left = ''; buildTag.style.right = '';
+        buildTag.style.bottom = 'auto'; buildTag.style.top = 'auto'; buildTag.style.left = 'auto'; buildTag.style.right = 'auto';
         buildTag.style.right = '20px';
         if (pos === 'bottom') {
             buildTag.style.bottom = `${offset + 15}px`;
@@ -511,6 +558,11 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
         const tray = clockEl.closest('#system-tray');
         if (tray) tray.style.display = showClock ? 'flex' : 'none';
     }
+
+    document.documentElement.style.setProperty('--tb-height-offset', `${!autoHide && (pos === 'bottom' || pos === 'top') ? sz : 0}px`);
+    document.documentElement.style.setProperty('--tb-top-offset', `${!autoHide && pos === 'top' ? sz : 0}px`);
+    document.documentElement.style.setProperty('--tb-left-offset', `${!autoHide && pos === 'left' ? sz : 0}px`);
+    document.documentElement.style.setProperty('--tb-right-offset', `${!autoHide && pos === 'right' ? sz : 0}px`);
 
     logKernel(`Taskbar: Applied props — pos:${pos} size:${sz}px autohide:${autoHide} ontop:${alwaysTop}`);
 }
