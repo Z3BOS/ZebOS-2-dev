@@ -464,6 +464,38 @@ const SVGS = {
             <rect x="13.5" y="14" width="3" height="4" fill="#000000"/>
         </svg>
     `,
+    run: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="4" width="20" height="16" rx="1.5" fill="#c0c0c0" stroke="#444444" stroke-width="1.5"/>
+            <rect x="4" y="6" width="16" height="4" fill="#000080"/>
+            <path d="M7 13V19H12" stroke="#444444" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="8" y1="16" x2="14" y2="16" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+            <polygon points="15,13.3 20,16 15,18.7" fill="#2e7d32"/>
+        </svg>
+    `,
+    regedit: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="6" width="18" height="14" rx="1" fill="#e8d9b5" stroke="#7a5c2e" stroke-width="1.5"/>
+            <rect x="3" y="6" width="18" height="4" fill="#c9a86a" stroke="#7a5c2e" stroke-width="1"/>
+            <line x1="6" y1="12" x2="16" y2="12" stroke="#7a5c2e" stroke-width="1"/>
+            <line x1="6" y1="15" x2="16" y2="15" stroke="#7a5c2e" stroke-width="1"/>
+            <line x1="6" y1="18" x2="12" y2="18" stroke="#7a5c2e" stroke-width="1"/>
+            <circle cx="17.5" cy="17" r="3.2" fill="#455a64" stroke="#263238" stroke-width="0.8"/>
+            <circle cx="17.5" cy="16.2" r="0.9" fill="#eeeeee"/>
+            <rect x="16.9" y="16.7" width="1.2" height="1.8" fill="#eeeeee"/>
+        </svg>
+    `,
+    reinstall: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="6" width="20" height="12" rx="2" fill="#d0d0d0" stroke="#000000" stroke-width="1.5"/>
+            <line x1="2" y1="14" x2="22" y2="14" stroke="#808080" stroke-width="1"/>
+            <rect x="5" y="9" width="8" height="2" fill="#555555"/>
+            <path d="M15 15.5C15 13.6 16.6 12 18.5 12C19.6 12 20.6 12.5 21.2 13.4" stroke="#c62828" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <polygon points="21.2,11.2 21.6,13.7 19.1,13.3" fill="#c62828"/>
+            <path d="M22 17.5C22 19.4 20.4 21 18.5 21C17.4 21 16.4 20.5 15.8 19.6" stroke="#c62828" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <polygon points="15.8,21.8 15.4,19.3 17.9,19.7" fill="#c62828"/>
+        </svg>
+    `,
     chess: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="2" y="2" width="20" height="20" fill="#e0e0e0" stroke="#000000" stroke-width="1.5"/>

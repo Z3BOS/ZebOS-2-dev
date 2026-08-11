@@ -410,6 +410,73 @@ function applyOsSettings(settings) {
     if (settings.roundedCorners !== undefined) systemState.roundedCorners = settings.roundedCorners;
 }
 
+// ==========================================================================
+// REGISTRY EDITOR API
+// The "registry" isn't a separate data store — it's a read/write window onto
+// the same systemState fields Personalize and the desktop context menu edit.
+// Editing a value here takes effect live, exactly like those do.
+// ==========================================================================
+export function getRegistrySnapshot() {
+    return {
+        desktopBackground: systemState.desktopBackground,
+        desktopPattern:    systemState.desktopPattern,
+        desktopScheme:     systemState.desktopScheme,
+        soundScheme:       systemState.soundScheme,
+        roundedCorners:    systemState.roundedCorners,
+        autoArrange:       systemState.autoArrange,
+        desktopSortBy:     systemState.desktopSortBy,
+        taskbarAutoHide:   systemState.taskbarAutoHide,
+        savedUsername:     systemState.savedUsername,
+        hasLoggedInBefore: systemState.hasLoggedInBefore,
+        alwaysShowSetup:   systemState.alwaysShowSetup,
+        skipBootAnimation: systemState.skipBootAnimation,
+        autoDevMode:       systemState.autoDevMode,
+        disableKernelLogs: systemState.disableKernelLogs,
+        version:           systemState.version,
+        codename:          systemState.codename,
+        currentUser:       systemState.currentUser,
+        uptime:            systemState.uptime,
+        buildHash:         BUILD_GIT_HASH,
+    };
+}
+
+export function setRegistryValue(field, rawValue) {
+    switch (field) {
+        case 'desktopBackground':
+        case 'desktopPattern':
+        case 'desktopScheme':
+        case 'soundScheme':
+        case 'roundedCorners':
+            applyOsSettings({
+                color:          field === 'desktopBackground' ? rawValue : systemState.desktopBackground,
+                pattern:        field === 'desktopPattern'    ? rawValue : systemState.desktopPattern,
+                scheme:         field === 'desktopScheme'     ? rawValue : systemState.desktopScheme,
+                soundScheme:    field === 'soundScheme'       ? rawValue : systemState.soundScheme,
+                roundedCorners: field === 'roundedCorners'    ? rawValue : systemState.roundedCorners,
+            });
+            break;
+        case 'taskbarAutoHide': {
+            systemState.taskbarAutoHide = !!rawValue;
+            setupTaskbarEvents();
+            const tb = document.getElementById('system-taskbar');
+            if (tb) tb.style.opacity = systemState.taskbarAutoHide ? '0' : '1';
+            break;
+        }
+        case 'autoArrange':
+            systemState.autoArrange = !!rawValue;
+            renderDesktopIcons();
+            break;
+        case 'desktopSortBy':
+            systemState.desktopSortBy = rawValue;
+            renderDesktopIcons();
+            break;
+        default:
+            systemState[field] = rawValue;
+    }
+    saveFileSystem();
+    logKernel(`Registry: Set ${field} = ${rawValue}`);
+}
+
 let taskbarEventsInitialized = false;
 
 function setupTaskbarEvents() {
@@ -1669,6 +1736,87 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
             break;
         }
 
+        case 'start-link-run': {
+            const winId = 'app-run';
+            try {
+                const module = await import(`./programs/run.js?v=${Date.now()}`);
+                const runBody = createWindow("Run", "run", winId);
+                if (runBody) {
+                    setWindowBounds(runBody, 420, 210);
+                    const runInstance = new module.RunDialog(
+                        () => closeWindow(winId),
+                        (appId, arg) => launchApplication(appId, arg),
+                        () => launchApplication('start-link-files')
+                    );
+                    registerWindowCleanup(winId, () => runInstance.cleanup());
+                    runInstance.open(runBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount run.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-regedit': {
+            const winId = 'app-regedit';
+            try {
+                const module = await import(`./programs/regedit.js?v=${Date.now()}`);
+                const regeditBody = createWindow("Registry Editor", "regedit", winId);
+                if (regeditBody) {
+                    setWindowBounds(regeditBody, 700, 480);
+                    const regeditInstance = new module.RegistryEditorApp(
+                        () => closeWindow(winId),
+                        { getSnapshot: getRegistrySnapshot, setValue: setRegistryValue }
+                    );
+                    registerWindowCleanup(winId, () => regeditInstance.cleanup());
+                    regeditInstance.open(regeditBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount regedit.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-sysflags': {
+            const winId = 'app-sysflags';
+            try {
+                const module = await import(`./devtools/sysflags.js?v=${Date.now()}`);
+                const sysflagsBody = createWindow("System Flags", "settings", winId);
+                if (sysflagsBody) {
+                    setWindowBounds(sysflagsBody, 420, 520);
+                    const sysflagsInstance = new module.SystemFlagsApp(
+                        () => closeWindow(winId),
+                        { getSnapshot: getRegistrySnapshot, setValue: setRegistryValue }
+                    );
+                    registerWindowCleanup(winId, () => sysflagsInstance.cleanup());
+                    sysflagsInstance.open(sysflagsBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount devtools/sysflags.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
+        case 'start-link-reinstall': {
+            const winId = 'app-reinstaller';
+            try {
+                const module = await import(`./devtools/reinstaller.js?v=${Date.now()}`);
+                const reinstallBody = createWindow("Reinstaller", "reinstall", winId);
+                if (reinstallBody) {
+                    setWindowBounds(reinstallBody, 420, 300);
+                    const reinstallInstance = new module.ReinstallerApp(
+                        () => closeWindow(winId),
+                        { reinstallAndRestart }
+                    );
+                    registerWindowCleanup(winId, () => reinstallInstance.cleanup());
+                    reinstallInstance.open(reinstallBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount devtools/reinstaller.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
         case 'start-link-shutdown':
             alert("ZebOS Shutdown Sequence Initiated.");
             break;
@@ -1854,6 +2002,20 @@ function buildRecoveryApi(onExit) {
             setFlag
         }
     };
+}
+
+// ==========================================================================
+// DEVTOOLS: LIVE-SESSION REINSTALLER
+// Same reset buildRecoveryApi's reinstall() does at the boot-time Recovery
+// screen, but triggered mid-session — so it restarts ZebOS afterward instead
+// of just falling through to the logon screen that hasn't rendered yet.
+// ==========================================================================
+export function reinstallAndRestart() {
+    Object.assign(systemState, RECOVERY_DEFAULT_SETTINGS);
+    provisionDefaultRootFS();
+    saveFileSystem();
+    logKernel("Devtools Reinstaller: Fresh install provisioned, all prior data erased. Restarting...", "WARN");
+    setTimeout(() => window.location.reload(), 500);
 }
 
 // ==========================================================================
@@ -2331,12 +2493,40 @@ function setupStartMenuController() {
 }
 
 // ==========================================================================
+// GLOBAL DESKTOP SHORTCUTS
+// ==========================================================================
+function isDesktopSessionActive() {
+    return !document.getElementById('boot-screen')
+        && !document.getElementById('zeb-loading-screen')
+        && !document.getElementById('logon-screen')
+        && !document.getElementById('recovery-screen');
+}
+
+function isTypingContext() {
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
+
+function setupGlobalShortcuts() {
+    window.addEventListener('keydown', (e) => {
+        if (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && e.key.toLowerCase() === 'r') {
+            if (!isDesktopSessionActive() || isTypingContext() || document.querySelector('.os-modal-overlay')) return;
+            e.preventDefault();
+            launchApplication('start-link-run');
+        }
+    });
+}
+
+// ==========================================================================
 // KERNEL INITIALIZATION LAUNCHPOINT
 // ==========================================================================
 loadFileSystem();
 initializeBootSequence();
 startSystemClock();
 setupStartMenuController();
+setupGlobalShortcuts();
 renderDesktopIcons();
 
 initContextMenuSystem({
