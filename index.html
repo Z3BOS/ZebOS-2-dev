@@ -11,16 +11,9 @@
 
     <!-- LAYER 3: Fullscreen Responsive Image Boot Screen Overlay -->
     <div id="boot-screen">
-        <div class="boot-screen-content">
-            <img src="assets/system/splash.png" alt="ZebOS 2 Splash" class="boot-splash-img" id="boot-splash-art">
-            <!-- Kernel log lines print here first, before the splash art is revealed -->
-            <div id="boot-log-console"></div>
-            <div class="boot-spinner" id="boot-spinner"></div>
-        </div>
-        <div class="boot-footer">
-            <div>ZebOS 2 Operating System</div>
-            <div>Build 3.0.1 (UIKit_1.00_stable)</div>
-        </div>
+        <!-- Kernel log lines print here first, before the splash art is revealed -->
+        <div id="boot-log-console"></div>
+        <img id="boot-splash-img" src="assets/system/splashboot.png" alt="ZebOS 2 Splash">
         <div id="boot-progress-track">
             <div id="boot-progress-bar"></div>
         </div>
