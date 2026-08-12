@@ -16,7 +16,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'System activity & launcher dashboard',
                 execPath: 'Z:\\ZebApps\\Activity Center\\activitycenter.exe',
                 category: 'System Utility',
-                version: '2.7.0 Beta',
+                version: '3.0.0',
                 size: '185 KB',
                 ram: '1.4 MB',
                 status: 'Running'
@@ -28,7 +28,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Browse virtual file system folders & drives',
                 execPath: 'Z:\\ZebApps\\Zeb Explorer\\explorer.exe',
                 category: 'File Management',
-                version: '2.7.0 Beta',
+                version: '3.0.0',
                 size: '410 KB',
                 ram: '2.2 MB',
                 status: 'Ready'
@@ -40,7 +40,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Edit text, ZDL scripts, & configuration files',
                 execPath: 'Z:\\ZebApps\\Text Editor\\editor.exe',
                 category: 'Productivity',
-                version: '2.5.8',
+                version: '3.0.0',
                 size: '142 KB',
                 ram: '0.9 MB',
                 status: 'Ready'
@@ -52,7 +52,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Command prompt interface for system tasks',
                 execPath: 'Z:\\ZebApps\\Terminal\\cmd.exe',
                 category: 'Developer Tools',
-                version: '2.7.0 Beta',
+                version: '3.0.0',
                 size: '220 KB',
                 ram: '1.1 MB',
                 status: 'Ready'
@@ -64,7 +64,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Raster graphics editor & drawing suite',
                 execPath: 'Z:\\ZebApps\\Paint Studio\\paint.exe',
                 category: 'Graphics & Design',
-                version: '2.4.1',
+                version: '3.0.0',
                 size: '512 KB',
                 ram: '3.5 MB',
                 status: 'Ready'
@@ -76,7 +76,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Perform standard & scientific calculations',
                 execPath: 'Z:\\ZebApps\\Calculator\\calc.exe',
                 category: 'Utilities',
-                version: '2.0.0',
+                version: '3.0.0',
                 size: '96 KB',
                 ram: '0.5 MB',
                 status: 'Ready'
@@ -88,7 +88,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Monitor processes, CPU, & system resources',
                 execPath: 'Z:\\ZebApps\\Task Manager\\taskmgr.exe',
                 category: 'System Diagnostics',
-                version: '2.7.0 Beta',
+                version: '3.0.0',
                 size: '340 KB',
                 ram: '1.6 MB',
                 status: 'Ready'
@@ -100,7 +100,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Play audio waveforms & retro media streams',
                 execPath: 'Z:\\ZebApps\\Media Player\\player.exe',
                 category: 'Multimedia',
-                version: '2.3.0',
+                version: '3.0.0',
                 size: '620 KB',
                 ram: '4.1 MB',
                 status: 'Ready'
@@ -112,7 +112,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Classic card solitaire engine',
                 execPath: 'Z:\\ZebApps\\Solitaire\\solitaire.exe',
                 category: 'Entertainment',
-                version: '1.9.0',
+                version: '3.0.0',
                 size: '280 KB',
                 ram: '1.7 MB',
                 status: 'Ready'
@@ -124,7 +124,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Strategic chess engine vs computer or local P2P',
                 execPath: 'Z:\\ZebApps\\Chess\\chess.exe',
                 category: 'Entertainment',
-                version: '2.1.0',
+                version: '3.0.0',
                 size: '490 KB',
                 ram: '2.8 MB',
                 status: 'Ready'
@@ -136,7 +136,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Customize wallpaper, schemes, & themes',
                 execPath: 'Z:\\ZebApps\\System Info\\desk.cpl',
                 category: 'Control Panel',
-                version: '2.7.0 Beta',
+                version: '3.0.0',
                 size: '150 KB',
                 ram: '1.0 MB',
                 status: 'Ready'
