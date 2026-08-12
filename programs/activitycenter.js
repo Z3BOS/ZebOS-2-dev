@@ -16,7 +16,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'System activity & launcher dashboard',
                 execPath: 'Z:\\ZebApps\\Activity Center\\activitycenter.exe',
                 category: 'System Utility',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '185 KB',
                 ram: '1.4 MB',
                 status: 'Running'
@@ -28,7 +28,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Browse virtual file system folders & drives',
                 execPath: 'Z:\\ZebApps\\Zeb Explorer\\explorer.exe',
                 category: 'File Management',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '410 KB',
                 ram: '2.2 MB',
                 status: 'Ready'
@@ -40,7 +40,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Edit text, ZDL scripts, & configuration files',
                 execPath: 'Z:\\ZebApps\\Text Editor\\editor.exe',
                 category: 'Productivity',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '142 KB',
                 ram: '0.9 MB',
                 status: 'Ready'
@@ -52,7 +52,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Command prompt interface for system tasks',
                 execPath: 'Z:\\ZebApps\\Terminal\\cmd.exe',
                 category: 'Developer Tools',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '220 KB',
                 ram: '1.1 MB',
                 status: 'Ready'
@@ -64,7 +64,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Raster graphics editor & drawing suite',
                 execPath: 'Z:\\ZebApps\\Paint Studio\\paint.exe',
                 category: 'Graphics & Design',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '512 KB',
                 ram: '3.5 MB',
                 status: 'Ready'
@@ -76,7 +76,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Perform standard & scientific calculations',
                 execPath: 'Z:\\ZebApps\\Calculator\\calc.exe',
                 category: 'Utilities',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '96 KB',
                 ram: '0.5 MB',
                 status: 'Ready'
@@ -88,7 +88,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Monitor processes, CPU, & system resources',
                 execPath: 'Z:\\ZebApps\\Task Manager\\taskmgr.exe',
                 category: 'System Diagnostics',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '340 KB',
                 ram: '1.6 MB',
                 status: 'Ready'
@@ -100,7 +100,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Play audio waveforms & retro media streams',
                 execPath: 'Z:\\ZebApps\\Media Player\\player.exe',
                 category: 'Multimedia',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '620 KB',
                 ram: '4.1 MB',
                 status: 'Ready'
@@ -112,7 +112,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Classic card solitaire engine',
                 execPath: 'Z:\\ZebApps\\Solitaire\\solitaire.exe',
                 category: 'Entertainment',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '280 KB',
                 ram: '1.7 MB',
                 status: 'Ready'
@@ -124,7 +124,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Strategic chess engine vs computer or local P2P',
                 execPath: 'Z:\\ZebApps\\Chess\\chess.exe',
                 category: 'Entertainment',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '490 KB',
                 ram: '2.8 MB',
                 status: 'Ready'
@@ -136,9 +136,93 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Customize wallpaper, schemes, & themes',
                 execPath: 'Z:\\ZebApps\\System Info\\desk.cpl',
                 category: 'Control Panel',
-                version: '3.0.0',
+                version: '3.0.1',
                 size: '150 KB',
                 ram: '1.0 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-camera',
+                icon: 'camera',
+                label: 'Camera',
+                desc: 'Webcam snapshot capture & video recording suite',
+                execPath: 'Z:\\ZebApps\\Camera\\camera.exe',
+                category: 'Multimedia',
+                version: '3.0.1',
+                size: '310 KB',
+                ram: '2.5 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-snake',
+                icon: 'snake',
+                label: 'Snake Game',
+                desc: 'Classic arcade snake game with high score tracking',
+                execPath: 'Z:\\ZebApps\\Snake Game\\snake.exe',
+                category: 'Entertainment',
+                version: '3.0.1',
+                size: '88 KB',
+                ram: '0.6 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-mines',
+                icon: 'mines',
+                label: 'Minesweeper',
+                desc: 'Classic mine clearing puzzle game',
+                execPath: 'Z:\\ZebApps\\Minesweeper\\mines.exe',
+                category: 'Entertainment',
+                version: '3.0.1',
+                size: '120 KB',
+                ram: '0.8 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-vm',
+                icon: 'vm',
+                label: 'ZebVM Manager',
+                desc: 'Virtual Machine manager & guest OS emulator',
+                execPath: 'Z:\\ZebApps\\ZebVM\\zebvm.exe',
+                category: 'System Utility',
+                version: '3.0.1',
+                size: '680 KB',
+                ram: '4.5 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-courgette',
+                icon: 'courgette',
+                label: 'System Info',
+                desc: 'Hardware diagnostics, kernel specs, & memory log',
+                execPath: 'Z:\\ZebApps\\System Info\\courgette.exe',
+                category: 'System Diagnostics',
+                version: '3.0.1',
+                size: '160 KB',
+                ram: '1.0 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-regedit',
+                icon: 'regedit',
+                label: 'Registry Editor',
+                desc: 'System registry keys & configuration tree manager',
+                execPath: 'Z:\\ZebOS\\regedit.exe',
+                category: 'System Utility',
+                version: '3.0.1',
+                size: '240 KB',
+                ram: '1.2 MB',
+                status: 'Ready'
+            },
+            {
+                id: 'start-link-viewer',
+                icon: 'viewer',
+                label: 'Zeb Viewer',
+                desc: 'Image & media viewer application',
+                execPath: 'Z:\\ZebApps\\Zeb Viewer\\viewer.exe',
+                category: 'Graphics & Design',
+                version: '3.0.1',
+                size: '215 KB',
+                ram: '1.5 MB',
                 status: 'Ready'
             }
         ];

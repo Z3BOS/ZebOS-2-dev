@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v3.0.0 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v3.0.1 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "3.0.0",
+    version: "3.0.1",
     currentUser: "guest",
     uptime: 0,
     activeApp: null,
@@ -209,7 +209,7 @@ function ensureSystemFoldersExist() {
         "Zeb32": {
             type: "dir",
             content: {
-                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 3.0.0.8f31b40" },
+                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 3.0.1.8f31b40" },
                 "shell32.zdl":   { type: "file", content: "ZebOS Desktop User Interface Shell Controller" },
                 "user32.zdl":    { type: "file", content: "ZebOS Windowing & Event Management Subsystem" },
                 "gdi32.zdl":     { type: "file", content: "ZebOS Graphics Device Interface Subsystem" },
@@ -269,7 +269,7 @@ function ensureSystemFoldersExist() {
             type: "dir",
             content: {
                 "system.ini": { type: "file", content: "[boot]\nshell=shell32.zdl\ndrivers=display.zdl,mouse.zdl,sound32.zdl\n" },
-                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=3.0.0\nTheme=Standard\n" },
+                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=3.0.1\nTheme=Standard\n" },
                 "zebos.cfg":   { type: "file", content: "CONFIG_DEV_MODE=0\nCONFIG_VFS_QUOTA=2097152\n" }
             }
         }
@@ -710,11 +710,11 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2  Build v3.0.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2  Build v3.0.1!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
-                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 3.0.0.8f31b40" },
+                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 3.0.1.8f31b40" },
                 "shell32.zdl":   { type: "file", content: "ZebOS Desktop User Interface Shell Controller" },
                 "user32.zdl":    { type: "file", content: "ZebOS Windowing & Event Management Subsystem" },
                 "gdi32.zdl":     { type: "file", content: "ZebOS Graphics Device Interface Subsystem" },
@@ -773,7 +773,7 @@ function provisionDefaultRootFS() {
             type: "dir",
             content: {
                 "system.ini": { type: "file", content: "[boot]\nshell=shell32.zdl\ndrivers=display.zdl,mouse.zdl,sound32.zdl\n" },
-                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=3.0.0\nTheme=Standard\n" },
+                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=3.0.1\nTheme=Standard\n" },
                 "zebos.cfg":   { type: "file", content: "CONFIG_DEV_MODE=0\nCONFIG_VFS_QUOTA=2097152\n" }
             }
         }
@@ -930,7 +930,7 @@ function initializeBootSequence() {
         if (!systemState.disableKernelLogs) logKernel(message);
     }
 
-    bootLog("SYSTEM START: Initializing Zeb Kernel v3.0.0 ...");
+    bootLog("SYSTEM START: Initializing Zeb Kernel v3.0.1 ...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -1008,7 +1008,7 @@ function initializeBootSequence() {
                 <div class="zeb-loading-content">
                     <img src="assets/system/z_logo.png" class="zeb-loading-logo" alt="ZebOS Logo" onerror="this.style.display='none'">
                     <div class="zeb-loading-title">Zeb<span class="brand-highlight">OS</span></div>
-                    <div class="zeb-loading-version">Professional 3.0.0 </div>
+                    <div class="zeb-loading-version">Professional 3.0.1 </div>
                     <div class="zeb-loading-track">
                         <div class="zeb-loading-blocks">
                             <div class="zeb-loading-block"></div>
@@ -1108,7 +1108,7 @@ function initializeBootSequence() {
                 if (finished) return;
                 if (bootScreen) bootScreen.classList.add('splash-active');
                 bootLog("BOOT: Kernel log complete, displaying splash screen.");
-                setTimeout(finishBoot, 4200);
+                setTimeout(finishBoot, 7000);
             }, 300);
         }
     }
@@ -1118,7 +1118,7 @@ function initializeBootSequence() {
         setTimeout(finishBoot, 1500);
     } else {
         printNextBootLine();
-        setTimeout(finishBoot, Math.max(7500, fullBootLog.length * 180 + 4500));
+        setTimeout(finishBoot, Math.max(10000, fullBootLog.length * 180 + 7200));
     }
 }
 

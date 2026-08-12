@@ -535,6 +535,32 @@ activitycenter: `
             <circle cx="18" cy="10.5" r="1" fill="#ff5252"/>
         </svg>
     `,
+    grid: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" fill="none" stroke="#000000" stroke-width="1.5"/>
+            <path d="M9 3V21M15 3V21M3 9H21M3 15H21" stroke="#000080" stroke-width="1.2"/>
+        </svg>
+    `,
+    timer: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="13" r="8" fill="#ffffff" stroke="#000000" stroke-width="1.5"/>
+            <path d="M12 9V13L15 15" stroke="#000080" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M10 2H14" stroke="#000000" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M12 2V5" stroke="#000000" stroke-width="1.5"/>
+        </svg>
+    `,
+    filter: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 4H21L14 12V19L10 21V12L3 4Z" fill="#c0c0c0" stroke="#000000" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M6 6H18" stroke="#000080" stroke-width="1.2"/>
+        </svg>
+    `,
+    delete: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 7H18M9 7V5C9 4.4 9.4 4 10 4H14C14.6 4 15 4.4 15 5V7M17 7V19C17 19.6 16.6 20 16 20H8C7.4 20 7 19.6 7 19V7" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M10 11V16M14 11V16" stroke="#d32f2f" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+    `,
 };
 
 export function getIcon(name, customClass = "") {

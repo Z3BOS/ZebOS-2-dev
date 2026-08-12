@@ -2,11 +2,13 @@
 // Split out of camera.js so the UI shell calls captureFrame()/downloadBlob()
 // instead of touching the canvas/Blob APIs directly.
 
-export function captureFrame(videoEl, canvasEl) {
+export function captureFrame(videoEl, canvasEl, filterString = 'none') {
     if (!videoEl.videoWidth) return null;
     canvasEl.width = videoEl.videoWidth;
     canvasEl.height = videoEl.videoHeight;
-    canvasEl.getContext('2d').drawImage(videoEl, 0, 0);
+    const ctx = canvasEl.getContext('2d');
+    ctx.filter = filterString || 'none';
+    ctx.drawImage(videoEl, 0, 0);
     return canvasEl.toDataURL('image/png');
 }
 

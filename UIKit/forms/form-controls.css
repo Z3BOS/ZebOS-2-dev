@@ -54,10 +54,11 @@ input[type="radio"]:checked::after {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #ffffff;
+    background: #c0c0c0;
     border: 2px solid #808080;
     border-right-color: #ffffff;
     border-bottom-color: #ffffff;
+    box-shadow: inset 1px 1px 0 #000000;
     padding: 2px 4px;
     cursor: pointer;
     min-height: 22px;
@@ -97,8 +98,8 @@ input[type="radio"]:checked::after {
     top: 100%;
     left: 0;
     width: 100%;
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: #c0c0c0;
+    border: 1px solid #000000;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
     z-index: 9999;
     max-height: 160px;
