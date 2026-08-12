@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.7.0 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.8.0 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -206,7 +206,7 @@ function ensureSystemFoldersExist() {
     });
 
     const defaults = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Beta Build v2.7.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Public Beta Build v2.8.0!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
@@ -712,7 +712,7 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Beta Build v2.7.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Public Beta Build v2.8.0!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
@@ -932,7 +932,7 @@ function initializeBootSequence() {
         if (!systemState.disableKernelLogs) logKernel(message);
     }
 
-    bootLog("SYSTEM START: Initializing Zeb Kernel v2.7.0 Beta...");
+    bootLog("SYSTEM START: Initializing Zeb Kernel v2.8.0 Public Beta...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
@@ -1010,7 +1010,7 @@ function initializeBootSequence() {
                 <div class="zeb-loading-content">
                     <img src="assets/system/z_logo.png" class="zeb-loading-logo" alt="ZebOS Logo" onerror="this.style.display='none'">
                     <div class="zeb-loading-title">Zeb<span class="brand-highlight">OS</span></div>
-                    <div class="zeb-loading-version">Professional 2.7.0 Beta</div>
+                    <div class="zeb-loading-version">Professional 2.7.0 Public Beta</div>
                     <div class="zeb-loading-track">
                         <div class="zeb-loading-blocks">
                             <div class="zeb-loading-block"></div>
