@@ -1577,6 +1577,23 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
             break;
         }
 
+        case 'start-link-camera': {
+            const winId = 'app-camera';
+            try {
+                const module = await import(`./camera/camera.js?v=${Date.now()}`);
+                const cameraBody = createWindow("Camera", "camera", winId);
+                if (cameraBody) {
+                    setWindowBounds(cameraBody, 640, 480);
+                    const cameraInstance = new module.CameraApp(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => cameraInstance.cleanup());
+                    cameraInstance.open(cameraBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount camera/camera.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
         case 'start-link-vm': {
             const winId = 'app-vm';
             try {
@@ -2075,6 +2092,7 @@ const INITIAL_DESKTOP_SHORTCUTS = [
     { id: 'start-link-tasklist', icon: 'tasklist', label: 'Task List' },
     { id: 'start-link-media', icon: 'media', label: 'Media Player' },
     { id: 'start-link-vm', icon: 'vm', label: 'ZebVM Manager' },
+    { id: 'start-link-camera', icon: 'camera', label: 'Camera' },
     { id: 'start-link-courgette', icon: 'courgette', label: 'Courgette' },
     { id: 'start-link-taskmgr', icon: 'taskmgr', label: 'Task Manager' },
     { id: 'start-link-solitaire', icon: 'solitaire', label: 'Solitaire' },

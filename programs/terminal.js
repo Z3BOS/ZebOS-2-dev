@@ -435,7 +435,7 @@ export class ZebTerminal extends BaseApp {
 
     runMosys(args) {
         if (!args.length || args[0] === 'help' || args[0] === '-h') {
-            this.println("mosys - ZebOS platform & firmware diagnostics utility");
+            this.println("mosys - More Systems");
             this.println("usage: mosys <command> <sub-command> [args]");
             this.println("");
             this.println("commands:");

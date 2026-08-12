@@ -526,6 +526,15 @@ activitycenter: `
         <rect x="5.5" y="18" width="8" height="1" fill="#008000"/>
     </svg>
 `,
+    camera: `
+        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="7" width="20" height="14" rx="2" fill="#424242" stroke="#000000" stroke-width="1.5"/>
+            <rect x="8" y="4" width="8" height="4" rx="1" fill="#616161" stroke="#000000" stroke-width="1.2"/>
+            <circle cx="12" cy="14" r="5" fill="#212121" stroke="#000000" stroke-width="1.5"/>
+            <circle cx="12" cy="14" r="2.6" fill="#42a5f5"/>
+            <circle cx="18" cy="10.5" r="1" fill="#ff5252"/>
+        </svg>
+    `,
     tasklist: `
         <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="4" y="3" width="16" height="19" rx="1.5" fill="#f5f5f5" stroke="#444444" stroke-width="1.3"/>
