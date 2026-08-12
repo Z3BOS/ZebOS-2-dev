@@ -1,4 +1,4 @@
-// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.6.0 Core)
+// State tracking & Persistent VFS Storage Module (ZebOS 2 v2.7.0 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
 
@@ -7,7 +7,7 @@ import { initContextMenuSystem } from './contextmenu.js';
 const BUILD_GIT_HASH = "8f31b40";
 
 let systemState = {
-    version: "2.6.0",
+    version: "2.7.0",
     codename: "Fawn",
     currentUser: "guest",
     uptime: 0,
@@ -206,11 +206,11 @@ function ensureSystemFoldersExist() {
     });
 
     const defaults = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Beta Build v2.6.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Beta Build v2.7.0!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
-                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.6.0.8f31b40" },
+                "kernel.zdl":    { type: "file", content: "ZebOS 2 Core Microkernel Execution Module [x86_64-zeb]\nVersion: 2.7.0.8f31b40" },
                 "shell32.zdl":   { type: "file", content: "ZebOS Desktop User Interface Shell Controller" },
                 "user32.zdl":    { type: "file", content: "ZebOS Windowing & Event Management Subsystem" },
                 "gdi32.zdl":     { type: "file", content: "ZebOS Graphics Device Interface Subsystem" },
@@ -270,7 +270,7 @@ function ensureSystemFoldersExist() {
             type: "dir",
             content: {
                 "system.ini": { type: "file", content: "[boot]\nshell=shell32.zdl\ndrivers=display.zdl,mouse.zdl,sound32.zdl\n" },
-                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=2.6.0\nTheme=Standard\n" },
+                "win.ini":    { type: "file", content: "[ZebOS]\nVersion=2.7.0\nTheme=Standard\n" },
                 "zebos.cfg":   { type: "file", content: "CONFIG_DEV_MODE=0\nCONFIG_VFS_QUOTA=2097152\n" }
             }
         }
@@ -712,7 +712,7 @@ function applyTaskbarProperties({ pos, size, autoHide, alwaysTop, showClock }) {
 
 function provisionDefaultRootFS() {
     systemState.fileSystem = {
-        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Beta Build v2.6.0!\nPersistent storage disk saving & dynamic VFS active." },
+        "readme.txt": { type: "file", content: "Welcome to ZebOS 2 Beta Build v2.7.0!\nPersistent storage disk saving & dynamic VFS active." },
         "Zeb32": {
             type: "dir",
             content: {
@@ -932,7 +932,7 @@ function initializeBootSequence() {
         if (!systemState.disableKernelLogs) logKernel(message);
     }
 
-    bootLog("SYSTEM START: Initializing Zeb Kernel v2.6.0 Beta...");
+    bootLog("SYSTEM START: Initializing Zeb Kernel v2.7.0 Beta...");
     const bootScreen = document.getElementById('boot-screen');
     const logConsole = document.getElementById('boot-log-console');
 
