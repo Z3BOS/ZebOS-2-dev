@@ -1,5 +1,6 @@
 // This is a small app I made in like 10 minutes that is like a Neofetch for ZebOS
 // It shows some basic system info and a cute ASCII courgette
+import { BaseApp } from '../UIKit/framework/index.js';
 
 const ASCII_COURGETTE = `
        .::::.
@@ -11,16 +12,12 @@ const ASCII_COURGETTE = `
         '::::'
 `;
 
-export class CourgetteInfo {
+export class CourgetteInfo extends BaseApp {
     constructor(onCloseRequest, snapshot) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.snapshot = snapshot;
 
-        this.bodyElement = null;
-        this.uptimeEl = null;
-        this.tickInterval = null;
         this.uptimeSeconds = snapshot.uptimeSeconds;
-
         this.keyHandler = (e) => this.handleKeyDown(e);
     }
 
@@ -36,9 +33,8 @@ export class CourgetteInfo {
         return `${(bytes / 1024).toFixed(1)} KB`;
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
-        this.bodyElement.style.height = "100%";
+    mount() {
+        this.body.style.height = "100%";
 
         const stats = [
             ['OS', `ZebOS 2 (Beta v${this.snapshot.version})`],
@@ -47,11 +43,11 @@ export class CourgetteInfo {
             ['Uptime', this.formatUptime(this.uptimeSeconds)],
             ['Resolution', `${window.innerWidth}x${window.innerHeight}`],
             ['Files', `${this.snapshot.fileCount} file(s), ${this.snapshot.dirCount} folder(s)`],
-            ['Disk', `${this.formatBytes(this.snapshot.diskBytes)} (ZEBOS_V2_DISK)`], 
+            ['Disk', `${this.formatBytes(this.snapshot.diskBytes)} (ZEBOS_V2_DISK)`],
             ['Agent', navigator.userAgent.split(') ').pop().split(' ')[0] || navigator.userAgent]
         ];
 
-        this.bodyElement.innerHTML = `
+        this.render(`
             <div style="display:flex; flex-direction:column; height:100%; background:#0e1b0e; color:#c8f0c8; font-family:'Consolas','Courier New',monospace; box-sizing:border-box;">
                 <div style="flex-grow:1; display:flex; gap:18px; padding:18px; overflow:auto; align-items:flex-start;">
                     <pre style="margin:0; color:#55dd55; font-size:0.95em; line-height:1.15; flex-shrink:0;">${ASCII_COURGETTE}</pre>
@@ -61,16 +57,16 @@ export class CourgetteInfo {
                     Esc: Exit
                 </div>
             </div>
-        `;
+        `);
 
-        const statsEl = this.bodyElement.querySelector('.cg-stats');
+        const statsEl = this.body.querySelector('.cg-stats');
         this.statsEl = statsEl;
         this.stats = stats;
         this.renderStats();
 
-        window.addEventListener('keydown', this.keyHandler);
+        this.listen(window, 'keydown', this.keyHandler);
         const uptimeRow = this.stats.find(row => row[0] === 'Uptime');
-        this.tickInterval = setInterval(() => {
+        this.interval(() => {
             this.uptimeSeconds += 1;
             if (uptimeRow) uptimeRow[1] = this.formatUptime(this.uptimeSeconds);
             this.renderStats();
@@ -84,11 +80,6 @@ export class CourgetteInfo {
     }
 
     handleKeyDown(e) {
-        if (e.key === 'Escape') { e.preventDefault(); this.onCloseRequest(); }
-    }
-
-    cleanup() {
-        clearInterval(this.tickInterval);
-        window.removeEventListener('keydown', this.keyHandler);
+        if (e.key === 'Escape') { e.preventDefault(); this.close(); }
     }
 }

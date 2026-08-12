@@ -1,9 +1,10 @@
 // programs/snake.js
-export class SnakeGame {
-    constructor(onCloseRequest) {
-        this.onCloseRequest = onCloseRequest;
+import { BaseApp } from '../UIKit/framework/index.js';
 
-        this.bodyElement = null;
+export class SnakeGame extends BaseApp {
+    constructor(onCloseRequest) {
+        super(onCloseRequest);
+
         this.canvas = null;
         this.ctx = null;
         this.scoreEl = null;
@@ -14,16 +15,14 @@ export class SnakeGame {
         this.dx = this.gridSize;
         this.dy = 0;
         this.score = 0;
-        this.gameInterval = null;
 
         this.keyHandler = (e) => this.handleKeyDown(e);
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
-        this.bodyElement.style.height = "100%";
+    mount() {
+        this.body.style.height = "100%";
 
-        this.bodyElement.innerHTML = `
+        this.render(`
             <div style="display:flex; flex-direction:column; height:100%; background:#000500; box-sizing:border-box;">
                 <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                     <canvas class="snake-canvas" width="400" height="400" style="width:400px; height:400px; max-width:100%; max-height:100%; image-rendering:pixelated; background:#000500;"></canvas>
@@ -33,15 +32,15 @@ export class SnakeGame {
                     <span>Score: <span class="snake-score">0</span></span>
                 </div>
             </div>
-        `;
+        `);
 
-        this.canvas = this.bodyElement.querySelector('.snake-canvas');
+        this.canvas = this.body.querySelector('.snake-canvas');
         this.ctx = this.canvas.getContext('2d');
-        this.scoreEl = this.bodyElement.querySelector('.snake-score');
+        this.scoreEl = this.body.querySelector('.snake-score');
 
-        window.addEventListener('keydown', this.keyHandler);
+        this.listen(window, 'keydown', this.keyHandler);
         this.resetGame();
-        this.gameInterval = setInterval(() => this.tick(), 100);
+        this.interval(() => this.tick(), 100);
     }
 
     resetGame() {
@@ -63,7 +62,7 @@ export class SnakeGame {
     }
 
     handleKeyDown(e) {
-        if (e.key === 'Escape') { e.preventDefault(); this.onCloseRequest(); return; }
+        if (e.key === 'Escape') { e.preventDefault(); this.close(); return; }
         if (e.key === 'ArrowUp' && this.dy === 0) { this.dx = 0; this.dy = -this.gridSize; }
         if (e.key === 'ArrowDown' && this.dy === 0) { this.dx = 0; this.dy = this.gridSize; }
         if (e.key === 'ArrowLeft' && this.dx === 0) { this.dx = -this.gridSize; this.dy = 0; }
@@ -123,10 +122,5 @@ export class SnakeGame {
             this.ctx.fillStyle = idx === 0 ? '#55ff55' : '#00aa00';
             this.ctx.fillRect(segment.x + 1, segment.y + 1, this.gridSize - 2, this.gridSize - 2);
         });
-    }
-
-    cleanup() {
-        clearInterval(this.gameInterval);
-        window.removeEventListener('keydown', this.keyHandler);
     }
 }

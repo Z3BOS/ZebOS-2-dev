@@ -1,12 +1,11 @@
 import { getIcon } from '../icons.js';
 import { playSystemSound, showOsConfirm } from '../os.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
-export class ActivityCenterApp {
+export class ActivityCenterApp extends BaseApp {
     constructor(onClose) {
-        this.onClose = onClose;
+        super(onClose);
         this.root = null;
-        this.clockTimer = null;
-        this.boundHandlers = [];
         this.selectedProgram = null;
 
         this.programs = [
@@ -145,8 +144,8 @@ export class ActivityCenterApp {
         ];
     }
 
-    open(container) {
-        this.root = container;
+    mount() {
+        this.root = this.body;
         this.root.style.background = '#c0c0c0';
         this.root.style.display = 'flex';
         this.root.style.flexDirection = 'column';
@@ -440,8 +439,7 @@ export class ActivityCenterApp {
         const on = (selector, type, fn) => {
             const el = this.root.querySelector(selector);
             if (!el) return;
-            el.addEventListener(type, fn);
-            this.boundHandlers.push({ el, type, fn });
+            this.listen(el, type, fn);
         };
 
         on('#ac-run-selected', 'click', () => {
@@ -462,7 +460,7 @@ export class ActivityCenterApp {
             this.renderProgramList();
         });
 
-        on('#ac-close', 'click', () => this.onClose && this.onClose());
+        on('#ac-close', 'click', () => this.close());
 
         on('#ac-action-taskmgr', 'click', () => this.runApp('start-link-taskmgr'));
         on('#ac-action-files', 'click', () => this.runApp('start-link-files'));
@@ -490,8 +488,7 @@ export class ActivityCenterApp {
                 window.launchApplicationFromActivityCenter(appId);
             }
         };
-        window.addEventListener('zebos:launch-app', launchProxy);
-        this.boundHandlers.push({ el: window, type: 'zebos:launch-app', fn: launchProxy });
+        this.listen(window, 'zebos:launch-app', launchProxy);
     }
 
     refreshStatus() {
@@ -515,16 +512,6 @@ export class ActivityCenterApp {
             timeEl.textContent = now.toLocaleTimeString();
         };
         tick();
-        this.clockTimer = setInterval(tick, 1000);
-    }
-
-    cleanup() {
-        if (this.clockTimer) {
-            clearInterval(this.clockTimer);
-            this.clockTimer = null;
-        }
-        this.boundHandlers.forEach(({ el, type, fn }) => el.removeEventListener(type, fn));
-        this.boundHandlers = [];
-        this.root = null;
+        this.interval(tick, 1000);
     }
 }

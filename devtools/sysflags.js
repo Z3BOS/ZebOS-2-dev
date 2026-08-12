@@ -3,6 +3,8 @@
 // A friendly checkbox/dropdown front-end over the same live settings the
 // Registry Editor exposes as raw HKCU/HKLM values (same getSnapshot/setValue
 // api) — think msconfig next to regedit.
+import { BaseApp } from '../UIKit/framework/index.js';
+
 const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;
 
 const BOOL_FLAGS = [
@@ -33,21 +35,19 @@ const ENUM_FLAGS = [
     ]},
 ];
 
-export class SystemFlagsApp {
+export class SystemFlagsApp extends BaseApp {
     constructor(onCloseRequest, api) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.api = api; // { getSnapshot(), setValue(field, value) }
         this.container = null;
         this.snapshot = api.getSnapshot();
     }
 
-    open(windowBodyElement) {
-        this.container = windowBodyElement;
+    mount() {
+        this.container = this.body;
         this.container.style.height = '100%';
-        this.render();
+        this.renderUI();
     }
-
-    cleanup() {}
 
     _sunken() { return 'border:2px solid #808080;border-right-color:#ffffff;border-bottom-color:#ffffff;'; }
 
@@ -69,7 +69,7 @@ export class SystemFlagsApp {
         </select>`;
     }
 
-    render() {
+    renderUI() {
         if (!this.container) return;
         const s = this.snapshot;
 

@@ -1,7 +1,9 @@
 // programs/calc.js - ZebOS Calculator (Standard & Scientific)
-export class RetroCalculator {
+import { BaseApp } from '../UIKit/framework/index.js';
+
+export class RetroCalculator extends BaseApp {
     constructor(onCloseRequest) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
 
         this.bodyElement = null;
         this.displayEl = null;
@@ -17,36 +19,28 @@ export class RetroCalculator {
         this.memoryValue = 0;
 
         this.keyHandler = (e) => this.handleKeyDown(e);
-        this.clickHandler = (e) => this.handleClick(e);
+
+        this.on('click', '.calc-mode-tab[data-mode]', (el) => {
+            if (this.mode !== el.dataset.mode) {
+                this.mode = el.dataset.mode;
+                this.renderUI();
+            }
+        });
+        this.on('click', '.calc-btn-retro[data-action]', (el) => {
+            this.processAction(el.dataset.action);
+        });
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
-        this.render();
+        this.renderUI();
 
-        window.addEventListener('keydown', this.keyHandler);
-        this.bodyElement.addEventListener('click', this.clickHandler);
+        this.listen(window, 'keydown', this.keyHandler);
     }
 
-    handleClick(e) {
-        const tab = e.target.closest('.calc-mode-tab');
-        if (tab && tab.dataset.mode) {
-            if (this.mode !== tab.dataset.mode) {
-                this.mode = tab.dataset.mode;
-                this.render();
-            }
-            return;
-        }
-
-        const target = e.target.closest('.calc-btn-retro');
-        if (target && target.dataset.action) {
-            this.processAction(target.dataset.action);
-        }
-    }
-
-    render() {
+    renderUI() {
         if (!this.bodyElement) return;
 
         const isSci = this.mode === 'scientific';
@@ -345,8 +339,4 @@ export class RetroCalculator {
         if (this.memoryTagEl) this.memoryTagEl.style.display = this.memoryValue !== 0 ? 'inline' : 'none';
     }
 
-    cleanup() {
-        window.removeEventListener('keydown', this.keyHandler);
-        if (this.bodyElement) this.bodyElement.removeEventListener('click', this.clickHandler);
-    }
 }

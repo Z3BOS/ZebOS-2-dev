@@ -4,28 +4,27 @@
 // ZebOS (a real reload), the same way the boot-time Recovery > Reinstall
 // tab does, just triggered from inside a running session.
 import { showOsConfirm } from '../os.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
-export class ReinstallerApp {
+export class ReinstallerApp extends BaseApp {
     constructor(onCloseRequest, api) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.api = api; // { reinstallAndRestart() }
         this.container = null;
         this.busy = false;
     }
 
-    open(windowBodyElement) {
-        this.container = windowBodyElement;
+    mount() {
+        this.container = this.body;
         this.container.style.height = '100%';
-        this.render();
+        this.renderUI();
     }
-
-    cleanup() {}
 
     _btnStyle(extra = '') {
         return `background:#c0c0c0;border:2px solid #ffffff;border-right-color:#000000;border-bottom-color:#000000;padding:5px 14px;cursor:pointer;font-family:Arial,sans-serif;font-size:11px;outline:none;${extra}`;
     }
 
-    render() {
+    renderUI() {
         if (!this.container) return;
         this.container.innerHTML = `
         <div style="display:flex;flex-direction:column;height:100%;background:#c0c0c0;font-family:Arial,Helvetica,sans-serif;font-size:11px;padding:16px;box-sizing:border-box;user-select:none;">
@@ -69,6 +68,6 @@ export class ReinstallerApp {
             );
         });
 
-        if (cancelBtn) cancelBtn.addEventListener('click', () => this.onCloseRequest());
+        if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
     }
 }

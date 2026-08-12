@@ -3,6 +3,7 @@ import { createInitialState, squareName } from '../cherry/board.js';
 import { getLegalMovesForSquare, getGameStatus, makeMove } from '../cherry/rules.js';
 import { getBestMove } from '../cherry/engine.js';
 import { getIcon } from '../icons.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
 const PIECE_GLYPH = {
     wK: '♔', wQ: '♕', wR: '♖', wB: '♗', wN: '♘', wP: '♙',
@@ -12,9 +13,9 @@ const PIECE_GLYPH = {
 const PROMO_ORDER = ['Q', 'R', 'B', 'N'];
 const POINT_VALUE = { P: 1, N: 3, B: 3, R: 5, Q: 9, K: 0 };
 
-export class ChessApp {
+export class ChessApp extends BaseApp {
     constructor(onCloseRequest) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.bodyElement = null;
 
         this.state = createInitialState();
@@ -34,17 +35,17 @@ export class ChessApp {
         this.boundKeyDown = (e) => this.handleKeyDown(e);
     }
 
-    open(bodyElement) {
-        this.bodyElement = bodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
-        window.addEventListener('keydown', this.boundKeyDown);
-        this.render();
+        this.listen(window, 'keydown', this.boundKeyDown);
+        this.renderUI();
     }
 
     // ==========================================================================
     // RENDER
     // ==========================================================================
-    render() {
+    renderUI() {
         if (!this.bodyElement) return;
 
         const status = getGameStatus(this.state);
@@ -281,7 +282,7 @@ export class ChessApp {
         if (this.selected && this.selected.r === r && this.selected.f === f) {
             this.selected = null;
             this.legalTargets = [];
-            this.render();
+            this.renderUI();
             return;
         }
 
@@ -294,7 +295,7 @@ export class ChessApp {
                     this.pendingPromotion = { from: this.selected, to: { r, f } };
                     this.selected = null;
                     this.legalTargets = [];
-                    this.render();
+                    this.renderUI();
                     return;
                 }
                 this.commitMove(this.selected, { r, f }, null);
@@ -309,7 +310,7 @@ export class ChessApp {
             this.selected = null;
             this.legalTargets = [];
         }
-        this.render();
+        this.renderUI();
     }
 
     cancelPromotion() {
@@ -318,7 +319,7 @@ export class ChessApp {
         this.pendingPromotion = null;
         this.selected = from;
         this.legalTargets = getLegalMovesForSquare(this.state, from.r, from.f);
-        this.render();
+        this.renderUI();
     }
 
     choosePromotion(pieceType) {
@@ -344,7 +345,7 @@ export class ChessApp {
 
         this.selected = null;
         this.legalTargets = [];
-        this.render();
+        this.renderUI();
         this.maybeTriggerAI();
     }
 
@@ -354,9 +355,9 @@ export class ChessApp {
         if (!this.vsComputer || this.state.turn !== 'b') return;
 
         this.aiThinking = true;
-        this.render();
+        this.renderUI();
 
-        this.aiTimeout = setTimeout(() => {
+        this.aiTimeout = this.timeout(() => {
             this.aiTimeout = null;
             const preState = this.state;
             const move = getBestMove(this.state, { maxDepth: 6, timeLimitMs: 800 });
@@ -372,7 +373,7 @@ export class ChessApp {
                     this.moveHistory.push(this.buildNotation(preState, result.move, status2 === 'check', status2 === 'checkmate'));
                 }
             }
-            this.render();
+            this.renderUI();
         }, 500);
     }
 
@@ -383,7 +384,7 @@ export class ChessApp {
             this.aiTimeout = null;
             this.aiThinking = false;
         }
-        this.render();
+        this.renderUI();
         if (enabled) this.maybeTriggerAI();
     }
 
@@ -394,7 +395,7 @@ export class ChessApp {
         this.forcedResult = { type: 'resign', loser: this.state.turn };
         if (this.aiTimeout) { clearTimeout(this.aiTimeout); this.aiTimeout = null; }
         this.aiThinking = false;
-        this.render();
+        this.renderUI();
     }
 
     newGame() {
@@ -410,19 +411,14 @@ export class ChessApp {
         this.capturedByWhite = [];
         this.capturedByBlack = [];
         this.forcedResult = null;
-        this.render();
+        this.renderUI();
     }
 
     handleKeyDown(e) {
         if (e.key === 'Escape') {
             e.preventDefault();
             if (this.pendingPromotion) this.cancelPromotion();
-            else this.onCloseRequest();
+            else this.close();
         }
-    }
-
-    cleanup() {
-        if (this.aiTimeout) clearTimeout(this.aiTimeout);
-        window.removeEventListener('keydown', this.boundKeyDown);
     }
 }

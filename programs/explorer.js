@@ -1,9 +1,10 @@
 import { getIcon } from '../icons.js';
 import { showOsPrompt, showOsConfirm } from '../os.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
-export class FileExplorerApp {
+export class FileExplorerApp extends BaseApp {
     constructor(closeCallback, launchFileCallback, saveVfsCallback, getVfsContext) {
-        this.closeCallback = closeCallback;
+        super(closeCallback);
         this.launchFileCallback = launchFileCallback;
         this.saveVfsCallback = saveVfsCallback;
         this.getVfsContext = getVfsContext;
@@ -16,8 +17,8 @@ export class FileExplorerApp {
         this.clipboardItem = null;
     }
 
-    open(containerElement) {
-        this.container = containerElement;
+    mount() {
+        this.container = this.body;
         this.renderLayout();
         this.refreshView();
     }
@@ -289,7 +290,7 @@ export class FileExplorerApp {
                 });
             });
 
-            document.addEventListener('click', () => {
+            this.listen(document, 'click', () => {
                 if (list) list.style.display = 'none';
             });
         }

@@ -1,0 +1,10 @@
+/* Zeb Explorer file manager */
+.explorer-container { display: flex; flex-direction: column; height: 100%; background-color: #ffffff; }
+.explorer-toolbar { background-color: #c0c0c0; padding: 4px 8px; border-bottom: 2px solid #808080; display: flex; gap: 6px; }
+.explorer-btn { padding: 2px 8px; font-size: 0.9em; font-weight: bold; background-color: #c0c0c0; border: 1px solid #ffffff; border-right-color: #000000; border-bottom-color: #000000; cursor: pointer; }
+.explorer-btn:disabled { color: #808080; cursor: default; border-color: #eeeeee; }
+.explorer-grid { flex-grow: 1; padding: 15px; display: flex; flex-wrap: wrap; gap: 20px; align-content: flex-start; overflow-y: auto; }
+.explorer-item { width: 70px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; }
+.explorer-icon { font-size: 2.3em; margin-bottom: 4px; }
+.explorer-name { font-size: 0.9em; color: #000000; word-break: break-all; }
+.explorer-item:hover .explorer-name { background-color: #000080; color: #ffffff; }

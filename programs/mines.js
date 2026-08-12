@@ -1,9 +1,10 @@
 // programs/mines.js - ZebOS 2 Retro Minesweeper Application
 import { getIcon } from '../icons.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
-export class MinesweeperGame {
+export class MinesweeperGame extends BaseApp {
     constructor(onCloseRequest) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
 
         this.bodyElement = null;
         this.rows = 9;
@@ -26,8 +27,8 @@ export class MinesweeperGame {
         this.boundKeyDown = (e) => this.handleKeyDown(e);
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
         this.bodyElement.innerHTML = `
@@ -57,7 +58,7 @@ export class MinesweeperGame {
         this.timerCounterEl = this.bodyElement.querySelector('.mines-timer');
 
         this.faceEl.addEventListener('click', () => this.resetGame());
-        window.addEventListener('keydown', this.boundKeyDown);
+        this.listen(window, 'keydown', this.boundKeyDown);
 
         this.resetGame();
     }
@@ -154,7 +155,7 @@ export class MinesweeperGame {
         }
 
         // Start timer
-        this.timerInterval = setInterval(() => {
+        this.timerInterval = this.interval(() => {
             if (this.timerSeconds < 999) {
                 this.timerSeconds++;
                 this.timerCounterEl.textContent = this.timerSeconds.toString().padStart(3, '0');
@@ -278,12 +279,7 @@ export class MinesweeperGame {
     handleKeyDown(e) {
         if (e.key === 'Escape') {
             e.preventDefault();
-            this.onCloseRequest();
+            this.close();
         }
-    }
-
-    cleanup() {
-        clearInterval(this.timerInterval);
-        window.removeEventListener('keydown', this.boundKeyDown);
     }
 }

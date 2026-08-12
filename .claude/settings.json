@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv desktop.css chrome/desktop.css)",
+      "Bash(mv start-menu.css chrome/start-menu.css)",
+      "Bash(mv taskbar.css chrome/taskbar.css)",
+      "Bash(mv context-menu.css chrome/context-menu.css)",
+      "Bash(mv windows.css chrome/windows.css)",
+      "Read(//tmp/**)",
+      "Bash(python3 -)",
+      "Bash(node --check programs/tasklist.js)",
+      "Bash(node --check icons.js)",
+      "Bash(node --check programs/run.js)",
+      "Bash(command -v chromium-cli)",
+      "Bash(command -v python3)",
+      "Bash(node --check UIKit/framework/base-app.js)",
+      "Bash(node --check programs/courgette.js)",
+      "Bash(node --check programs/media.js)",
+      "Bash(node --check programs/vm.js)",
+      "Bash(node --check programs/mines.js)",
+      "Bash(node --check programs/solitaire.js)",
+      "Bash(node --check programs/regedit.js)",
+      "Bash(node --check programs/chess.js)"
+    ]
+  }
+}

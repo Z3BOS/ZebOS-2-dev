@@ -6,6 +6,7 @@
 // real JS heap usage (performance.memory) - both sampled, never randomized.
 import { closeWindow } from '../os.js';
 import { getIcon } from '../icons.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
 const SERVICES = [
     { id: 'svc-compositor', name: 'Desktop Window Compositor', startup: 'Automatic', desc: 'Manages window rendering, dragging, resizing, and z-order' },
@@ -18,9 +19,9 @@ const SERVICES = [
 const HISTORY_LEN = 60;
 const TICK_MS = 1000;
 
-export class TaskManagerApp {
+export class TaskManagerApp extends BaseApp {
     constructor(onCloseRequest) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.bodyElement = null;
         this.activeTab = 'processes';
         this.selectedId = null;
@@ -41,23 +42,18 @@ export class TaskManagerApp {
         this.lastMemLimitMB = 0;
     }
 
-    open(bodyElement) {
-        this.bodyElement = bodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
-        window.addEventListener('keydown', this.boundKeyDown);
+        this.listen(window, 'keydown', this.boundKeyDown);
         this.tick();
-        this.pollInterval = setInterval(() => this.tick(), TICK_MS);
-    }
-
-    cleanup() {
-        clearInterval(this.pollInterval);
-        window.removeEventListener('keydown', this.boundKeyDown);
+        this.pollInterval = this.interval(() => this.tick(), TICK_MS);
     }
 
     handleKeyDown(e) {
         if (e.key === 'Escape') {
             e.preventDefault();
-            this.onCloseRequest();
+            this.close();
         }
     }
 
@@ -126,7 +122,7 @@ export class TaskManagerApp {
         this.memHistory.push(this.lastMemPct);
         if (this.memHistory.length > HISTORY_LEN) this.memHistory.shift();
 
-        this.render();
+        this.renderUI();
     }
 
     scanWindows() {
@@ -187,7 +183,7 @@ export class TaskManagerApp {
     }
 
     // ---- render ----
-    render() {
+    renderUI() {
         if (!this.bodyElement) return;
         const rows = this.buildRows();
         const focusState = this.captureFocusState();
@@ -495,7 +491,7 @@ export class TaskManagerApp {
         this.bodyElement.querySelectorAll('.taskmgr-tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.activeTab = btn.dataset.tab;
-                this.render();
+                this.renderUI();
             });
         });
 
@@ -508,7 +504,7 @@ export class TaskManagerApp {
                     this.sortKey = key;
                     this.sortDir = (key === 'name' || key === 'status' || key === 'id') ? 'asc' : 'desc';
                 }
-                this.render();
+                this.renderUI();
             });
         });
 
@@ -516,14 +512,14 @@ export class TaskManagerApp {
             tr.addEventListener('click', () => {
                 this.selectedId = tr.dataset.id;
                 this.selectedEndable = tr.dataset.endable === 'true';
-                this.render();
+                this.renderUI();
             });
             tr.addEventListener('dblclick', () => {
                 if (tr.dataset.endable === 'true') {
                     closeWindow(tr.dataset.id);
                     this.selectedId = null;
                     this.selectedEndable = false;
-                    this.render();
+                    this.renderUI();
                 }
             });
         });
@@ -535,7 +531,7 @@ export class TaskManagerApp {
                 closeWindow(this.selectedId);
                 this.selectedId = null;
                 this.selectedEndable = false;
-                this.render();
+                this.renderUI();
             });
         }
 
@@ -543,14 +539,14 @@ export class TaskManagerApp {
         if (searchInput) {
             searchInput.addEventListener('input', () => {
                 this.search = searchInput.value;
-                this.render();
+                this.renderUI();
             });
         }
 
         this.bodyElement.querySelectorAll('.taskmgr-perf-nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 this.perfMetric = item.dataset.metric;
-                this.render();
+                this.renderUI();
             });
         });
     }

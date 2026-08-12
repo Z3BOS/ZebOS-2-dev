@@ -1,0 +1,214 @@
+/* UIKit: the desktop file */
+#desktop-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #008080;
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#desktop-icons-zone {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    padding: 12px;
+    gap: 8px 12px;
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.desktop-icon {
+    width: 82px;
+    height: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    user-select: none;
+    pointer-events: auto;
+    flex-shrink: 0;
+}
+
+.desktop-icon-glyph {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.desktop-icon-label {
+    font-size: 11px;
+    color: #ffffff;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.95);
+    word-break: break-word;
+    margin-top: 2px;
+    max-width: 78px;
+    line-height: 1.25;
+}
+
+.desktop-icon.small-view {
+    width: 150px !important;
+    height: 28px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    padding: 2px 6px !important;
+}
+
+.desktop-icon.small-view .desktop-icon-glyph,
+.desktop-icon.small-view .sys-icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.desktop-icon.small-view .desktop-icon-label {
+    text-align: left !important;
+    font-size: 11px !important;
+    max-width: 115px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin-top: 0 !important;
+}
+
+/* Code-based SVG icon sizing */
+.sys-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.desktop-icon .sys-icon {
+    width: 38px;
+    height: 38px;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.explorer-item div > .sys-icon,
+.explorer-table-row .sys-icon,
+.exp-drive-card .sys-icon {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.start-menu-item .sys-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.window-title .sys-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.taskbar-tab .sys-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.paint-tool-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    box-sizing: border-box;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+}
+
+.paint-tool-btn .sys-icon,
+.paint-btn .sys-icon {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+    display: block;
+}
+
+.paint-tool-btn.active-tool {
+    background-color: #e0e0e0;
+    border: 2px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+
+.paint-btn {
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.desktop-icon-label {
+    font-size: 12px;
+    color: #ffffff;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
+    word-break: break-word;
+    padding: 1px 4px;
+}
+
+.desktop-icon:hover .desktop-icon-label,
+.desktop-icon:focus .desktop-icon-label {
+    background-color: rgba(0, 0, 128, 0.6);
+}
+
+#desktop-build-tag {
+    position: absolute;
+    bottom: 58px; right: 20px;
+    font-family: monospace;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.55);
+    text-align: right;
+    line-height: 1.4;
+    pointer-events: none;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+#window-workspace {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#window-workspace * {
+    pointer-events: auto;
+}

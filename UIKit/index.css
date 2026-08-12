@@ -1,0 +1,16 @@
+/* UIKit's main CSS file */
+@import "base.css";
+@import "screens/boot-screen.css";
+@import "screens/dev-mode.css";
+@import "chrome/desktop.css";
+@import "chrome/start-menu.css";
+@import "chrome/taskbar.css";
+@import "chrome/context-menu.css";
+@import "chrome/windows.css";
+@import "apps/explorer.css";
+@import "forms/form-controls.css";
+@import "forms/app-chrome.css";
+@import "apps/chess.css";
+@import "apps/solitaire.css";
+@import "screens/recovery.css";
+@import "screens/loading-screen.css";

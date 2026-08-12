@@ -1,15 +1,16 @@
 // programs/editor.js - ZebOS 2 Retro Text Editor (Notepad)
 import { getIcon } from '../icons.js';
 import { showOsPrompt } from '../os.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
 const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;
 
-export class TextEditor {
+export class TextEditor extends BaseApp {
     constructor(fileName, fileContent, onExitCallback, onCloseRequest) {
+        super(onCloseRequest);
         this.fileName = fileName;
         this.content = fileContent || "";
         this.onExit = onExitCallback;
-        this.onCloseRequest = onCloseRequest;
 
         this.bodyElement = null;
         this.textarea = null;
@@ -22,8 +23,8 @@ export class TextEditor {
         this.selectionHandler = () => this.updateCursorStats();
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
+    mount() {
+        this.bodyElement = this.body;
 
         // Force structural fluid scaling behavior directly on parent window body
         this.bodyElement.style.display = "flex";
@@ -118,8 +119,8 @@ export class TextEditor {
         this.textarea.focus();
 
         // Keyboard shortcuts
-        window.addEventListener('keydown', this.keyHandler);
-        document.addEventListener('click', this.documentClickHandler);
+        this.listen(window, 'keydown', this.keyHandler);
+        this.listen(document, 'click', this.documentClickHandler);
 
         // Selection & cursor change listeners for dynamic line/col counter
         this.textarea.addEventListener('keyup', this.selectionHandler);
@@ -399,7 +400,7 @@ export class TextEditor {
                 document.removeEventListener('mousedown', closeHandler);
             }
         };
-        setTimeout(() => document.addEventListener('mousedown', closeHandler), 10);
+        setTimeout(() => this.listen(document, 'mousedown', closeHandler), 10);
     }
 
     closeContextMenu() {
@@ -592,7 +593,7 @@ export class TextEditor {
         if (hintEl) {
             hintEl.textContent = message;
             hintEl.style.color = "#008000";
-            setTimeout(() => {
+            this.timeout(() => {
                 if (hintEl) {
                     hintEl.textContent = `Z:\\${this.fileName}`;
                     hintEl.style.color = "#000080";

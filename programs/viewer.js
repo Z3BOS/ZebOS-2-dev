@@ -1,12 +1,13 @@
 // programs/viewer.js - ZebOS Zeb Viewer (Image Viewer Application)
 import { getIcon } from '../icons.js';
 import { showOsConfirm, showSaveFileDialog, saveFileToVfsPath } from '../os.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
-export class ZebViewerApp {
+export class ZebViewerApp extends BaseApp {
     constructor(imageName = "image.png", imageDataUrl = null, onCloseRequest = () => {}, getVfsNode = null) {
+        super(onCloseRequest);
         this.imageName = imageName;
         this.imageDataUrl = imageDataUrl;
-        this.onCloseRequest = onCloseRequest;
         this.getVfsNode = getVfsNode;
 
         this.bodyElement = null;
@@ -34,19 +35,19 @@ export class ZebViewerApp {
         this.resizeHandler = () => this.handleResize();
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
-        this.render();
+        this.renderUI();
         this.initCanvas();
         this.loadImage();
 
-        window.addEventListener('keydown', this.keyHandler);
-        window.addEventListener('resize', this.resizeHandler);
+        this.listen(window, 'keydown', this.keyHandler);
+        this.listen(window, 'resize', this.resizeHandler);
     }
 
-    render() {
+    renderUI() {
         if (!this.bodyElement) return;
 
         this.bodyElement.innerHTML = `
@@ -326,14 +327,14 @@ export class ZebViewerApp {
             this.viewportEl.style.cursor = 'grabbing';
         });
 
-        window.addEventListener('mousemove', (e) => {
+        this.listen(window, 'mousemove', (e) => {
             if (!this.isDragging) return;
             this.panX = e.clientX - this.dragStartX;
             this.panY = e.clientY - this.dragStartY;
             this.draw();
         });
 
-        window.addEventListener('mouseup', () => {
+        this.listen(window, 'mouseup', () => {
             if (this.isDragging) {
                 this.isDragging = false;
                 if (this.viewportEl) this.viewportEl.style.cursor = 'grab';
@@ -395,7 +396,7 @@ export class ZebViewerApp {
 
         this.bodyElement.querySelector('.opt-close').addEventListener('click', () => {
             closeAllMenus();
-            this.onCloseRequest();
+            this.close();
         });
 
         this.bodyElement.querySelector('.opt-zoom-in').addEventListener('click', () => { closeAllMenus(); this.adjustZoom(1.25); });
@@ -446,11 +447,7 @@ export class ZebViewerApp {
         else if (e.key === '-') this.adjustZoom(0.8);
         else if (e.key === '0') this.resetView();
         else if (e.key === 'r' || e.key === 'R') this.rotate(90);
-        else if (e.key === 'Escape') this.onCloseRequest();
+        else if (e.key === 'Escape') this.close();
     }
 
-    cleanup() {
-        window.removeEventListener('keydown', this.keyHandler);
-        window.removeEventListener('resize', this.resizeHandler);
-    }
 }

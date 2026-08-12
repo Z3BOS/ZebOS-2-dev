@@ -1,0 +1,99 @@
+/* Shared toolbar button / list-row chrome */
+.app-toolbar-btn {
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.app-toolbar-btn .sys-icon {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+    display: block;
+}
+.app-toolbar-btn:active {
+    border: 2px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+.app-toolbar-btn:disabled {
+    color: #808080;
+    cursor: default;
+    border-color: #eeeeee #808080 #808080 #eeeeee;
+}
+.app-list-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+.app-list-row.selected {
+    background-color: #000080;
+    color: #ffffff;
+}
+.app-list-row .sys-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.taskmgr-row {
+    transition: background-color 0.1s ease;
+}
+.taskmgr-row:hover {
+    background-color: #e2e8f0;
+}
+.taskmgr-row.selected,
+.taskmgr-row[style*="background:#000080"] {
+    background-color: #000080 !important;
+    color: #ffffff !important;
+}
+
+/* Custom Win95 Retro 3D Checkbox */
+.zeb-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #000000;
+    cursor: pointer;
+    user-select: none;
+}
+
+.zeb-checkbox-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background-color: #ffffff;
+    border: 2px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    box-shadow: inset 1px 1px 0 #000000;
+    box-sizing: border-box;
+    cursor: pointer;
+    margin: 0;
+    position: relative;
+    display: inline-grid;
+    place-content: center;
+}
+
+.zeb-checkbox-label input[type="checkbox"]:checked::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background-color: #000000;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}

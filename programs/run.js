@@ -1,6 +1,7 @@
 // Run dialog for ZebOS
 // This actually was really easy wow
 import { getIcon } from '../icons.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
 const HISTORY_KEY = 'ZEBOS_RUN_HISTORY';
 const HISTORY_MAX = 10;
@@ -29,6 +30,9 @@ const COMMAND_MAP = {
     'calc':            'start-link-calc',
     'calculator':      'start-link-calc',
     'snake':           'start-link-snake',
+    'tasklist':        'start-link-tasklist',
+    'todo':            'start-link-tasklist',
+    'tasks':           'start-link-tasklist',
     'courgette':       'start-link-courgette',
     'winver':          'start-link-courgette',
     'about':           'start-link-courgette',
@@ -57,19 +61,19 @@ const COMMAND_MAP = {
 // Commands that accept a trailing argument as a target filename ("notepad readme.txt").
 const FILE_ARG_COMMANDS = new Set(['start-link-text-editor']);
 
-export class RunDialog {
+export class RunDialog extends BaseApp {
     constructor(onCloseRequest, onExecute, onBrowse) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.onExecute = onExecute;
         this.onBrowse = onBrowse;
         this.container = null;
         this.history = this._loadHistory();
     }
 
-    open(windowBodyElement) {
-        this.container = windowBodyElement;
+    mount() {
+        this.container = this.body;
         this.container.style.height = '100%';
-        this.render();
+        this.renderDialog();
         const input = this.container.querySelector('#run-input');
         if (input) {
             input.focus();
@@ -104,7 +108,7 @@ export class RunDialog {
         return { appId, arg: (arg && FILE_ARG_COMMANDS.has(appId)) ? arg : null };
     }
 
-    render() {
+    renderDialog() {
         if (!this.container) return;
         this.container.innerHTML = `
         <div style="display:flex; flex-direction:column; height:100%; background:#c0c0c0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size:11px; padding:12px 14px; box-sizing:border-box; user-select:none;">
@@ -164,23 +168,21 @@ export class RunDialog {
             }
             this._saveHistory(raw.trim());
             this.onExecute(resolved.appId, resolved.arg);
-            this.onCloseRequest();
+            this.close();
         };
 
         if (okBtn) okBtn.addEventListener('click', submit);
-        if (cancelBtn) cancelBtn.addEventListener('click', () => this.onCloseRequest());
+        if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
         if (browseBtn) browseBtn.addEventListener('click', () => {
             if (this.onBrowse) this.onBrowse();
-            this.onCloseRequest();
+            this.close();
         });
         if (input) {
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') submit();
-                if (e.key === 'Escape') this.onCloseRequest();
+                if (e.key === 'Escape') this.close();
             });
             input.addEventListener('input', () => { errEl.textContent = ''; });
         }
     }
-
-    cleanup() {}
 }

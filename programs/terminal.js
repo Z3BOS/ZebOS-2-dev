@@ -1,7 +1,9 @@
 // programs/terminal.js - ZebOS Interactive Shell & CLI Application Suite
-export class ZebTerminal {
+import { BaseApp } from '../UIKit/framework/index.js';
+
+export class ZebTerminal extends BaseApp {
     constructor(onCloseRequest, shell) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.shell = shell;
 
         this.bodyElement = null;
@@ -20,8 +22,8 @@ export class ZebTerminal {
         this.bodyClickHandler = () => this.inputEl && this.inputEl.focus();
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
         this.bodyElement.innerHTML = `
@@ -42,8 +44,8 @@ export class ZebTerminal {
         this.println("Type 'help' to view all available commands and CLI apps.\n");
         this.updatePrompt();
 
-        this.inputEl.addEventListener('keydown', this.keyHandler);
-        this.bodyElement.addEventListener('click', this.bodyClickHandler);
+        this.listen(this.inputEl, 'keydown', this.keyHandler);
+        this.listen(this.bodyElement, 'click', this.bodyClickHandler);
         this.inputEl.focus();
     }
 
@@ -105,7 +107,7 @@ export class ZebTerminal {
         }
         if (e.key === 'Escape') {
             e.preventDefault();
-            this.onCloseRequest();
+            this.close();
         }
     }
 
@@ -177,7 +179,7 @@ export class ZebTerminal {
                 const target = args[0] || 'google.com';
                 this.println(`PING ${target} (142.250.190.46) 56(84) bytes of data.`);
                 let count = 0;
-                const interval = setInterval(() => {
+                const interval = this.interval(() => {
                     count++;
                     const ms = (10 + Math.random() * 8).toFixed(1);
                     this.println(`64 bytes from ${target}: icmp_seq=${count} ttl=115 time=${ms} ms`);
@@ -313,7 +315,7 @@ export class ZebTerminal {
                 break;
 
             case 'exit':
-                this.onCloseRequest();
+                this.close();
                 break;
 
             case 'backup': {
@@ -413,7 +415,7 @@ export class ZebTerminal {
         this.println("--- Press ENTER or ANY KEY to stop Matrix animation ---", "#55ff55");
         
         const chars = "abcdefghijklmnopqrstuvwxyz0123456789@#$%&*";
-        this.matrixInterval = setInterval(() => {
+        this.matrixInterval = this.interval(() => {
             let line = "";
             for (let i = 0; i < 60; i++) {
                 line += Math.random() > 0.4 ? chars[Math.floor(Math.random() * chars.length)] : " ";
@@ -432,9 +434,4 @@ export class ZebTerminal {
         this.updatePrompt();
     }
 
-    cleanup() {
-        if (this.matrixInterval) clearInterval(this.matrixInterval);
-        if (this.inputEl) this.inputEl.removeEventListener('keydown', this.keyHandler);
-        if (this.bodyElement) this.bodyElement.removeEventListener('click', this.bodyClickHandler);
-    }
 }

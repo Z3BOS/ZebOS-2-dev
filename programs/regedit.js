@@ -5,6 +5,7 @@
 // os.js's setRegistryValue(), which applies it to the running desktop and
 // persists it, exactly like the Personalize applet does.
 import { getIcon } from '../icons.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
 const HIVES = [
     {
@@ -74,26 +75,21 @@ const HIVES = [
     },
 ];
 
-export class RegistryEditorApp {
+export class RegistryEditorApp extends BaseApp {
     constructor(onCloseRequest, api) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.api = api; // { getSnapshot(), setValue(field, value) }
         this.container = null;
         this.snapshot = api.getSnapshot();
         this.expandedHives = new Set(['HKEY_CURRENT_USER']);
         this.selectedKeyId = 'hkcu-desktop';
         this.selectedValueName = null;
-        this._outsideClickHandler = null;
     }
 
-    open(windowBodyElement) {
-        this.container = windowBodyElement;
+    mount() {
+        this.container = this.body;
         this.container.style.height = '100%';
-        this.render();
-    }
-
-    cleanup() {
-        if (this._outsideClickHandler) document.removeEventListener('mousedown', this._outsideClickHandler);
+        this.renderUI();
     }
 
     _findKey(keyId) {
@@ -124,7 +120,7 @@ export class RegistryEditorApp {
         return type === 'dword' ? 'REG_DWORD' : 'REG_SZ';
     }
 
-    render() {
+    renderUI() {
         if (!this.container) return;
         const found = this._findKey(this.selectedKeyId) || this._findKey('hkcu-desktop');
         const { hive, key } = found;
@@ -210,7 +206,7 @@ export class RegistryEditorApp {
                 const id = row.dataset.hive;
                 if (this.expandedHives.has(id)) this.expandedHives.delete(id);
                 else this.expandedHives.add(id);
-                this.render();
+                this.renderUI();
             });
         });
 
@@ -218,14 +214,14 @@ export class RegistryEditorApp {
             row.addEventListener('click', () => {
                 this.selectedKeyId = row.dataset.key;
                 this.selectedValueName = null;
-                this.render();
+                this.renderUI();
             });
         });
 
         this.container.querySelectorAll('.reg-value-row').forEach(row => {
             row.addEventListener('click', () => {
                 this.selectedValueName = row.dataset.value;
-                this.render();
+                this.renderUI();
             });
             row.addEventListener('dblclick', () => {
                 const { key } = this._findKey(this.selectedKeyId);
@@ -326,7 +322,7 @@ export class RegistryEditorApp {
             cleanup();
             this.api.setValue(valueDef.field, val);
             this.snapshot = this.api.getSnapshot();
-            this.render();
+            this.renderUI();
         };
 
         dialog.querySelector('#reg-modal-ok').addEventListener('click', commit);
@@ -381,7 +377,7 @@ export class RegistryEditorApp {
             cleanup();
             this.api.setValue(valueDef.field, n !== 0);
             this.snapshot = this.api.getSnapshot();
-            this.render();
+            this.renderUI();
         };
 
         dialog.querySelector('#reg-modal-ok').addEventListener('click', commit);

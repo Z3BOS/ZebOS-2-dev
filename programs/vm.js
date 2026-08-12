@@ -1,10 +1,11 @@
 // programs/vm.js - ZebOS 2 ZebVM Virtual Machine Manager Engine
 import { getIcon } from '../icons.js';
 import { showOsPrompt } from '../os.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
-export class ZebVMManager {
+export class ZebVMManager extends BaseApp {
     constructor(onCloseRequest) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
 
         this.bodyElement = null;
         this.vms = [
@@ -37,15 +38,15 @@ export class ZebVMManager {
         this.boundKeyDown = (e) => this.handleKeyDown(e);
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
-        window.addEventListener('keydown', this.boundKeyDown);
+        this.listen(window, 'keydown', this.boundKeyDown);
 
-        this.render();
+        this.renderUI();
     }
 
-    render() {
+    renderUI() {
         if (!this.bodyElement) return;
 
         const activeVm = this.vms.find(v => v.id === this.selectedVmId) || this.vms[0];
@@ -162,7 +163,7 @@ export class ZebVMManager {
         this.bodyElement.querySelectorAll('.vm-card').forEach(card => {
             card.addEventListener('click', () => {
                 this.selectedVmId = card.dataset.id;
-                this.render();
+                this.renderUI();
             });
         });
 
@@ -208,7 +209,7 @@ export class ZebVMManager {
                             desc: "Custom Web Embed Virtual Machine Instance"
                         });
                         this.selectedVmId = newId;
-                        this.render();
+                        this.renderUI();
                     });
                 });
             });
@@ -218,13 +219,13 @@ export class ZebVMManager {
     startVm(vm) {
         if (vm.status === 'running' || vm.booting) return;
         vm.booting = true;
-        this.render();
+        this.renderUI();
 
         if (this.bootTimers[vm.id]) clearTimeout(this.bootTimers[vm.id]);
-        this.bootTimers[vm.id] = setTimeout(() => {
+        this.bootTimers[vm.id] = this.timeout(() => {
             vm.booting = false;
             vm.status = 'running';
-            this.render();
+            this.renderUI();
         }, 1200);
     }
 
@@ -233,18 +234,13 @@ export class ZebVMManager {
         vm.booting = false;
         vm.status = 'stopped';
         if (this.bootTimers[vm.id]) clearTimeout(this.bootTimers[vm.id]);
-        this.render();
+        this.renderUI();
     }
 
     handleKeyDown(e) {
         if (e.key === 'Escape') {
             e.preventDefault();
-            this.onCloseRequest();
+            this.close();
         }
-    }
-
-    cleanup() {
-        Object.keys(this.bootTimers).forEach(id => clearTimeout(this.bootTimers[id]));
-        window.removeEventListener('keydown', this.boundKeyDown);
     }
 }

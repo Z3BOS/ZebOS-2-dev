@@ -1,0 +1,134 @@
+/* Recovery Mode dialog */
+.recovery-root {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(160deg, #001a33 0%, #004d66 60%, #008080 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.recovery-window {
+    width: min(800px, 94vw);
+    height: min(600px, 92vh);
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    box-shadow: 3px 3px 16px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+.recovery-titlebar {
+    background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+    color: #ffffff;
+    padding: 5px 8px;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    user-select: none;
+}
+.recovery-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.recovery-title .sys-icon { width: 16px; height: 16px; }
+.recovery-version { font-size: 11px; font-weight: normal; color: #cfe8ff; }
+.recovery-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 8px 8px 0;
+    flex-shrink: 0;
+}
+.recovery-tab-btn {
+    padding: 5px 14px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #808080;
+    border-bottom: none;
+    color: #000000;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    margin-bottom: -2px;
+    z-index: 1;
+    position: relative;
+}
+.recovery-tab-btn.active {
+    font-weight: bold;
+    border-right-color: #000000;
+    z-index: 2;
+    padding-bottom: 7px;
+}
+.recovery-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin: 0 8px;
+    padding: 14px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #808080;
+    border-bottom-color: #808080;
+    box-sizing: border-box;
+}
+.recovery-panel { max-width: 540px; }
+.recovery-panel h3 { margin: 0 0 10px; color: #000080; font-size: 13px; }
+.recovery-panel p { font-size: 12px; line-height: 1.6; color: #202020; }
+.recovery-btn {
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    color: #000000;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 6px 14px;
+    cursor: pointer;
+}
+.recovery-btn:active {
+    border: 2px solid #000000;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+.recovery-danger-btn { color: #c62828; }
+.recovery-restore-row {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+}
+.recovery-status { margin-top: 12px; font-size: 12px; min-height: 16px; font-weight: bold; }
+.recovery-status.ok { color: #006600; }
+.recovery-status.error { color: #c62828; }
+.recovery-flag-row {
+    padding: 6px 0;
+    font-size: 12px;
+    border-bottom: 1px solid #a0a0a0;
+}
+.recovery-flag-row select {
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 2px 4px;
+}
+.recovery-shell-panel { max-width: none; height: 100%; }
+.recovery-shell-mount { height: 100%; min-height: 320px; }
+.recovery-footer {
+    padding: 8px;
+    border-top: 1px solid #808080;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}

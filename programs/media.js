@@ -1,9 +1,10 @@
 // programs/media.js - ZebOS 2 Retro Media Player Application
 import { getIcon } from '../icons.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
-export class MediaPlayer {
+export class MediaPlayer extends BaseApp {
     constructor(onCloseRequest, loadFromVFS) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.loadFromVFS = loadFromVFS;
 
         this.bodyElement = null;
@@ -18,8 +19,8 @@ export class MediaPlayer {
         this.boundTimeUpdate = () => this.updateProgress();
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
         this.bodyElement.innerHTML = `
@@ -107,9 +108,9 @@ export class MediaPlayer {
             input.click();
         });
 
-        this.mediaEl.addEventListener('timeupdate', this.boundTimeUpdate);
+        this.listen(this.mediaEl, 'timeupdate', this.boundTimeUpdate);
         this.mediaEl.addEventListener('ended', () => this.stop());
-        window.addEventListener('keydown', this.boundKeyDown);
+        this.listen(window, 'keydown', this.boundKeyDown);
 
         // Load default video preset sample
         this.loadSource('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'BigBuckBunny.mp4 (Sample Video)');
@@ -167,15 +168,13 @@ export class MediaPlayer {
     handleKeyDown(e) {
         if (e.key === 'Escape') {
             e.preventDefault();
-            this.onCloseRequest();
+            this.close();
         }
     }
 
-    cleanup() {
+    onCleanup() {
         if (this.mediaEl) {
             this.mediaEl.pause();
-            this.mediaEl.removeEventListener('timeupdate', this.boundTimeUpdate);
         }
-        window.removeEventListener('keydown', this.boundKeyDown);
     }
 }

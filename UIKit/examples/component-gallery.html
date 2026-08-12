@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ZebOS 2 UIKit — Component Gallery</title>
+<link rel="stylesheet" href="../index.css">
+<style>
+    /* Gallery-only styles: lay the widgets out on a page instead of a
+       booted desktop. None of this ships with an app — it just gives
+       UIKit's floating/fixed-positioned pieces (.window-frame,
+       #start-menu, #system-taskbar, ...) a normal place to sit so they
+       can be previewed inline on a scrolling page. */
+    body, html {
+        overflow: auto;
+        background-color: #008080;
+        padding: 24px;
+        box-sizing: border-box;
+        display: block;
+    }
+    .gallery-section {
+        background: #f2f2f2;
+        border: 1px solid #999;
+        border-radius: 4px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        max-width: 900px;
+    }
+    .gallery-section h2 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        color: #000080;
+    }
+    .gallery-section p {
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: #333;
+        font-family: Arial, sans-serif;
+    }
+    .gallery-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+    }
+    .gallery-swatch {
+        position: relative;
+        display: inline-block;
+    }
+    .gallery-demo-frame {
+        /* .window-frame is position:absolute in real ZebOS; pin it inline
+           here so it lays out in the page flow instead of floating. */
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        width: 340px !important;
+        height: 220px !important;
+        margin: 0 auto;
+    }
+    .gallery-demo-taskbar {
+        position: relative !important;
+        bottom: auto !important;
+        display: flex !important;
+        opacity: 1 !important;
+        width: 100% !important;
+    }
+    .gallery-demo-startmenu {
+        position: relative !important;
+        bottom: auto !important; left: auto !important;
+    }
+    code {
+        background: #e8e8e8;
+        padding: 1px 5px;
+        border-radius: 2px;
+        font-size: 12px;
+    }
+</style>
+</head>
+<body>
+
+    <h1 style="color:#fff; font-family:Arial, sans-serif; text-shadow:1px 1px 2px rgba(0,0,0,0.6);">ZebOS 2 UIKit — Component Gallery</h1>
+    <p style="color:#eee; font-family:Arial, sans-serif; max-width:900px;">
+        A visual reference for the reusable UIKit classes documented in
+        <code>../docs/README.md</code>. Open this file directly in a
+        browser — it only depends on <code>../index.css</code>, no JS
+        required.
+    </p>
+
+    <div class="gallery-section">
+        <h2>Retro 3D bevel buttons</h2>
+        <p><code>.app-toolbar-btn</code> — the standard toolbar action button. Click one to see the pressed state.</p>
+        <div class="gallery-row">
+            <button class="app-toolbar-btn">Save</button>
+            <button class="app-toolbar-btn">New</button>
+            <button class="app-toolbar-btn" disabled>Disabled</button>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h2>Window frame chrome</h2>
+        <p><code>.window-frame</code> / <code>.window-header</code> / <code>.window-body</code> / <code>.win-btn</code> — built for you by <code>createWindow()</code> in <code>os.js</code>; shown here standalone.</p>
+        <div class="window-frame active-window gallery-demo-frame">
+            <div class="window-header">
+                <div class="window-title">Example Window</div>
+                <div class="window-controls">
+                    <button class="win-btn">&#8211;</button>
+                    <button class="win-btn">&#9633;</button>
+                    <button class="win-btn">&#10005;</button>
+                </div>
+            </div>
+            <div class="window-body" style="padding:10px; font-family:Arial, sans-serif; font-size:12px;">
+                This is <code>.window-body</code> — everything an app renders goes here.
+            </div>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h2>List rows</h2>
+        <p><code>.app-list-row</code> (+ <code>.selected</code>) — click a row to select it.</p>
+        <div style="background:#fff; border:2px solid #808080; border-right-color:#fff; border-bottom-color:#fff; max-width:280px;" id="gallery-list">
+            <div class="app-list-row selected">explorer.exe</div>
+            <div class="app-list-row">calc.exe</div>
+            <div class="app-list-row">terminal.exe</div>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h2>Form controls</h2>
+        <p><code>input[type=radio]</code> and <code>.zeb-checkbox-label</code> — styled automatically, no extra markup needed beyond a real input.</p>
+        <div class="gallery-row" style="font-family:Arial, sans-serif; font-size:12px;">
+            <label><input type="radio" name="gallery-radio" checked> Option A</label>
+            <label><input type="radio" name="gallery-radio"> Option B</label>
+            <label class="zeb-checkbox-label"><input type="checkbox" checked> Enabled</label>
+            <label class="zeb-checkbox-label"><input type="checkbox"> Disabled</label>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h2>Start menu</h2>
+        <p><code>#start-menu</code> / <code>.start-menu-item</code> — pinned inline here instead of anchored to the taskbar.</p>
+        <div id="start-menu" class="gallery-demo-startmenu">
+            <div id="start-menu-sidebar">
+                <span id="sidebar-brand-text">ZebOS 2</span>
+            </div>
+            <div id="start-menu-links">
+                <div class="start-menu-item"><span class="menu-icon">&#128193;</span> File Explorer</div>
+                <div class="start-menu-item"><span class="menu-icon">&#128421;</span> Calculator</div>
+                <hr class="start-menu-divider">
+                <div class="start-menu-item"><span class="menu-icon">&#9099;</span> Shut Down...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h2>Taskbar</h2>
+        <p><code>#system-taskbar</code> / <code>.taskbar-tab</code> — pinned inline here instead of fixed to the viewport bottom.</p>
+        <div id="system-taskbar" class="gallery-demo-taskbar">
+            <button id="start-button">
+                <span class="start-text">Start</span>
+            </button>
+            <div id="taskbar-tabs-zone">
+                <div class="taskbar-tab active-tab">Example Window</div>
+                <div class="taskbar-tab">Calculator</div>
+            </div>
+            <div id="system-tray">
+                <span id="live-clock">12:00 PM</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h2>Icons</h2>
+        <p><code>.sys-icon</code> — real icons come from the code-based SVG set in <code>icons.js</code> (<code>getIcon(name)</code>); these two placeholders just demonstrate the sizing contract (square, <code>viewBox="0 0 24 24"</code>).</p>
+        <div class="gallery-row">
+            <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="3" width="20" height="18" rx="1.5" fill="#c0c0c0" stroke="#444" stroke-width="1.5"/>
+            </svg>
+            <span style="font-family:Arial, sans-serif; font-size:12px;">18&times;18 base &mdash; grows to 38&times;38 inside <code>.desktop-icon</code>, shrinks to 16&times;16 inside <code>.window-title</code> / <code>.taskbar-tab</code>, automatically, via context selectors in <code>desktop.css</code>.</span>
+        </div>
+    </div>
+
+    <script>
+        // Demo-only interactivity so the gallery isn't fully static —
+        // none of this is part of UIKit itself.
+        document.querySelectorAll('.win-btn').forEach(btn => {
+            btn.addEventListener('mousedown', () => btn.classList.add('pressed-demo'));
+        });
+        document.getElementById('gallery-list').addEventListener('click', (e) => {
+            const row = e.target.closest('.app-list-row');
+            if (!row) return;
+            document.querySelectorAll('#gallery-list .app-list-row').forEach(r => r.classList.remove('selected'));
+            row.classList.add('selected');
+        });
+        document.querySelectorAll('.taskbar-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.taskbar-tab').forEach(t => t.classList.remove('active-tab'));
+                tab.classList.add('active-tab');
+            });
+        });
+    </script>
+</body>
+</html>

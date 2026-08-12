@@ -1,4 +1,5 @@
 // This is a simple Klondike Solitaire game for ZebOS
+import { BaseApp } from '../UIKit/framework/index.js';
 
 const SUITS = ['S', 'H', 'D', 'C'];
 const SUIT_GLYPH = { S: '♠', H: '♥', D: '♦', C: '♣' };
@@ -18,9 +19,9 @@ function cardInnerHtml(card) {
     return `<div class="card-rank-top">${rankLabel(card.rank)}${glyph}</div><div class="card-suit-big">${glyph}</div>`;
 }
 
-export class SolitaireGame {
+export class SolitaireGame extends BaseApp {
     constructor(onCloseRequest) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.bodyElement = null;
 
         this.tableau = [];
@@ -37,11 +38,11 @@ export class SolitaireGame {
         this.dealNewGame();
     }
 
-    open(bodyElement) {
-        this.bodyElement = bodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
-        window.addEventListener('keydown', this.boundKeyDown);
-        this.render();
+        this.listen(window, 'keydown', this.boundKeyDown);
+        this.renderUI();
     }
 
     buildShuffledDeck() {
@@ -79,7 +80,7 @@ export class SolitaireGame {
     }
 
     // Rendering stuff. This took way too long.
-    render() {
+    renderUI() {
         if (!this.bodyElement) return;
 
         this.bodyElement.innerHTML = `
@@ -157,7 +158,7 @@ export class SolitaireGame {
     // events
     bindEvents() {
         this.bodyElement.querySelectorAll('.solitaire-new-game-btn, .solitaire-win-newgame-btn').forEach(btn => {
-            btn.addEventListener('click', () => { this.dealNewGame(); this.render(); });
+            btn.addEventListener('click', () => { this.dealNewGame(); this.renderUI(); });
         });
 
         const stockSlot = this.bodyElement.querySelector('[data-pile="stock"]');
@@ -184,7 +185,7 @@ export class SolitaireGame {
         } else {
             return;
         }
-        this.render();
+        this.renderUI();
     }
 
     handleDoubleClick(el) {
@@ -192,7 +193,7 @@ export class SolitaireGame {
         const card = this.resolveTopCardForSource(sourcePileId);
         if (!card) return;
         if (this.tryMove(sourcePileId, [card], `foundation-${card.suit}`)) {
-            this.render();
+            this.renderUI();
         }
     }
 
@@ -278,7 +279,7 @@ export class SolitaireGame {
         if (pileEl) {
             this.tryMove(sourcePileId, cardGroup, pileEl.dataset.pile);
         }
-        this.render();
+        this.renderUI();
     }
 
     // move
@@ -348,17 +349,20 @@ export class SolitaireGame {
     handleKeyDown(e) {
         if (e.key === 'Escape') {
             e.preventDefault();
-            this.onCloseRequest();
+            this.close();
         }
     }
 
-    cleanup() {
+    // Custom teardown: if the window closes mid-drag, the document-level
+    // mousemove/mouseup pair added in beginDrag() is still live and needs
+    // tearing down by hand — BaseApp's automatic listener cleanup only
+    // covers listeners registered through this.listen().
+    onCleanup() {
         if (this.dragState) {
             this.dragState.ghostEls.forEach(el => el.remove());
             document.removeEventListener('mousemove', this.boundMouseMove);
             document.removeEventListener('mouseup', this.boundMouseUp);
             this.dragState = null;
         }
-        window.removeEventListener('keydown', this.boundKeyDown);
     }
 }

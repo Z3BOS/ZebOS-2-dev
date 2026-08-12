@@ -1,11 +1,12 @@
 // programs/personalize.js - ZebOS 2 Beta Display Properties Applet v2.6.0
 // All settings actually apply to the live OS. No browser page reloads.
+import { BaseApp } from '../UIKit/framework/index.js';
 
 const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;
 
-export class PersonalizeApp {
+export class PersonalizeApp extends BaseApp {
     constructor(onCloseRequest, onApplyCallback, currentBg, currentPattern, currentScheme, currentSoundScheme, currentRoundedCorners) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.onApplyCallback = onApplyCallback;
 
         this.initialState = {
@@ -45,10 +46,10 @@ export class PersonalizeApp {
         ];
     }
 
-    open(windowBodyElement) {
-        this.container = windowBodyElement;
+    mount() {
+        this.container = this.body;
         this.container.style.height = '100%';
-        this.render();
+        this.renderUI();
     }
 
     _btnStyle(extra = '') {
@@ -105,7 +106,7 @@ export class PersonalizeApp {
         </div>`;
     }
 
-    render() {
+    renderUI() {
         if (!this.container) return;
 
         this.container.innerHTML = `
@@ -323,7 +324,7 @@ export class PersonalizeApp {
         this.container.querySelectorAll('.p-tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.activeTab = btn.dataset.tab;
-                this.render();
+                this.renderUI();
             });
         });
 
@@ -393,19 +394,20 @@ export class PersonalizeApp {
         const cancelBtn = this.container.querySelector('#p-btn-cancel');
 
         if (applyBtn)  applyBtn.addEventListener('click',  () => this.doApply());
-        if (okBtn)     okBtn.addEventListener('click',     () => { this.doApply(); this.onCloseRequest(); });
+        if (okBtn)     okBtn.addEventListener('click',     () => { this.doApply(); this.close(); });
         if (cancelBtn) cancelBtn.addEventListener('click', () => {
             if (this.isDirty && this.onApplyCallback) {
                 this.onApplyCallback({ ...this.initialState });
             }
-            this.onCloseRequest();
+            this.close();
         });
 
-        document.addEventListener('mousedown', this._outsideClickHandler = (e) => {
+        this._outsideClickHandler = (e) => {
             if (!e.target.closest('.w95-dropdown')) {
                 this._closeAllDropdowns();
             }
-        });
+        };
+        this.listen(document, 'mousedown', this._outsideClickHandler);
     }
 
     _bindDropdown(dropId, onChange) {
@@ -575,9 +577,4 @@ export class PersonalizeApp {
         }
     }
 
-    cleanup() {
-        if (this._outsideClickHandler) {
-            document.removeEventListener('mousedown', this._outsideClickHandler);
-        }
-    }
 }

@@ -1,0 +1,37 @@
+/* Universal CSS Reset */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #000000;
+    user-select: none;
+}
+
+:root {
+    --os-titlebar-bg: #000080;
+    --os-titlebar-fg: #ffffff;
+    --os-font-size: 12px;
+    --os-border-radius: 0px;
+}
+
+/* Rounded corners mode: toggled via body.rounded-corners */
+body.rounded-corners .window-frame {
+    border-radius: 6px !important;
+    overflow: hidden;
+}
+body.rounded-corners .window-header {
+    border-radius: 4px 4px 0 0 !important;
+}
+body.rounded-corners #start-menu {
+    border-radius: 6px 6px 0 0 !important;
+}
+body.rounded-corners .retro-context-menu {
+    border-radius: 4px !important;
+}
+
+.hidden-view {
+    display: none !important;
+}

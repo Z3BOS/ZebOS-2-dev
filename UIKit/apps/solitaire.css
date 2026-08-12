@@ -1,0 +1,43 @@
+/* Solitaire */
+.solitaire-table {
+    background-color: #087830;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+}
+.solitaire-card {
+    width: 64px;
+    height: 90px;
+    border-radius: 4px;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    padding: 3px 5px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    position: absolute;
+    cursor: pointer;
+}
+.solitaire-card.red-suit { color: #c62828; }
+.solitaire-card.black-suit { color: #000000; }
+.solitaire-card.face-down {
+    background: repeating-linear-gradient(45deg, #10509c, #10509c 6px, #1565c0 6px, #1565c0 12px);
+    border: 1px solid #06305e;
+}
+.solitaire-card .card-rank-top { font-size: 14px; line-height: 1; }
+.solitaire-card .card-suit-big { font-size: 26px; text-align: center; line-height: 1.6; }
+.solitaire-pile-slot {
+    width: 64px;
+    height: 90px;
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    box-sizing: border-box;
+    position: relative;
+}
+.solitaire-card.drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    opacity: 0.9;
+    z-index: 100010;
+}

@@ -1,10 +1,11 @@
 // programs/paint.js - Paint Studio
 import { getIcon } from '../icons.js';
 import { showOsConfirm, showSaveFileDialog, saveFileToVfsPath } from '../os.js';
+import { BaseApp } from '../UIKit/framework/index.js';
 
-export class PaintApp {
+export class PaintApp extends BaseApp {
     constructor(onCloseRequest, saveToVFS) {
-        this.onCloseRequest = onCloseRequest;
+        super(onCloseRequest);
         this.saveToVFS = saveToVFS;
 
         this.bodyElement = null;
@@ -47,8 +48,8 @@ export class PaintApp {
         this.boundKeyDown = (e) => this.handleKeyDown(e);
     }
 
-    open(windowBodyElement) {
-        this.bodyElement = windowBodyElement;
+    mount() {
+        this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
         this.bodyElement.innerHTML = `
@@ -324,10 +325,10 @@ export class PaintApp {
         this.initBrushThumbnails();
 
         // Canvas mouse & key events
-        this.mainCanvas.addEventListener('mousedown', this.boundMouseDown);
-        window.addEventListener('mousemove', this.boundMouseMove);
-        window.addEventListener('mouseup', this.boundMouseUp);
-        window.addEventListener('keydown', this.boundKeyDown);
+        this.listen(this.mainCanvas, 'mousedown', this.boundMouseDown);
+        this.listen(window, 'mousemove', this.boundMouseMove);
+        this.listen(window, 'mouseup', this.boundMouseUp);
+        this.listen(window, 'keydown', this.boundKeyDown);
     }
 
     initMenubar() {
@@ -368,7 +369,7 @@ export class PaintApp {
             });
         });
 
-        document.addEventListener('click', () => closeAllMenus());
+        this.listen(document, 'click', () => closeAllMenus());
 
         // File Menu Handlers
         this.bodyElement.querySelector('.opt-new').addEventListener('click', () => {
@@ -393,7 +394,7 @@ export class PaintApp {
 
         this.bodyElement.querySelector('.opt-exit').addEventListener('click', () => {
             closeAllMenus();
-            this.onCloseRequest();
+            this.close();
         });
 
         // Edit Menu Handlers
@@ -691,7 +692,7 @@ export class PaintApp {
             });
         });
 
-        document.addEventListener('click', () => {
+        this.listen(document, 'click', () => {
             if (brushList) brushList.style.display = 'none';
         });
 
@@ -1148,7 +1149,7 @@ export class PaintApp {
     handleKeyDown(e) {
         if (e.key === 'Escape') {
             e.preventDefault();
-            this.onCloseRequest();
+            this.close();
         } else if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) {
             e.preventDefault();
             this.undo();
@@ -1164,14 +1165,6 @@ export class PaintApp {
         }
     }
 
-    cleanup() {
-        if (this.mainCanvas) {
-            this.mainCanvas.removeEventListener('mousedown', this.boundMouseDown);
-        }
-        window.removeEventListener('mousemove', this.boundMouseMove);
-        window.removeEventListener('mouseup', this.boundMouseUp);
-        window.removeEventListener('keydown', this.boundKeyDown);
-    }
 }
 
 function hexToTransparentRgba(hex) {
