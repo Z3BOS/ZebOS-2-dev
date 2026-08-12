@@ -17,6 +17,7 @@ export class ZebTerminal extends BaseApp {
         this.matrixInterval = null;
 
         this.startTime = Date.now();
+        this.fakeSerial = this.generateFakeSerial();
 
         this.keyHandler = (e) => this.handleKeyDown(e);
         this.bodyClickHandler = () => this.inputEl && this.inputEl.focus();
@@ -131,6 +132,7 @@ export class ZebTerminal extends BaseApp {
                 this.println("  ls                   list directory contents");
                 this.println("  matrix               digital rain screen animation");
                 this.println("  mkdir <name>         create a new directory");
+                this.println("  mosys <cmd> <sub>    platform/firmware diagnostics (try 'mosys help')");
                 this.println("  ping <host>          network ICMP latency test");
                 this.println("  pwd                  print working directory");
                 this.println("  rm <name>            delete a file or directory");
@@ -162,6 +164,10 @@ export class ZebTerminal extends BaseApp {
             case 'htop':
             case 'ps':
                 this.renderTaskManager();
+                break;
+
+            case 'mosys':
+                this.runMosys(args);
                 break;
 
             case 'calc':
@@ -365,6 +371,194 @@ export class ZebTerminal extends BaseApp {
             default:
                 this.println(`zebsh: command not found: ${cmd}. Type 'help' for command list.`, "#ff5555");
         }
+    }
+
+    generateFakeSerial() {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+        let tail = "";
+        for (let i = 0; i < 8; i++) tail += chars[Math.floor(Math.random() * chars.length)];
+        return `ZB${new Date().getFullYear()}-${tail}`;
+    }
+
+    // Serial persists per-browser-profile via localStorage, same disk the rest of ZebOS uses,
+    // rather than being re-rolled every terminal session.
+    getSerialNumber() {
+        const KEY = 'ZEBOS_V2_SERIAL';
+        try {
+            let serial = localStorage.getItem(KEY);
+            if (!serial) {
+                serial = this.generateFakeSerial();
+                localStorage.setItem(KEY, serial);
+            }
+            return serial;
+        } catch (e) {
+            return this.fakeSerial;
+        }
+    }
+
+    getBrowserVendor() {
+        if (navigator.vendor) return navigator.vendor;
+        const ua = navigator.userAgent;
+        if (/Firefox\//.test(ua)) return "Mozilla Foundation";
+        if (/Edg\//.test(ua)) return "Microsoft Corporation";
+        return "Unknown";
+    }
+
+    getHostPlatform() {
+        return (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "Unknown";
+    }
+
+    getChassisType() {
+        const touch = navigator.maxTouchPoints > 0;
+        const w = screen.width;
+        if (touch && w <= 900) return "Tablet";
+        if (touch) return "Convertible";
+        if (w >= 1800) return "Desktop";
+        return "Notebook";
+    }
+
+    getBrowserNameVersion() {
+        const ua = navigator.userAgent;
+        const patterns = [
+            [/Edg\/([\d.]+)/, "Edge"],
+            [/OPR\/([\d.]+)/, "Opera"],
+            [/Chrome\/([\d.]+)/, "Chrome"],
+            [/Firefox\/([\d.]+)/, "Firefox"],
+            [/Version\/([\d.]+).*Safari/, "Safari"]
+        ];
+        for (const [re, name] of patterns) {
+            const m = ua.match(re);
+            if (m) return { name, version: m[1] };
+        }
+        return { name: "Unknown", version: "0.0" };
+    }
+
+    runMosys(args) {
+        if (!args.length || args[0] === 'help' || args[0] === '-h') {
+            this.println("mosys - ZebOS platform & firmware diagnostics utility");
+            this.println("usage: mosys <command> <sub-command> [args]");
+            this.println("");
+            this.println("commands:");
+            this.println("  platform [name|vendor|model|chassis|version]");
+            this.println("  ec info");
+            this.println("  smbios info bios");
+            this.println("  memory spd print <all|geometry>");
+            this.println("  vpd print <all|serial_number|region>");
+            this.println("  eventlog list");
+            return;
+        }
+
+        const [command, ...rest] = args;
+        switch (command) {
+            case 'platform': this.mosysPlatform(rest); break;
+            case 'ec': this.mosysEc(rest); break;
+            case 'smbios': this.mosysSmbios(rest); break;
+            case 'memory': this.mosysMemory(rest); break;
+            case 'vpd': this.mosysVpd(rest); break;
+            case 'eventlog': this.mosysEventlog(rest); break;
+            default:
+                this.println(`mosys: unknown command: '${command}'. Try 'mosys help'.`, "#ff5555");
+        }
+    }
+
+    mosysPlatform(rest) {
+        const codename = this.shell.getCodename ? this.shell.getCodename() : "Unknown";
+        const version = this.shell.getVersion ? this.shell.getVersion() : "0.0.0";
+        const fields = {
+            name: codename,
+            vendor: this.getBrowserVendor(),
+            model: this.getHostPlatform(),
+            chassis: this.getChassisType(),
+            version: `Rev ${version}`
+        };
+        const field = rest[0];
+        if (!field) {
+            Object.entries(fields).forEach(([k, v]) => this.println(`${k.padEnd(10)} | ${v}`));
+            return;
+        }
+        if (!(field in fields)) { this.println(`mosys: platform: unknown field: '${field}'`, "#ff5555"); return; }
+        this.println(fields[field]);
+    }
+
+    mosysEc(rest) {
+        if (rest.length && rest[0] !== 'info') { this.println(`mosys: ec: unknown sub-command: '${rest[0]}'`, "#ff5555"); return; }
+        const { name, version } = this.getBrowserNameVersion();
+        this.println("vendor           | name  | fw_version");
+        this.println(`${this.getBrowserVendor().padEnd(16)} | zebec | ${name.toLowerCase()}_v${version}`);
+    }
+
+    mosysSmbios(rest) {
+        if (rest.join(' ') !== 'info bios') { this.println("usage: mosys smbios info bios"); return; }
+        const { name, version } = this.getBrowserNameVersion();
+        const romSize = (performance.memory && performance.memory.jsHeapSizeLimit)
+            ? `${Math.round(performance.memory.jsHeapSizeLimit / 1024)} KB`
+            : "Unavailable";
+        this.println(`vendor        | ${this.getBrowserVendor()}`);
+        this.println(`version       | ${name} ${version}`);
+        this.println(`release_date  | ${new Date(document.lastModified).toLocaleDateString()}`);
+        this.println(`rom_size      | ${romSize}`);
+    }
+
+    mosysMemory(rest) {
+        const sub = rest.join(' ');
+        if (sub === 'spd print all') {
+            const deviceMemory = navigator.deviceMemory ? `${navigator.deviceMemory} GB (approx.)` : "Unavailable";
+            this.println(`installed_memory | ${deviceMemory}`);
+            this.println(`cpu_threads      | ${navigator.hardwareConcurrency || "Unknown"}`);
+            if (performance.memory) {
+                const fmt = b => `${(b / 1048576).toFixed(1)} MB`;
+                this.println(`heap_used        | ${fmt(performance.memory.usedJSHeapSize)}`);
+                this.println(`heap_total       | ${fmt(performance.memory.totalJSHeapSize)}`);
+                this.println(`heap_limit       | ${fmt(performance.memory.jsHeapSizeLimit)}`);
+            } else {
+                this.println(`heap_stats       | Unavailable (performance.memory not supported)`);
+            }
+        } else if (sub === 'spd print geometry') {
+            this.println(`resolution       | ${screen.width}x${screen.height}`);
+            this.println(`color_depth      | ${screen.colorDepth}-bit`);
+            this.println(`pixel_ratio      | ${window.devicePixelRatio}x`);
+        } else {
+            this.println("usage: mosys memory spd print <all|geometry>");
+        }
+    }
+
+    mosysVpd(rest) {
+        const sub = rest.join(' ');
+        const locale = navigator.language || "en-US";
+        const region = locale.includes('-') ? locale.split('-')[1].toUpperCase() : locale.toUpperCase();
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+        const serial = this.getSerialNumber();
+
+        if (sub === 'print all' || sub === '') {
+            this.println(`"serial_number"="${serial}"`);
+            this.println(`"region"="${region}"`);
+            this.println(`"initial_locale"="${locale}"`);
+            this.println(`"initial_timezone"="${timezone}"`);
+        } else if (sub === 'print serial_number') {
+            this.println(serial);
+        } else if (sub === 'print region') {
+            this.println(region);
+        } else {
+            this.println("usage: mosys vpd print <all|serial_number|region>");
+        }
+    }
+
+    mosysEventlog(rest) {
+        if (rest.length && rest[0] !== 'list') { this.println(`usage: mosys eventlog list`); return; }
+        const origin = performance.timeOrigin;
+        const nav = performance.getEntriesByType('navigation')[0];
+        const events = nav ? [
+            ["Navigation start", origin + nav.startTime],
+            ["DOM interactive", origin + nav.domInteractive],
+            ["DOM content loaded", origin + nav.domContentLoadedEventEnd],
+            ["Page load complete", origin + nav.loadEventEnd]
+        ] : [["Navigation start", origin]];
+        events.push(["Terminal session start", this.startTime]);
+
+        this.println("event | timestamp                | description");
+        events.forEach(([desc, ts], i) => {
+            this.println(`${String(i + 1).padStart(5)} | ${new Date(ts).toLocaleString()} | ${desc}`);
+        });
     }
 
     renderSysfetch() {
