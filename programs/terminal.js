@@ -40,7 +40,7 @@ export class ZebTerminal extends BaseApp {
         this.inputEl = this.bodyElement.querySelector('.term-input');
         this.promptEl = this.bodyElement.querySelector('.term-prompt');
 
-        this.println("ZebOS Terminal Shell [Version 2.6.0]");
+        this.println("ZebOS Terminal Shell [Version 2.7.0]");
         this.println("Type 'help' to view all available commands and CLI apps.\n");
         this.updatePrompt();
 
@@ -299,7 +299,7 @@ export class ZebTerminal extends BaseApp {
                 break;
 
             case 'ver':
-                this.println(`ZebOS 2 (Beta Build 2.6.0 "Fawn")`);
+                this.println(`ZebOS 2 (Beta Build 2.7.0 "Fawn")`);
                 break;
 
             case 'date':
@@ -379,11 +379,11 @@ export class ZebTerminal extends BaseApp {
 <span style="color:#0088ff; font-weight:bold;">..█.. █.... █...█ █...█ ....█</span>
 <span style="color:#0066ff; font-weight:bold;">█████ █████ ████. .███. ████.</span>
 
-<span style="color:#ffff55;">OS:</span>         ZebOS 2 (Beta Build 2.6.0)
+<span style="color:#ffff55;">OS:</span>         ZebOS 2 (Beta Build 2.7.0)
 <span style="color:#ffff55;">Codename:</span>   "${this.shell.getCodename()}"
-<span style="color:#ffff55;">Kernel:</span>     ZebOS VFS Hardened Engine v2.6.0
+<span style="color:#ffff55;">Kernel:</span>     ZebOS VFS Hardened Engine v2.7.0
 <span style="color:#ffff55;">User:</span>       ${this.shell.getUsername()}
-<span style="color:#ffff55;">Shell:</span>      ZebShell (zebsh) v2.6.0
+<span style="color:#ffff55;">Shell:</span>      ZebShell (zebsh) v2.7.0
 <span style="color:#ffff55;">Uptime:</span>     ${mins}m ${secs}s
 <span style="color:#ffff55;">Memory:</span>     512 MB / 2048 MB (VFS Persistent)
 <span style="color:#ffff55;">Palette:</span>    <span style="color:#000000; background:#000000;">  </span><span style="color:#ff5555; background:#ff5555;">  </span><span style="color:#55ff55; background:#55ff55;">  </span><span style="color:#ffff55; background:#ffff55;">  </span><span style="color:#5555ff; background:#5555ff;">  </span><span style="color:#ff55ff; background:#ff55ff;">  </span><span style="color:#55ffff; background:#55ffff;">  </span><span style="color:#ffffff; background:#ffffff;">  </span>

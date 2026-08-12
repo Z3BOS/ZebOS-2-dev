@@ -1,4 +1,4 @@
-// programs/personalize.js - ZebOS 2 Beta Display Properties Applet v2.6.0
+// programs/personalize.js - ZebOS 2 Beta Display Properties Applet v2.7.0
 // All settings actually apply to the live OS. No browser page reloads.
 import { BaseApp } from '../UIKit/framework/index.js';
 

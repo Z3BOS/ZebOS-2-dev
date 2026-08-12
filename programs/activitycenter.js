@@ -16,7 +16,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'System activity & launcher dashboard',
                 execPath: 'Z:\\ZebApps\\Activity Center\\activitycenter.exe',
                 category: 'System Utility',
-                version: '2.6.0 Beta',
+                version: '2.7.0 Beta',
                 size: '185 KB',
                 ram: '1.4 MB',
                 status: 'Running'
@@ -28,7 +28,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Browse virtual file system folders & drives',
                 execPath: 'Z:\\ZebApps\\Zeb Explorer\\explorer.exe',
                 category: 'File Management',
-                version: '2.6.0 Beta',
+                version: '2.7.0 Beta',
                 size: '410 KB',
                 ram: '2.2 MB',
                 status: 'Ready'
@@ -52,7 +52,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Command prompt interface for system tasks',
                 execPath: 'Z:\\ZebApps\\Terminal\\cmd.exe',
                 category: 'Developer Tools',
-                version: '2.6.0 Beta',
+                version: '2.7.0 Beta',
                 size: '220 KB',
                 ram: '1.1 MB',
                 status: 'Ready'
@@ -88,7 +88,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Monitor processes, CPU, & system resources',
                 execPath: 'Z:\\ZebApps\\Task Manager\\taskmgr.exe',
                 category: 'System Diagnostics',
-                version: '2.6.0 Beta',
+                version: '2.7.0 Beta',
                 size: '340 KB',
                 ram: '1.6 MB',
                 status: 'Ready'
@@ -136,7 +136,7 @@ export class ActivityCenterApp extends BaseApp {
                 desc: 'Customize wallpaper, schemes, & themes',
                 execPath: 'Z:\\ZebApps\\System Info\\desk.cpl',
                 category: 'Control Panel',
-                version: '2.6.0 Beta',
+                version: '2.7.0 Beta',
                 size: '150 KB',
                 ram: '1.0 MB',
                 status: 'Ready'
