@@ -1643,23 +1643,6 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
             break;
         }
 
-        case 'start-link-tasklist': {
-            const winId = 'app-tasklist';
-            try {
-                const module = await import(`./programs/tasklist.js?v=${Date.now()}`);
-                const taskBody = createWindow("Task List", "tasklist", winId);
-                if (taskBody) {
-                    setWindowBounds(taskBody, 360, 440);
-                    const taskInstance = new module.TaskListApp(() => closeWindow(winId));
-                    registerWindowCleanup(winId, () => taskInstance.cleanup());
-                    taskInstance.open(taskBody);
-                }
-            } catch (err) {
-                logKernel(`Kernel Error: Failed to mount tasklist.js (${err.message})`, "ERROR");
-            }
-            break;
-        }
-
         case 'start-link-courgette': {
             const winId = 'app-courgette';
             try {
@@ -2087,7 +2070,6 @@ const INITIAL_DESKTOP_SHORTCUTS = [
     { id: 'start-link-mines', icon: 'mines', label: 'Minesweeper' },
     { id: 'start-link-calc', icon: 'calc', label: 'Calculator' },
     { id: 'start-link-snake', icon: 'snake', label: 'Snake' },
-    { id: 'start-link-tasklist', icon: 'tasklist', label: 'Task List' },
     { id: 'start-link-media', icon: 'media', label: 'Media Player' },
     { id: 'start-link-vm', icon: 'vm', label: 'ZebVM Manager' },
     { id: 'start-link-camera', icon: 'camera', label: 'Camera' },

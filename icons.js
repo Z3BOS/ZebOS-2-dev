@@ -535,20 +535,6 @@ activitycenter: `
             <circle cx="18" cy="10.5" r="1" fill="#ff5252"/>
         </svg>
     `,
-    tasklist: `
-        <svg class="sys-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="3" width="16" height="19" rx="1.5" fill="#f5f5f5" stroke="#444444" stroke-width="1.3"/>
-            <rect x="8" y="1.5" width="8" height="3.5" rx="1" fill="#c0c0c0" stroke="#444444" stroke-width="1.1"/>
-            <rect x="6.5" y="8" width="3" height="3" fill="#ffffff" stroke="#808080" stroke-width="1"/>
-            <path d="M7 9.5L7.7 10.2L9 8.8" stroke="#2e7d32" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="11" y="8.5" width="8" height="1.6" fill="#808080"/>
-            <rect x="6.5" y="13" width="3" height="3" fill="#ffffff" stroke="#808080" stroke-width="1"/>
-            <path d="M7 14.5L7.7 15.2L9 13.8" stroke="#2e7d32" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="11" y="13.5" width="8" height="1.6" fill="#808080"/>
-            <rect x="6.5" y="18" width="3" height="3" fill="#ffffff" stroke="#808080" stroke-width="1"/>
-            <rect x="11" y="18.5" width="6" height="1.6" fill="#c0c0c0"/>
-        </svg>
-    `,
 };
 
 export function getIcon(name, customClass = "") {

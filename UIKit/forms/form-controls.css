@@ -41,3 +41,162 @@ input[type="radio"]:checked::after {
     border-bottom-color: #000000;
     height: 16px;
 }
+
+/* Win95 Custom Dropdown UI Control */
+.w95-dropdown {
+    position: relative;
+    user-select: none;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+}
+
+.w95-drop-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border: 2px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    padding: 2px 4px;
+    cursor: pointer;
+    min-height: 22px;
+    box-sizing: border-box;
+}
+
+.w95-drop-label {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #000000;
+    font-size: 11px;
+}
+
+.w95-drop-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    background: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    font-size: 9px;
+    line-height: 1;
+    font-weight: bold;
+    color: #000000;
+    margin-left: 4px;
+}
+
+.w95-drop-list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    border: 2px solid #000000;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    max-height: 160px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    margin-top: 1px;
+}
+
+.w95-drop-list.open,
+.w95-dropdown.open .w95-drop-list {
+    display: block;
+}
+
+.w95-drop-item {
+    padding: 3px 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #000000;
+    font-size: 11px;
+}
+
+.w95-drop-item:hover,
+.w95-drop-item.selected {
+    background-color: #000080;
+    color: #ffffff;
+}
+
+/* Win95 Sunken Text Inputs & Textareas */
+.w95-input,
+input[type="text"].w95-input,
+textarea.w95-input {
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    box-shadow: inset 1px 1px 0 #000000;
+    padding: 3px 6px;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    outline: none;
+    box-sizing: border-box;
+}
+.w95-input:focus {
+    border-color: #000000 #ffffff #ffffff #000000;
+}
+
+/* Win95 Tab Control */
+.w95-tab-header {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    padding-left: 4px;
+    user-select: none;
+}
+.w95-tab-item {
+    background: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #808080;
+    border-bottom: none;
+    padding: 3px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #000000;
+    cursor: pointer;
+    margin-bottom: -2px;
+    z-index: 1;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+.w95-tab-item.active {
+    z-index: 3;
+    padding-top: 4px;
+}
+.w95-tab-body {
+    background: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #808080;
+    border-bottom-color: #808080;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Win95 Progress Bar */
+.w95-progress-track {
+    background: #ffffff;
+    border: 2px solid #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+    height: 16px;
+    padding: 1px;
+    box-sizing: border-box;
+}
+.w95-progress-fill {
+    height: 100%;
+    background-color: #000080;
+    width: 0%;
+    transition: width 0.2s ease;
+}

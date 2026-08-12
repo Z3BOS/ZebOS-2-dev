@@ -2,7 +2,7 @@
 // Real device detection/stream handling lives in devices.js; frame capture
 // and file saving live in capture.js — this file just wires them to the DOM.
 import { getIcon } from '../icons.js';
-import { BaseApp } from '../UIKit/framework/index.js';
+import { BaseApp, w95Dropdown, bindW95Dropdown } from '../UIKit/framework/index.js';
 import { isSupported, listCameras, requestCamera, stopCamera, describeStream, describeError } from './devices.js';
 import { captureFrame, canvasToBlob, downloadBlob } from './capture.js';
 
@@ -12,13 +12,14 @@ export class CameraApp extends BaseApp {
 
         this.videoEl = null;
         this.canvasEl = null;
-        this.deviceSelect = null;
+        this.deviceDropdownEl = null;
         this.statusEl = null;
         this.thumbEl = null;
 
         this.stream = null;
         this.currentDeviceId = null;
         this.lastCaptureBlob = null;
+        this.camerasList = [];
 
         this.boundDeviceChange = () => this.refreshDeviceList();
         this.boundKeyDown = (e) => this.handleKeyDown(e);
@@ -27,15 +28,22 @@ export class CameraApp extends BaseApp {
     mount() {
         this.body.style.height = "100%";
 
+        const initialDropdownHtml = w95Dropdown({
+            id: 'cam-device-dropdown',
+            options: [{ value: '', label: 'Detecting cameras...' }],
+            value: '',
+            width: '220px'
+        });
+
         this.render(`
             <div style="display:flex; flex-direction:column; height:100%; background:#1c1c1c; color:#ffffff; font-family:Arial, sans-serif; box-sizing:border-box; user-select:none;">
 
                 <!-- Title / device selector bar -->
                 <div style="background:#2a2a2a; padding:6px 10px; font-size:12px; font-weight:bold; border-bottom:2px solid #000000; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; gap:8px;">
                     <span style="color:#00e5ff; white-space:nowrap;">ZebOS Camera</span>
-                    <select class="cam-device-select" style="flex-grow:1; max-width:240px; font-size:11px; padding:2px; background:#ffffff; color:#000000;">
-                        <option value="">Detecting cameras...</option>
-                    </select>
+                    <div id="cam-device-dropdown-container">
+                        ${initialDropdownHtml}
+                    </div>
                 </div>
 
                 <!-- Live viewport -->
@@ -49,8 +57,8 @@ export class CameraApp extends BaseApp {
                 <div style="background:#c0c0c0; color:#000000; padding:6px 10px; border-top:2px solid #ffffff; display:flex; flex-direction:column; gap:6px; flex-shrink:0;">
                     <div class="cam-status" style="font-family:monospace; font-size:11px; color:#ffcc55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Initializing camera...</div>
                     <div style="display:flex; gap:6px;">
-                        <button class="cam-capture-btn" style="flex-grow:1; padding:4px; font-size:11px; font-weight:bold; background:#c0c0c0; border:1px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">${getIcon('picture')} Capture</button>
-                        <button class="cam-save-btn" style="flex-grow:1; padding:4px; font-size:11px; font-weight:bold; background:#c0c0c0; border:1px solid #ffffff; border-right-color:#000000; border-bottom-color:#000000; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">${getIcon('save')} Save Photo</button>
+                        <button class="cam-capture-btn app-toolbar-btn" style="flex-grow:1; justify-content:center;">${getIcon('picture')} Capture</button>
+                        <button class="cam-save-btn app-toolbar-btn" style="flex-grow:1; justify-content:center;">${getIcon('save')} Save Photo</button>
                     </div>
                 </div>
             </div>
@@ -58,20 +66,24 @@ export class CameraApp extends BaseApp {
 
         this.videoEl = this.body.querySelector('.cam-video');
         this.canvasEl = this.body.querySelector('.cam-canvas');
-        this.deviceSelect = this.body.querySelector('.cam-device-select');
+        this.deviceDropdownEl = this.body.querySelector('#cam-device-dropdown-container');
         this.statusEl = this.body.querySelector('.cam-status');
         this.thumbEl = this.body.querySelector('.cam-thumb');
 
         this.body.querySelector('.cam-capture-btn').addEventListener('click', () => this.capture());
         this.body.querySelector('.cam-save-btn').addEventListener('click', () => this.savePhoto());
-        this.deviceSelect.addEventListener('change', () => this.startStream(this.deviceSelect.value));
 
         this.listen(window, 'keydown', this.boundKeyDown);
 
         if (!isSupported()) {
             this.setStatus("Camera API not supported in this browser.", true);
-            this.deviceSelect.innerHTML = '<option value="">Unsupported</option>';
-            this.deviceSelect.disabled = true;
+            this.deviceDropdownEl.innerHTML = w95Dropdown({
+                id: 'cam-device-dropdown',
+                options: [{ value: '', label: 'Unsupported' }],
+                value: '',
+                width: '220px',
+                disabled: true
+            });
             return;
         }
 
@@ -95,17 +107,32 @@ export class CameraApp extends BaseApp {
     }
 
     async refreshDeviceList() {
-        if (!this.deviceSelect) return;
+        if (!this.deviceDropdownEl) return;
         try {
             const cams = await listCameras();
-            this.deviceSelect.innerHTML = cams.length
-                ? cams.map((d, i) => `<option value="${d.deviceId}">${d.label || `Camera ${i + 1}`}</option>`).join('')
-                : '<option value="">No cameras detected</option>';
-            this.deviceSelect.disabled = cams.length === 0;
+            this.camerasList = cams;
+            const options = cams.length
+                ? cams.map((d, i) => ({ value: d.deviceId, label: d.label || `Camera ${i + 1}` }))
+                : [{ value: '', label: 'No cameras detected' }];
 
-            if (this.currentDeviceId && cams.some(d => d.deviceId === this.currentDeviceId)) {
-                this.deviceSelect.value = this.currentDeviceId;
-            }
+            const selectedValue = (this.currentDeviceId && cams.some(d => d.deviceId === this.currentDeviceId))
+                ? this.currentDeviceId
+                : (cams[0]?.deviceId || '');
+
+            this.deviceDropdownEl.innerHTML = w95Dropdown({
+                id: 'cam-device-dropdown',
+                options: options,
+                value: selectedValue,
+                width: '220px',
+                disabled: cams.length === 0
+            });
+
+            bindW95Dropdown(this.deviceDropdownEl, '#cam-device-dropdown', (deviceId) => {
+                if (deviceId && deviceId !== this.currentDeviceId) {
+                    this.startStream(deviceId);
+                }
+            });
+
             if (!cams.length && !this.stream) {
                 this.setStatus("No camera detected on this device.", true);
             }

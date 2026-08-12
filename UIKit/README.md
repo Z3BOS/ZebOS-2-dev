@@ -83,6 +83,10 @@ doesn't change what belongs where, it just cuts the boilerplate.
 | `.app-list-row` (+ `.selected`) | forms/app-chrome.css | A selectable row in a list (Task Manager process list, file lists, etc). |
 | `.zeb-checkbox-label` | forms/app-chrome.css | Wrap a `<label>` around a `<input type="checkbox">` for the retro checkmark. |
 | `input[type="radio"]` | forms/form-controls.css | Styled automatically — no class needed, just use a real radio input. |
+| `.w95-dropdown` / `.w95-drop-display` / `.w95-drop-list` | forms/form-controls.css | Custom Win95 retro select dropdown control. Use `w95Dropdown()` and `bindW95Dropdown()` from `UIKit/framework/index.js`. |
+| `.w95-input` | forms/form-controls.css | Sunken 3D Win95 text input box and textarea. |
+| `.w95-tab-header` / `.w95-tab-item` / `.w95-tab-body` | forms/form-controls.css | Classic Win95 property-sheet tabbed container control. |
+| `.w95-progress-track` / `.w95-progress-fill` | forms/form-controls.css | Inset Win95 blue progress bar control. |
 | `.w95-drop-list` | forms/form-controls.css | Add to a scrollable list/dropdown to get the beveled Win95 scrollbar. |
 | `.sys-icon` | chrome/desktop.css | Base size for the code-based SVG icon set (`icons.js`). Context selectors (`.window-title .sys-icon`, `.taskbar-tab .sys-icon`, etc.) resize it automatically depending on where it's placed — you don't need to size it yourself. |
 | `.retro-context-menu` / `.context-menu-item` | chrome/context-menu.css | Right-click menus, built by `contextmenu.js`. See [howto/context-menus.md](howto/context-menus.md). |
