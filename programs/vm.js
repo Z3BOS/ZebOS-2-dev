@@ -1,7 +1,8 @@
 // programs/vm.js - ZebOS 2 ZebVM Virtual Machine Manager Engine
 import { getIcon } from '../icons.js';
-import { showOsPrompt } from '../os.js';
+import { showOsPrompt, getRegistrySnapshot, setRegistryValue } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { downloadLinuxEmulationAssets, bootLinuxEmulation, LINUX_EMULATION_TOTAL_BYTES } from '../linux/v86loader.js';
 
 export class ZebVMManager extends BaseApp {
     constructor(onCloseRequest) {
@@ -11,6 +12,7 @@ export class ZebVMManager extends BaseApp {
         this.vms = [
             {
                 id: 'vm-zebos-162',
+                type: 'iframe',
                 name: 'ZebOS v1.6.2 SP1',
                 url: 'https://z3bos.github.io/ZebOS/',
                 os: 'ZebOS v1.6.2 SP1',
@@ -22,6 +24,7 @@ export class ZebVMManager extends BaseApp {
             },
             {
                 id: 'vm-zebos-legacy',
+                type: 'iframe',
                 name: 'ZebOS 1.0 Classic',
                 url: 'https://z3bos.github.io/ZebOS/',
                 os: 'ZebOS v1.0.0',
@@ -30,11 +33,26 @@ export class ZebVMManager extends BaseApp {
                 status: 'stopped',
                 booting: false,
                 desc: 'Legacy 16-Bit ZebOS v1.0 Architecture Virtual Instance'
+            },
+            {
+                id: 'vm-linux-v86',
+                type: 'v86',
+                name: 'Linux (v86)',
+                os: 'Alpine Linux',
+                ram: 512,
+                cpus: 1,
+                status: 'stopped',
+                booting: false,
+                desc: 'Real Alpine Linux, emulated in-browser via v86 over a 9p filesystem. Not a fake terminal.'
             }
         ];
 
         this.selectedVmId = 'vm-zebos-162';
         this.bootTimers = {};
+        this.linuxEmulationEnabled = !!getRegistrySnapshot().linuxEmulationEnabled;
+        this.installing = false;
+        this.installProgress = { loaded: 0, total: LINUX_EMULATION_TOTAL_BYTES };
+        this.installError = null;
         this.boundKeyDown = (e) => this.handleKeyDown(e);
     }
 
@@ -114,9 +132,12 @@ export class ZebVMManager extends BaseApp {
         `;
 
         this.bindEvents(activeVm);
+        this.mountV86IfNeeded(activeVm);
     }
 
     renderVirtualViewport(vm) {
+        if (vm.type === 'v86') return this.renderV86Viewport(vm);
+
         if (vm.booting) {
             return `
                 <div style="flex-grow:1; background:#0c0c0c; color:#00ff00; font-family:'Consolas','Courier New',monospace; padding:16px; font-size:12px; line-height:1.6; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
@@ -143,7 +164,7 @@ export class ZebVMManager extends BaseApp {
                 <div style="width:64px; height:64px; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(59,130,246,0.5));">${getIcon('vm')}</div>
                 <div style="font-size:20px; font-weight:bold; color:#ffffff;">${vm.name}</div>
                 <div style="font-size:12px; color:#9ca3af; margin-top:4px;">${vm.desc}</div>
-                
+
                 <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px; background:#1f2937; padding:12px 18px; border-radius:6px; border:1px solid #374151; font-size:12px; text-align:left; min-width:280px;">
                     <div><strong style="color:#60a5fa;">Guest OS:</strong> ${vm.os}</div>
                     <div><strong style="color:#60a5fa;">Virtual RAM:</strong> ${vm.ram} MB</div>
@@ -156,6 +177,135 @@ export class ZebVMManager extends BaseApp {
                 </button>
             </div>
         `;
+    }
+
+    // v86 owns its own viewport states because it isn't a fake iframe VM:
+    // "not installed" needs a download button, "running" needs a live
+    // container element for bootLinuxEmulation() to attach a real canvas to,
+    // and there's no vm.url to show since there's nothing being embedded.
+    renderV86Viewport(vm) {
+        if (!this.linuxEmulationEnabled) {
+            if (this.installing) {
+                const pct = this.installProgress.total > 0
+                    ? Math.min(100, Math.round((this.installProgress.loaded / this.installProgress.total) * 100))
+                    : 0;
+                return `
+                    <div style="flex-grow:1; background:#111827; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:Arial, sans-serif;">
+                        <div style="width:64px; height:64px; margin-bottom:12px;">${getIcon('vm')}</div>
+                        <div style="font-size:16px; font-weight:bold; color:#ffffff;">Downloading Linux Emulation&hellip;</div>
+                        <div style="width:280px; height:14px; background:#1f2937; border:1px solid #374151; margin-top:14px;">
+                            <div id="v86-install-fill" style="width:${pct}%; height:100%; background:linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);"></div>
+                        </div>
+                        <div id="v86-install-pct" style="font-size:11px; color:#9ca3af; margin-top:6px;">${pct}%</div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="flex-grow:1; background:#111827; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:Arial, sans-serif;">
+                    <div style="width:64px; height:64px; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(59,130,246,0.5));">${getIcon('vm')}</div>
+                    <div style="font-size:20px; font-weight:bold; color:#ffffff;">${vm.name}</div>
+                    <div style="font-size:12px; color:#9ca3af; margin-top:4px; max-width:300px;">${vm.desc}</div>
+                    <div style="font-size:11px; color:#6b7280; margin-top:10px;">Not installed — not bundled with ZebOS. Fetches the ~${(LINUX_EMULATION_TOTAL_BYTES / (1024 * 1024)).toFixed(1)} MB v86 runtime now; the Alpine rootfs itself streams in on demand the first time it boots, not upfront.</div>
+                    ${this.installError ? `<div style="font-size:11px; color:#f87171; margin-top:8px;">${this.installError}</div>` : ''}
+                    <button class="btn-install-linux" style="margin-top:18px; padding:10px 24px; font-size:13px; font-weight:bold; background:linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color:#ffffff; border:1px solid #60a5fa; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+                        <span class="exp-icon-wrap">${getIcon('powerOn')}</span> Download &amp; Enable
+                    </button>
+                </div>
+            `;
+        }
+
+        if (vm.booting) {
+            return `
+                <div style="flex-grow:1; background:#0c0c0c; color:#00ff00; font-family:'Consolas','Courier New',monospace; padding:16px; font-size:12px; line-height:1.6; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                    <div style="width:50px; height:50px; margin-bottom:12px;">${getIcon('vm')}</div>
+                    <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.7.0 Post Diagnostic Check</div>
+                    <div style="color:#00ff00; margin-top:8px;">Initializing Virtual Hardware Layer...</div>
+                    <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${vm.name}]...</div>
+                </div>
+            `;
+        }
+
+        if (vm.status === 'running') {
+            // bootLinuxEmulation() attaches its own canvas into this
+            // container right after render — see mountV86IfNeeded().
+            return `<div id="v86-screen-${vm.id}" style="width:100%; height:100%; background:#000000;"></div>`;
+        }
+
+        return `
+            <div style="flex-grow:1; background:#111827; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:Arial, sans-serif;">
+                <div style="width:64px; height:64px; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(59,130,246,0.5));">${getIcon('vm')}</div>
+                <div style="font-size:20px; font-weight:bold; color:#ffffff;">${vm.name}</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">${vm.desc}</div>
+
+                <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px; background:#1f2937; padding:12px 18px; border-radius:6px; border:1px solid #374151; font-size:12px; text-align:left; min-width:280px;">
+                    <div><strong style="color:#60a5fa;">Guest OS:</strong> ${vm.os}</div>
+                    <div><strong style="color:#60a5fa;">Virtual RAM:</strong> ${vm.ram} MB</div>
+                    <div><strong style="color:#60a5fa;">vCPU Cores:</strong> ${vm.cpus} (v86 has no multicore support)</div>
+                    <div><strong style="color:#60a5fa;">Backend:</strong> v86 (WASM x86 emulator)</div>
+                </div>
+
+                <button class="btn-power-on-center" style="margin-top:20px; padding:10px 24px; font-size:13px; font-weight:bold; background:linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color:#ffffff; border:1px solid #60a5fa; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+                    <span class="exp-icon-wrap">${getIcon('powerOn')}</span> Power On Virtual Machine
+                </button>
+            </div>
+        `;
+    }
+
+    // Called after every renderUI() — no-ops unless this vm is the v86 kind,
+    // currently "running", and doesn't already have a live instance.
+    async mountV86IfNeeded(vm) {
+        if (vm.type !== 'v86' || vm.status !== 'running' || vm._v86Instance || vm._v86Mounting) return;
+        const container = this.bodyElement?.querySelector(`#v86-screen-${vm.id}`);
+        if (!container) return;
+
+        vm._v86Mounting = true;
+        try {
+            vm._v86Instance = await bootLinuxEmulation(container);
+        } catch (err) {
+            vm.status = 'stopped';
+            this.installError = `Boot failed: ${err.message}`;
+            this.renderUI();
+        } finally {
+            vm._v86Mounting = false;
+        }
+    }
+
+    async installLinuxEmulation() {
+        if (this.installing) return;
+        this.installing = true;
+        this.installError = null;
+        this.installProgress = { loaded: 0, total: LINUX_EMULATION_TOTAL_BYTES };
+        this.renderUI();
+
+        try {
+            await downloadLinuxEmulationAssets((progress) => {
+                this.installProgress = progress;
+                this.updateInstallProgressUI();
+            });
+            setRegistryValue('linuxEmulationEnabled', true);
+            this.linuxEmulationEnabled = true;
+            this.installing = false;
+            this.renderUI();
+        } catch (err) {
+            this.installing = false;
+            this.installError = err.message || 'Download failed — check your connection and try again.';
+            this.renderUI();
+        }
+    }
+
+    // Patches the progress bar directly instead of calling renderUI() on
+    // every chunk — a full re-render per network chunk would be wasteful
+    // and flickery for a bar that just needs its width updated.
+    updateInstallProgressUI() {
+        const fill = this.bodyElement?.querySelector('#v86-install-fill');
+        const pctEl = this.bodyElement?.querySelector('#v86-install-pct');
+        if (!fill || !pctEl) return;
+        const pct = this.installProgress.total > 0
+            ? Math.min(100, Math.round((this.installProgress.loaded / this.installProgress.total) * 100))
+            : 0;
+        fill.style.width = `${pct}%`;
+        pctEl.textContent = `${pct}%`;
     }
 
     bindEvents(activeVm) {
@@ -174,6 +324,9 @@ export class ZebVMManager extends BaseApp {
         const doStart = () => this.startVm(activeVm);
         if (startBtn) startBtn.addEventListener('click', doStart);
         if (startCenterBtn) startCenterBtn.addEventListener('click', doStart);
+
+        const installBtn = this.bodyElement.querySelector('.btn-install-linux');
+        if (installBtn) installBtn.addEventListener('click', () => this.installLinuxEmulation());
 
         // Stop VM
         const stopBtn = this.bodyElement.querySelector('.btn-stop-vm');
@@ -234,6 +387,10 @@ export class ZebVMManager extends BaseApp {
         vm.booting = false;
         vm.status = 'stopped';
         if (this.bootTimers[vm.id]) clearTimeout(this.bootTimers[vm.id]);
+        if (vm._v86Instance) {
+            vm._v86Instance.destroy().catch(() => {});
+            vm._v86Instance = null;
+        }
         this.renderUI();
     }
 
@@ -242,5 +399,15 @@ export class ZebVMManager extends BaseApp {
             e.preventDefault();
             this.close();
         }
+    }
+
+    onCleanup() {
+        Object.values(this.bootTimers).forEach(t => clearTimeout(t));
+        this.vms.forEach(vm => {
+            if (vm._v86Instance) {
+                vm._v86Instance.destroy().catch(() => {});
+                vm._v86Instance = null;
+            }
+        });
     }
 }
