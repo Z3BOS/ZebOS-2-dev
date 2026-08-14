@@ -2,6 +2,7 @@ import { getIcon } from '../icons.js';
 import { showOsPrompt, showOsConfirm } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
 import { Telemetry } from '../telemetry/index.js';
+import { escapeHtml } from '../caper/sanitize.js';
 
 export class FileExplorerApp extends BaseApp {
     constructor(closeCallback, launchFileCallback, saveVfsCallback, getVfsContext) {
@@ -535,6 +536,7 @@ export class FileExplorerApp extends BaseApp {
             const item = context[name];
             const isDir = item.type === "dir";
             const iconSvg = this.getItemIcon(name, item.type);
+            const safeName = escapeHtml(name);
 
             const card = document.createElement('div');
             card.className = 'explorer-item';
@@ -555,7 +557,7 @@ export class FileExplorerApp extends BaseApp {
                 `;
                 card.innerHTML = `
                     <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${iconSvg}</div>
-                    <div style="font-size:11px; margin-top:6px; word-break:break-word; max-width:80px; line-height:1.2;">${name}</div>
+                    <div style="font-size:11px; margin-top:6px; word-break:break-word; max-width:80px; line-height:1.2;">${safeName}</div>
                 `;
             } else if (this.viewMode === 'small') {
                 card.style.cssText = `
@@ -569,7 +571,7 @@ export class FileExplorerApp extends BaseApp {
                 `;
                 card.innerHTML = `
                     <div style="width:20px; height:20px; flex-shrink:0;">${iconSvg}</div>
-                    <div style="font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</div>
+                    <div style="font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeName}</div>
                 `;
             } else {
                 card.style.cssText = `
@@ -583,7 +585,7 @@ export class FileExplorerApp extends BaseApp {
                 `;
                 card.innerHTML = `
                     <div style="width:20px; height:20px; flex-shrink:0;">${iconSvg}</div>
-                    <div style="font-size:12px;">${name}</div>
+                    <div style="font-size:12px;">${safeName}</div>
                 `;
             }
 
@@ -650,6 +652,7 @@ export class FileExplorerApp extends BaseApp {
             const iconSvg = this.getItemIcon(name, item.type);
             const sizeStr = isDir ? "" : `${(new Blob([item.content || '']).size / 1024).toFixed(1)} KB`;
             const typeStr = this.getItemTypeName(name, item.type);
+            const safeName = escapeHtml(name);
 
             const row = document.createElement('tr');
             row.className = 'explorer-table-row';
@@ -664,7 +667,7 @@ export class FileExplorerApp extends BaseApp {
 
             row.innerHTML = `
                 <td style="padding:6px 10px; display:flex; align-items:center; gap:8px;">
-                    <span style="width:18px; height:18px; flex-shrink:0;">${iconSvg}</span> ${name}
+                    <span style="width:18px; height:18px; flex-shrink:0;">${iconSvg}</span> ${safeName}
                 </td>
                 <td style="padding:6px 10px;">${typeStr}</td>
                 <td style="padding:6px 10px;">${sizeStr}</td>
@@ -787,7 +790,7 @@ export class FileExplorerApp extends BaseApp {
                         padding-top: 2px;
                         padding-bottom: 2px;
                     `;
-                    node.innerHTML = `<span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('folder')}</span> ${key}`;
+                    node.innerHTML = `<span style="width:14px; height:14px; display:inline-flex; align-items:center;">${getIcon('folder')}</span> ${escapeHtml(key)}`;
                     node.addEventListener('click', (e) => {
                         e.stopPropagation();
                         this.navigateTo(fullPath);

@@ -1,9 +1,10 @@
 // programs/vm.js - ZebOS 2 ZebVM Virtual Machine Manager Engine
 import { getIcon } from '../icons.js';
-import { showOsPrompt, getRegistrySnapshot, setRegistryValue } from '../os.js';
+import { showOsPrompt, showOsConfirm, getRegistrySnapshot, setRegistryValue } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
 import { downloadLinuxEmulationAssets, bootLinuxEmulation, LINUX_EMULATION_TOTAL_BYTES } from '../linux/v86loader.js';
 import { Telemetry } from '../telemetry/index.js';
+import { escapeHtml } from '../caper/sanitize.js';
 
 export class ZebVMManager extends BaseApp {
     constructor(onCloseRequest) {
@@ -111,7 +112,7 @@ export class ZebVMManager extends BaseApp {
                                 <div style="display:flex; align-items:center; justify-content:space-between;">
                                     <div style="font-weight:bold; display:flex; align-items:center; gap:6px;">
                                         <span class="exp-icon-wrap">${getIcon('vm')}</span>
-                                        <span>${vm.name}</span>
+                                        <span>${escapeHtml(vm.name)}</span>
                                     </div>
                                     <span style="font-size:9px; font-weight:bold; padding:2px 5px; background:${vm.status === 'running' ? '#2e7d32' : (vm.booting ? '#f57f17' : '#757575')}; color:#ffffff; border-radius:2px;">${vm.booting ? 'BOOTING' : vm.status.toUpperCase()}</span>
                                 </div>
@@ -128,7 +129,7 @@ export class ZebVMManager extends BaseApp {
 
                 <!-- Footer System Status Bar -->
                 <div style="background:#c0c0c0; border-top:1px solid #ffffff; padding:3px 8px; font-size:11px; font-weight:bold; color:#333333; flex-shrink:0; display:flex; justify-content:space-between; align-items:center;">
-                    <div>Active Machine: <span style="color:#000080;">${activeVm.name}</span> (${activeVm.os})</div>
+                    <div>Active Machine: <span style="color:#000080;">${escapeHtml(activeVm.name)}</span> (${escapeHtml(activeVm.os)})</div>
                     <div>Running VMs: ${this.vms.filter(v => v.status === 'running').length}/${this.vms.length}</div>
                 </div>
             </div>
@@ -148,7 +149,7 @@ export class ZebVMManager extends BaseApp {
                     <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.7.0 Post Diagnostic Check</div>
                     <div style="color:#00ff00; margin-top:8px;">Initializing Virtual Hardware Layer...</div>
                     <div style="color:#888888; margin-top:4px;">Probing ${vm.cpus} vCPU cores | Allocating ${vm.ram}MB Virtual RAM</div>
-                    <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${vm.name}]...</div>
+                    <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${escapeHtml(vm.name)}]...</div>
                 </div>
             `;
         }
@@ -156,7 +157,7 @@ export class ZebVMManager extends BaseApp {
         if (vm.status === 'running') {
             return `
                 <div style="width:100%; height:100%; display:flex; flex-direction:column; position:relative; background:#ffffff;">
-                    <iframe src="${vm.url}" style="width:100%; height:100%; border:none; outline:none; display:block;" allow="fullscreen; autoplay; clipboard-write;"></iframe>
+                    <iframe src="${escapeHtml(vm.url)}" style="width:100%; height:100%; border:none; outline:none; display:block;" allow="fullscreen; autoplay; clipboard-write;"></iframe>
                 </div>
             `;
         }
@@ -165,14 +166,14 @@ export class ZebVMManager extends BaseApp {
         return `
             <div style="flex-grow:1; background:#111827; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:Arial, sans-serif;">
                 <div style="width:64px; height:64px; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(59,130,246,0.5));">${getIcon('vm')}</div>
-                <div style="font-size:20px; font-weight:bold; color:#ffffff;">${vm.name}</div>
-                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">${vm.desc}</div>
+                <div style="font-size:20px; font-weight:bold; color:#ffffff;">${escapeHtml(vm.name)}</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">${escapeHtml(vm.desc)}</div>
 
                 <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px; background:#1f2937; padding:12px 18px; border-radius:6px; border:1px solid #374151; font-size:12px; text-align:left; min-width:280px;">
-                    <div><strong style="color:#60a5fa;">Guest OS:</strong> ${vm.os}</div>
+                    <div><strong style="color:#60a5fa;">Guest OS:</strong> ${escapeHtml(vm.os)}</div>
                     <div><strong style="color:#60a5fa;">Virtual RAM:</strong> ${vm.ram} MB</div>
                     <div><strong style="color:#60a5fa;">vCPU Cores:</strong> ${vm.cpus} Cores</div>
-                    <div><strong style="color:#60a5fa;">Target URL:</strong> <a href="${vm.url}" target="_blank" style="color:#93c5fd; text-decoration:none;">Link ↗</a></div>
+                    <div><strong style="color:#60a5fa;">Target URL:</strong> <a href="${escapeHtml(vm.url)}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd; text-decoration:none;">Link ↗</a></div>
                 </div>
 
                 <button class="btn-power-on-center" style="margin-top:20px; padding:10px 24px; font-size:13px; font-weight:bold; background:linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color:#ffffff; border:1px solid #60a5fa; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
@@ -207,8 +208,8 @@ export class ZebVMManager extends BaseApp {
             return `
                 <div style="flex-grow:1; background:#111827; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:Arial, sans-serif;">
                     <div style="width:64px; height:64px; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(59,130,246,0.5));">${getIcon('vm')}</div>
-                    <div style="font-size:20px; font-weight:bold; color:#ffffff;">${vm.name}</div>
-                    <div style="font-size:12px; color:#9ca3af; margin-top:4px; max-width:300px;">${vm.desc}</div>
+                    <div style="font-size:20px; font-weight:bold; color:#ffffff;">${escapeHtml(vm.name)}</div>
+                    <div style="font-size:12px; color:#9ca3af; margin-top:4px; max-width:300px;">${escapeHtml(vm.desc)}</div>
                     <div style="font-size:11px; color:#6b7280; margin-top:10px;">Not installed — not bundled with ZebOS. Fetches the ~${(LINUX_EMULATION_TOTAL_BYTES / (1024 * 1024)).toFixed(1)} MB v86 runtime now; the Alpine rootfs itself streams in on demand the first time it boots, not upfront.</div>
                     ${this.installError ? `<div style="font-size:11px; color:#f87171; margin-top:8px;">${this.installError}</div>` : ''}
                     <button class="btn-install-linux" style="margin-top:18px; padding:10px 24px; font-size:13px; font-weight:bold; background:linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color:#ffffff; border:1px solid #60a5fa; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
@@ -224,7 +225,7 @@ export class ZebVMManager extends BaseApp {
                     <div style="width:50px; height:50px; margin-bottom:12px;">${getIcon('vm')}</div>
                     <div style="font-weight:bold; font-size:14px; color:#ffffff;">ZebVM BIOS v2.7.0 Post Diagnostic Check</div>
                     <div style="color:#00ff00; margin-top:8px;">Initializing Virtual Hardware Layer...</div>
-                    <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${vm.name}]...</div>
+                    <div style="color:#55ffff; margin-top:8px;">Booting Guest OS: [${escapeHtml(vm.name)}]...</div>
                 </div>
             `;
         }
@@ -238,11 +239,11 @@ export class ZebVMManager extends BaseApp {
         return `
             <div style="flex-grow:1; background:#111827; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:Arial, sans-serif;">
                 <div style="width:64px; height:64px; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(59,130,246,0.5));">${getIcon('vm')}</div>
-                <div style="font-size:20px; font-weight:bold; color:#ffffff;">${vm.name}</div>
-                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">${vm.desc}</div>
+                <div style="font-size:20px; font-weight:bold; color:#ffffff;">${escapeHtml(vm.name)}</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">${escapeHtml(vm.desc)}</div>
 
                 <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px; background:#1f2937; padding:12px 18px; border-radius:6px; border:1px solid #374151; font-size:12px; text-align:left; min-width:280px;">
-                    <div><strong style="color:#60a5fa;">Guest OS:</strong> ${vm.os}</div>
+                    <div><strong style="color:#60a5fa;">Guest OS:</strong> ${escapeHtml(vm.os)}</div>
                     <div><strong style="color:#60a5fa;">Virtual RAM:</strong> ${vm.ram} MB</div>
                     <div><strong style="color:#60a5fa;">vCPU Cores:</strong> ${vm.cpus} (v86 has no multicore support)</div>
                     <div><strong style="color:#60a5fa;">Backend:</strong> v86 (WASM x86 emulator)</div>
@@ -354,11 +355,16 @@ export class ZebVMManager extends BaseApp {
             newBtn.addEventListener('click', () => {
                 showOsPrompt("New Virtual Machine", "Enter Virtual Machine Name:", "Custom Web VM", (name) => {
                     showOsPrompt("New Virtual Machine", "Enter Target Embed Web URL:", "https://example.com", (url) => {
+                        const trimmedUrl = url.trim();
+                        if (!/^https?:\/\//i.test(trimmedUrl)) {
+                            showOsConfirm("Invalid URL", "Target URL must start with http:// or https://.", true);
+                            return;
+                        }
                         const newId = `vm_${Date.now()}`;
                         this.vms.push({
                             id: newId,
                             name: name.trim(),
-                            url: url.trim(),
+                            url: trimmedUrl,
                             os: "Web Application OS",
                             ram: 1024,
                             cpus: 2,

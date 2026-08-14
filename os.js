@@ -1,6 +1,8 @@
 // State tracking & Persistent VFS Storage Module (ZebOS 2 v3.0.1 Core)
 import { getIcon } from './icons.js';
 import { initContextMenuSystem } from './contextmenu.js';
+import { escapeHtml } from './caper/sanitize.js';
+import { validateFileSystem } from './caper/validate.js';
 
 // No build pipeline generates this — it's the short commit hash as of the
 // last time this file was edited, updated by hand alongside version bumps.
@@ -971,7 +973,7 @@ function initializeBootSequence() {
         const avatarHtml = systemState.savedAvatar
             ? `<img src="${systemState.savedAvatar}" style="width:16px; height:16px; border-radius:50%; display:block;" alt="">`
             : getIcon('user');
-        if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${avatarHtml} ${username}</span>`;
+        if (userTag) userTag.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${avatarHtml} ${escapeHtml(username)}</span>`;
         bootLog(`Session: User '${username}' signed in.`);
     }
 
@@ -1194,10 +1196,11 @@ export function createWindow(title, iconName, uniqueId) {
     win.style.top = `${centerY}px`;
 
     const iconSvg = iconName.includes('<svg') ? iconName : getIcon(iconName);
+    const safeTitle = escapeHtml(title);
 
     win.innerHTML = `
         <div class="window-header" style="cursor: move;">
-            <div class="window-title"><span class="win-title-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${title}</div>
+            <div class="window-title"><span class="win-title-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${safeTitle}</div>
             <div class="window-controls">
                 <button class="win-btn" id="win-min-${uniqueId}">${getIcon('winMin')}</button>
                 <button class="win-btn" id="win-max-${uniqueId}">${getIcon('winMax')}</button>
@@ -1214,7 +1217,7 @@ export function createWindow(title, iconName, uniqueId) {
     const tab = document.createElement('div');
     tab.className = 'taskbar-tab active-tab';
     tab.id = `tab-${uniqueId}`;
-    tab.innerHTML = `<span class="taskbar-tab-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${title}`;
+    tab.innerHTML = `<span class="taskbar-tab-icon" style="display:inline-flex; align-items:center;">${iconSvg}</span> ${safeTitle}`;
     tabsZone.appendChild(tab);
 
     tab.addEventListener('click', () => {
@@ -1472,7 +1475,7 @@ function buildSnapAssistTile(candidateWin, onPick) {
     titleRow.className = 'window-snap-assist-title';
     const iconEl = candidateWin.querySelector('.win-title-icon');
     const titleText = candidateWin.querySelector('.window-title')?.textContent?.trim() || '';
-    titleRow.innerHTML = `${iconEl ? iconEl.outerHTML : ''}<span>${escapeHtmlText(titleText)}</span>`;
+    titleRow.innerHTML = `${iconEl ? iconEl.outerHTML : ''}<span>${escapeHtml(titleText)}</span>`;
     tile.appendChild(titleRow);
 
     const refresh = () => {
@@ -1483,10 +1486,6 @@ function buildSnapAssistTile(candidateWin, onPick) {
 
     tile.addEventListener('click', onPick);
     return { tile, refresh };
-}
-
-function escapeHtmlText(str) {
-    return String(str).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
 }
 
 function maybeShowSnapAssist(win, mode) {
@@ -2306,6 +2305,9 @@ function buildRecoveryApi(onExit) {
             if (!parsed || typeof parsed !== 'object' || !parsed.fileSystem || typeof parsed.fileSystem !== 'object') {
                 return { ok: false, message: 'Backup file is missing a valid fileSystem section.' };
             }
+            if (!validateFileSystem(parsed.fileSystem)) {
+                return { ok: false, message: 'Backup file contains an invalid or malformed fileSystem section.' };
+            }
             systemState.fileSystem = parsed.fileSystem;
             const s = parsed.settings || {};
             if (s.color) systemState.desktopBackground = s.color;
@@ -2432,14 +2434,14 @@ export function showOsPrompt(title, message, defaultValue = "", onConfirm = null
 
     dialog.innerHTML = `
         <div class="window-header">
-            <div class="window-title">${title}</div>
+            <div class="window-title">${escapeHtml(title)}</div>
             <div class="window-controls">
                 <button class="win-btn" id="prompt-close">${getIcon('winClose')}</button>
             </div>
         </div>
         <div style="padding:14px; font-size:12px; display:flex; flex-direction:column; gap:10px;">
-            <div style="font-weight:bold; color:#000080;">${message}</div>
-            <input type="text" id="prompt-input" value="${defaultValue}" autocomplete="off" spellcheck="false" style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:12px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff; outline:none;">
+            <div style="font-weight:bold; color:#000080;">${escapeHtml(message)}</div>
+            <input type="text" id="prompt-input" value="${escapeHtml(defaultValue)}" autocomplete="off" spellcheck="false" style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:12px; border:2px solid #808080; border-right-color:#ffffff; border-bottom-color:#ffffff; background:#ffffff; outline:none;">
             <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px;">
                 <button id="prompt-ok" style="padding:4px 18px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer; font-weight:bold;">OK</button>
                 <button id="prompt-cancel" style="padding:4px 12px; background:#c0c0c0; border:2px solid #ffffff; border-right-color:#000; border-bottom-color:#000; cursor:pointer;">Cancel</button>
@@ -2521,7 +2523,7 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
 
     dialog.innerHTML = `
         <div class="window-header" style="${headerStyle}">
-            <div class="window-title" style="${isWarning ? 'color:#ffffff;' : ''}">${title}</div>
+            <div class="window-title" style="${isWarning ? 'color:#ffffff;' : ''}">${escapeHtml(title)}</div>
             <div class="window-controls">
                 <button class="win-btn" id="confirm-close">${getIcon('winClose')}</button>
             </div>
@@ -2529,7 +2531,7 @@ export function showOsConfirm(title, message, isWarning = false, onConfirm = nul
         <div style="padding:16px; font-size:12px; display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; align-items:flex-start; gap:12px;">
                 ${iconHtml}
-                <div style="font-size:12px; color:#000; line-height:1.4; word-break:break-word; white-space:pre-wrap;">${message}</div>
+                <div style="font-size:12px; color:#000; line-height:1.4; word-break:break-word; white-space:pre-wrap;">${escapeHtml(message)}</div>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
                 ${buttonsHtml}
@@ -2730,17 +2732,18 @@ function renderDesktopIcons() {
         if (shortcut.isCustomVfs) iconEl.dataset.isCustomVfs = 'true';
         if (shortcut.itemType) iconEl.dataset.itemType = shortcut.itemType;
         
+        const safeLabel = escapeHtml(shortcut.label);
         if (currentDesktopViewMode === 'small') {
             iconEl.className = 'desktop-icon small-view';
             iconEl.innerHTML = `
                 <div class="sys-icon" style="width:18px; height:18px; flex-shrink:0;">${getIcon(shortcut.icon)}</div>
-                <div class="desktop-icon-label">${shortcut.label}</div>
+                <div class="desktop-icon-label">${safeLabel}</div>
             `;
         } else {
             iconEl.className = 'desktop-icon';
             iconEl.innerHTML = `
                 <div class="desktop-icon-glyph">${getIcon(shortcut.icon)}</div>
-                <div class="desktop-icon-label">${shortcut.label}</div>
+                <div class="desktop-icon-label">${safeLabel}</div>
             `;
         }
 
@@ -2775,7 +2778,7 @@ function setupStartMenuController() {
     if (startLogoEl) startLogoEl.innerHTML = `<img src="assets/system/z_logo.png" style="width:20px; height:20px; object-fit:contain; display:block;" alt="Z">`;
 
     const userTagEl = document.getElementById('current-user-tag');
-    if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${systemState.currentUser}</span>`;
+    if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${getIcon('user')} ${escapeHtml(systemState.currentUser)}</span>`;
 
     const trayVolIcon = document.getElementById('tray-vol-icon');
     if (trayVolIcon) trayVolIcon.innerHTML = `<span style="display:inline-flex; align-items:center;">${getIcon('volume')}</span>`;
@@ -2811,7 +2814,7 @@ function setupStartMenuController() {
                 const avatarHtml = systemState.savedAvatar
                     ? `<img src="${systemState.savedAvatar}" style="width:20px; height:20px; border-radius:50%; display:block; flex-shrink:0;" alt="">`
                     : getIcon('user');
-                trayUser.innerHTML = `<span style="display:inline-flex; align-items:center; gap:6px;">${avatarHtml} User: ${systemState.currentUser}</span>`;
+                trayUser.innerHTML = `<span style="display:inline-flex; align-items:center; gap:6px;">${avatarHtml} User: ${escapeHtml(systemState.currentUser)}</span>`;
             }
 
             const trayDate = document.getElementById('tray-date-text');
@@ -2869,7 +2872,7 @@ function setupStartMenuController() {
                         const avatarHtml = avatarPath
                             ? `<img src="${avatarPath}" style="width:16px; height:16px; border-radius:50%; display:block;" alt="">`
                             : getIcon('user');
-                        if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${avatarHtml} ${username}</span>`;
+                        if (userTagEl) userTagEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;">${avatarHtml} ${escapeHtml(username)}</span>`;
                         logKernel(`Session: User '${username}' signed in.`);
                     }, systemState.savedUsername || 'guest', systemState.savedAvatar);
                 } catch (err) {
