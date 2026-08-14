@@ -11,10 +11,12 @@ const BOOL_FLAGS = [
     { field: 'autoDevMode',       label: 'Auto-enter Dev Mode on boot' },
     { field: 'skipBootAnimation', label: 'Skip boot animation' },
     { field: 'alwaysShowSetup',   label: 'Show setup screen on boot every time' },
+    { field: 'alwaysShowOobe',    label: 'Always show the full OOBE wizard on boot (Welcome, Components, Download)' },
     { field: 'disableKernelLogs', label: 'Disable kernel logs on startup' },
     { field: 'autoArrange',       label: 'Auto-arrange desktop icons' },
     { field: 'taskbarAutoHide',   label: 'Auto-hide taskbar' },
     { field: 'roundedCorners',    label: 'Rounded window corners' },
+    { field: 'linuxEmulationEnabled', label: 'This fetches and enables the Linux emulation layer' },
 ];
 
 const ENUM_FLAGS = [
