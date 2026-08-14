@@ -103,3 +103,132 @@
     width: calc(100vw - var(--tb-left-offset, 0px) - var(--tb-right-offset, 0px)) !important;
     height: calc(100vh - var(--tb-height-offset, 40px)) !important;
 }
+
+.window-snap-left,
+.window-snap-right {
+    top: var(--tb-top-offset, 0px) !important;
+    width: calc((100vw - var(--tb-left-offset, 0px) - var(--tb-right-offset, 0px)) / 2) !important;
+    height: calc(100vh - var(--tb-height-offset, 40px)) !important;
+}
+
+.window-snap-left {
+    left: var(--tb-left-offset, 0px) !important;
+}
+
+.window-snap-right {
+    left: calc(var(--tb-left-offset, 0px) + (100vw - var(--tb-left-offset, 0px) - var(--tb-right-offset, 0px)) / 2) !important;
+}
+
+/* Snap preview. I don't care if this is a little meh but it works and is fast, and I'm too tired to fix a bug. */
+.window-snap-preview {
+    position: fixed;
+    display: none;
+    background: rgba(16, 132, 208, 0.35);
+    border: 2px solid #1084d0;
+    box-sizing: border-box;
+    z-index: 100010;
+    pointer-events: none;
+}
+
+/* Flyout animation, this should be good enough. */
+.window-snap-flyout {
+    position: fixed;
+    display: none;
+    gap: 6px;
+    padding: 8px;
+    background-color: #c0c0c0;
+    border: 2px solid #ffffff;
+    border-right-color: #000000; border-bottom-color: #000000;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.4);
+    z-index: 100020;
+}
+
+.window-snap-flyout-tile {
+    width: 56px; height: 42px;
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    box-sizing: border-box;
+    padding: 3px;
+    cursor: pointer;
+}
+
+.window-snap-flyout-tile:hover,
+.window-snap-flyout-tile.hovered {
+    border-color: #000080;
+    background-color: #dbe9f7;
+}
+
+.window-snap-flyout-tile-fill {
+    width: 100%; height: 100%;
+    background: #1084d0;
+    box-sizing: border-box;
+}
+
+.window-snap-flyout-tile[data-zone="left"] .window-snap-flyout-tile-fill { width: 48%; }
+.window-snap-flyout-tile[data-zone="right"] .window-snap-flyout-tile-fill { width: 48%; margin-left: 52%; }
+
+/* I'm in hell and the only way I can get out is to make snap assist in CSS. Anyways this should be good enough for now. */
+.window-snap-assist {
+    position: fixed;
+    display: none;
+    flex-direction: column;
+    background-color: rgba(192, 192, 192, 0.92);
+    border: 2px solid #ffffff;
+    border-right-color: #000000; border-bottom-color: #000000;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    padding: 10px;
+    z-index: 100015;
+    overflow: auto;
+}
+
+.window-snap-assist-label {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #000000;
+}
+
+.window-snap-assist-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-content: flex-start;
+}
+
+.window-snap-assist-tile {
+    width: 140px;
+    background-color: #c0c0c0;
+    border: 1px solid #ffffff;
+    border-right-color: #000000; border-bottom-color: #000000;
+    cursor: pointer;
+    box-sizing: border-box;
+    padding: 3px;
+}
+
+.window-snap-assist-tile:hover {
+    outline: 2px solid #000080;
+}
+
+.window-snap-assist-thumb {
+    width: 100%;
+    height: 88px;
+    background: #ffffff;
+    border: 1px solid #808080;
+    overflow: hidden;
+    position: relative;
+}
+
+.window-snap-assist-thumb-inner {
+    position: absolute;
+    top: 0; left: 0;
+    transform-origin: top left;
+    pointer-events: none;
+}
+
+.window-snap-assist-title {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11px;
+    padding: 3px 2px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}

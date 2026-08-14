@@ -1217,23 +1217,23 @@ export function createWindow(title, iconName, uniqueId) {
         tab.classList.remove('active-tab');
     });
 
-    let isMaximized = false;
-    let preMaxTop, preMaxLeft, preMaxWidth, preMaxHeight;
-    
+    win._snapState = { mode: null, pre: null };
+
     document.getElementById(`win-max-${uniqueId}`).addEventListener('click', (e) => {
         e.stopPropagation();
-        if (!isMaximized) {
-            preMaxTop = win.style.top; preMaxLeft = win.style.left;
-            preMaxWidth = win.style.width; preMaxHeight = win.style.height;
-            win.classList.add('window-maximized');
-            isMaximized = true;
+        if (win._snapState.mode === 'max') {
+            restoreSnap(win);
         } else {
-            win.classList.remove('window-maximized');
-            win.style.top = preMaxTop; win.style.left = preMaxLeft;
-            win.style.width = preMaxWidth; win.style.height = preMaxHeight;
-            isMaximized = false;
+            applySnap(win, 'max');
         }
     });
+
+    win.querySelector('.window-header').addEventListener('dblclick', (e) => {
+        if (e.target.closest('.win-btn')) return;
+        if (win._snapState.mode === 'max') restoreSnap(win);
+        else applySnap(win, 'max');
+    });
+
 
     document.getElementById(`win-close-${uniqueId}`).addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1259,12 +1259,275 @@ function bringToFront(windowElement) {
     if (associatedTab) associatedTab.classList.add('active-tab');
 }
 
+const SNAP_EDGE_PX = 16;
+let snapPreviewEl = null;
+
+function getTaskbarOffsets() {
+    const cs = getComputedStyle(document.documentElement);
+    const num = (v) => parseFloat(cs.getPropertyValue(v)) || 0;
+    return {
+        top: num('--tb-top-offset'),
+        left: num('--tb-left-offset'),
+        right: num('--tb-right-offset'),
+        height: num('--tb-height-offset'),
+    };
+}
+
+function getSnapBounds(mode) {
+    const { top, left, right, height } = getTaskbarOffsets();
+    const usableWidth = window.innerWidth - left - right;
+    const usableHeight = window.innerHeight - height;
+    if (mode === 'max') return { top, left, width: usableWidth, height: usableHeight };
+    if (mode === 'left') return { top, left, width: usableWidth / 2, height: usableHeight };
+    if (mode === 'right') return { top, left: left + usableWidth / 2, width: usableWidth / 2, height: usableHeight };
+    return null;
+}
+
+const TOP_REVEAL_PX = 50;
+
+function detectSideSnapZone(clientX, clientY) {
+    const { top, left, right } = getTaskbarOffsets();
+    if (clientY < top) return null;
+    if (clientX - left >= 0 && clientX - left <= SNAP_EDGE_PX) return 'left';
+    if (window.innerWidth - right - clientX >= 0 && window.innerWidth - right - clientX <= SNAP_EDGE_PX) return 'right';
+    return null;
+}
+
+function getSnapPreviewEl() {
+    if (!snapPreviewEl) {
+        snapPreviewEl = document.createElement('div');
+        snapPreviewEl.className = 'window-snap-preview';
+        document.body.appendChild(snapPreviewEl);
+    }
+    return snapPreviewEl;
+}
+
+function showSnapPreview(mode) {
+    const preview = getSnapPreviewEl();
+    const b = getSnapBounds(mode);
+    preview.style.top = `${b.top}px`; preview.style.left = `${b.left}px`;
+    preview.style.width = `${b.width}px`; preview.style.height = `${b.height}px`;
+    preview.style.display = 'block';
+}
+
+function hideSnapPreview() {
+    if (snapPreviewEl) snapPreviewEl.style.display = 'none';
+}
+
+function applySnap(win, mode) {
+    const state = win._snapState;
+    if (!state.mode) {
+        state.pre = { top: win.style.top, left: win.style.left, width: win.style.width, height: win.style.height };
+    }
+    win.classList.remove('window-maximized', 'window-snap-left', 'window-snap-right');
+    win.classList.add(mode === 'max' ? 'window-maximized' : `window-snap-${mode}`);
+    state.mode = mode;
+    maybeShowSnapAssist(win, mode);
+}
+
+function restoreSnap(win) {
+    const state = win._snapState;
+    if (!state.mode) return;
+    win.classList.remove('window-maximized', 'window-snap-left', 'window-snap-right');
+    if (state.pre) {
+        win.style.top = state.pre.top; win.style.left = state.pre.left;
+        win.style.width = state.pre.width; win.style.height = state.pre.height;
+    }
+    state.mode = null;
+}
+
+
+let snapFlyoutEl = null;
+
+function getSnapFlyoutEl() {
+    if (!snapFlyoutEl) {
+        snapFlyoutEl = document.createElement('div');
+        snapFlyoutEl.className = 'window-snap-flyout';
+        document.body.appendChild(snapFlyoutEl);
+    }
+    return snapFlyoutEl;
+}
+
+function hideSnapLayoutsBar() {
+    if (snapFlyoutEl) snapFlyoutEl.style.display = 'none';
+}
+
+// Shows the layouts bar (if not already up) and reports which tile, if any, is currently under the cursor.
+function updateSnapLayoutsBar(clientX, clientY) {
+    const bar = getSnapFlyoutEl();
+    if (bar.style.display !== 'flex') {
+        bar.innerHTML = '';
+        [['left', 'Snap Left'], ['right', 'Snap Right'], ['max', 'Maximize']].forEach(([zone, label]) => {
+            const tile = document.createElement('div');
+            tile.className = 'window-snap-flyout-tile';
+            tile.dataset.zone = zone;
+            tile.title = label;
+            const fill = document.createElement('div');
+            fill.className = 'window-snap-flyout-tile-fill';
+            tile.appendChild(fill);
+            bar.appendChild(tile);
+        });
+        bar.style.display = 'flex';
+        const { top } = getTaskbarOffsets();
+        const barWidth = bar.offsetWidth || 200;
+        bar.style.left = `${Math.max(4, (window.innerWidth - barWidth) / 2)}px`;
+        bar.style.top = `${top + 6}px`;
+    }
+
+    // Cooked ass implementation
+    // We're basically not tracking mouseenter/mouseleave on the tiles, we just use elementFromPoint to see which tile is under the cursor and highlight it.
+    const elAtPoint = document.elementFromPoint(clientX, clientY);
+    const hoveredTile = elAtPoint ? elAtPoint.closest('.window-snap-flyout-tile') : null;
+    bar.querySelectorAll('.window-snap-flyout-tile').forEach(t => t.classList.toggle('hovered', t === hoveredTile));
+    return hoveredTile ? hoveredTile.dataset.zone : null;
+}
+
+
+let snapAssistEl = null;
+let snapAssistTimer = null;
+let snapAssistRefreshInterval = null;
+
+function getSnapAssistEl() {
+    if (!snapAssistEl) {
+        snapAssistEl = document.createElement('div');
+        snapAssistEl.className = 'window-snap-assist';
+        document.body.appendChild(snapAssistEl);
+    }
+    return snapAssistEl;
+}
+
+function onSnapAssistOutsideClick(e) {
+    if (snapAssistEl && !snapAssistEl.contains(e.target)) hideSnapAssist();
+}
+
+function onSnapAssistKeydown(e) {
+    if (e.key === 'Escape') hideSnapAssist();
+}
+
+function hideSnapAssist() {
+    if (snapAssistEl) snapAssistEl.style.display = 'none';
+    if (snapAssistRefreshInterval) { clearInterval(snapAssistRefreshInterval); snapAssistRefreshInterval = null; }
+    if (snapAssistTimer) { clearTimeout(snapAssistTimer); snapAssistTimer = null; }
+    document.removeEventListener('mousedown', onSnapAssistOutsideClick, true);
+    document.removeEventListener('keydown', onSnapAssistKeydown, true);
+}
+
+// This is so fucked up. 
+// I don't even know why I wrote it this way, but it works and I'm not going to touch it
+function cloneWindowThumbnail(win, targetWidth, targetHeight) {
+    const body = win.querySelector('.window-body');
+    if (!body) return document.createElement('div');
+    const rect = body.getBoundingClientRect();
+    const scale = rect.width > 0 && rect.height > 0
+        ? Math.min(targetWidth / rect.width, targetHeight / rect.height)
+        : 1;
+
+    const clone = body.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+
+    const originalCanvases = body.querySelectorAll('canvas');
+    const clonedCanvases = clone.querySelectorAll('canvas');
+    originalCanvases.forEach((orig, i) => {
+        const c = clonedCanvases[i];
+        if (!c) return;
+        c.width = orig.width; c.height = orig.height;
+        try { c.getContext('2d').drawImage(orig, 0, 0); } catch (err) {} // What the fuck??
+    });
+
+    clone.style.width = `${rect.width}px`;
+    clone.style.height = `${rect.height}px`;
+    clone.style.transform = `scale(${scale})`;
+    clone.className = 'window-snap-assist-thumb-inner';
+    return clone;
+}
+
+function buildSnapAssistTile(candidateWin, onPick) {
+    const tile = document.createElement('div');
+    tile.className = 'window-snap-assist-tile';
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'window-snap-assist-thumb';
+    tile.appendChild(thumbWrap);
+
+    const titleRow = document.createElement('div');
+    titleRow.className = 'window-snap-assist-title';
+    const iconEl = candidateWin.querySelector('.win-title-icon');
+    const titleText = candidateWin.querySelector('.window-title')?.textContent?.trim() || '';
+    titleRow.innerHTML = `${iconEl ? iconEl.outerHTML : ''}<span>${escapeHtmlText(titleText)}</span>`;
+    tile.appendChild(titleRow);
+
+    const refresh = () => {
+        thumbWrap.innerHTML = '';
+        thumbWrap.appendChild(cloneWindowThumbnail(candidateWin, 132, 88));
+    };
+    refresh();
+
+    tile.addEventListener('click', onPick);
+    return { tile, refresh };
+}
+
+function escapeHtmlText(str) {
+    return String(str).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+}
+
+function maybeShowSnapAssist(win, mode) {
+    if (mode !== 'left' && mode !== 'right') return;
+    const complementary = mode === 'left' ? 'right' : 'left';
+    const candidates = Array.from(document.querySelectorAll('.window-frame'))
+        .filter(w => w !== win && !w.classList.contains('hidden-view'));
+    if (candidates.length === 0) return;
+
+    const assist = getSnapAssistEl();
+    const b = getSnapBounds(complementary);
+    assist.style.top = `${b.top}px`; assist.style.left = `${b.left}px`;
+    assist.style.width = `${b.width}px`; assist.style.height = `${b.height}px`;
+    assist.innerHTML = '';
+
+    const label = document.createElement('div');
+    label.className = 'window-snap-assist-label';
+    label.textContent = 'Snap a window here';
+    assist.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'window-snap-assist-grid';
+    assist.appendChild(grid);
+
+    const refreshers = [];
+    candidates.forEach(cand => {
+        const { tile, refresh } = buildSnapAssistTile(cand, () => {
+            applySnap(cand, complementary);
+            bringToFront(cand);
+            hideSnapAssist();
+        });
+        grid.appendChild(tile);
+        refreshers.push(refresh);
+    });
+
+    assist.style.display = 'flex';
+    snapAssistRefreshInterval = setInterval(() => refreshers.forEach(r => r()), 700);
+    snapAssistTimer = setTimeout(hideSnapAssist, 8000);
+    setTimeout(() => {
+        document.addEventListener('mousedown', onSnapAssistOutsideClick, true);
+        document.addEventListener('keydown', onSnapAssistKeydown, true);
+    }, 0);
+}
+
 function setupWindowDrag(win) {
     const header = win.querySelector('.window-header');
-    let isDragging = false; let offsetX = 0; let offsetY = 0;
+    let isDragging = false; let offsetX = 0; let offsetY = 0; let pendingSnapZone = null;
 
     header.addEventListener('mousedown', (e) => {
-        if (e.target.classList.contains('win-btn') || win.classList.contains('window-maximized')) return;
+        if (e.target.classList.contains('win-btn')) return;
+
+        if (win._snapState.mode) {
+            const preWidth = parseInt(win._snapState.pre?.width, 10) || win.offsetWidth;
+            const ratioX = (e.clientX - win.offsetLeft) / win.offsetWidth;
+            restoreSnap(win);
+            win.style.left = `${e.clientX - preWidth * ratioX}px`;
+            win.style.top = `${e.clientY - 10}px`;
+        }
+
         isDragging = true;
         offsetX = e.clientX - win.offsetLeft; offsetY = e.clientY - win.offsetTop;
         bringToFront(win);
@@ -1275,9 +1538,29 @@ function setupWindowDrag(win) {
         let nextY = e.clientY - offsetY;
         if (nextY < 0) nextY = 0;
         win.style.left = `${e.clientX - offsetX}px`; win.style.top = `${nextY}px`;
+
+        const { top } = getTaskbarOffsets();
+        const nearTop = e.clientY >= top && (e.clientY - top) <= TOP_REVEAL_PX;
+
+        if (nearTop) {
+            const hoveredZone = updateSnapLayoutsBar(e.clientX, e.clientY);
+            pendingSnapZone = hoveredZone || 'max';
+            showSnapPreview(pendingSnapZone);
+        } else {
+            hideSnapLayoutsBar();
+            pendingSnapZone = detectSideSnapZone(e.clientX, e.clientY);
+            if (pendingSnapZone) showSnapPreview(pendingSnapZone);
+            else hideSnapPreview();
+        }
     });
 
-    document.addEventListener('mouseup', () => { isDragging = false; });
+    document.addEventListener('mouseup', () => {
+        if (isDragging && pendingSnapZone) applySnap(win, pendingSnapZone);
+        isDragging = false;
+        pendingSnapZone = null;
+        hideSnapPreview();
+        hideSnapLayoutsBar();
+    });
 }
 
 function setupWindowResize(win) {
@@ -1286,7 +1569,7 @@ function setupWindowResize(win) {
 
     handle.addEventListener('mousedown', (e) => {
         e.stopPropagation(); e.preventDefault();
-        if (win.classList.contains('window-maximized')) return;
+        if (win._snapState.mode) return;
         isResizing = true;
         startWidth = parseInt(document.defaultView.getComputedStyle(win).width, 10);
         startHeight = parseInt(document.defaultView.getComputedStyle(win).height, 10);
