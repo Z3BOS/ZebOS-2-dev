@@ -26,7 +26,9 @@ let systemState = {
     savedUsername: null,
     savedAvatar: null,
     alwaysShowSetup: false,
+    alwaysShowOobe: false,
     disableKernelLogs: false,
+    linuxEmulationEnabled: false,
     fileSystem: {}
 };
 
@@ -169,7 +171,9 @@ function loadFileSystem() {
             if (s.savedUsername)                   systemState.savedUsername     = s.savedUsername;
             if (s.savedAvatar)                      systemState.savedAvatar      = s.savedAvatar;
             if (s.alwaysShowSetup !== undefined)   systemState.alwaysShowSetup   = s.alwaysShowSetup;
+            if (s.alwaysShowOobe !== undefined)    systemState.alwaysShowOobe    = s.alwaysShowOobe;
             if (s.disableKernelLogs !== undefined) systemState.disableKernelLogs = s.disableKernelLogs;
+            if (s.linuxEmulationEnabled !== undefined) systemState.linuxEmulationEnabled = s.linuxEmulationEnabled;
         } catch(e) { /* ignore */ }
     }
 
@@ -351,7 +355,9 @@ export function saveFileSystem() {
             savedUsername:      systemState.savedUsername,
             savedAvatar:        systemState.savedAvatar,
             alwaysShowSetup:    systemState.alwaysShowSetup,
+            alwaysShowOobe:     systemState.alwaysShowOobe,
             disableKernelLogs:  systemState.disableKernelLogs,
+            linuxEmulationEnabled: systemState.linuxEmulationEnabled,
         };
         localStorage.setItem('ZEBOS_V2_SETTINGS', JSON.stringify(settings));
         logKernel("Storage System: Changes committed to local storage sectors successfully.");
@@ -428,9 +434,11 @@ export function getRegistrySnapshot() {
         savedUsername:     systemState.savedUsername,
         hasLoggedInBefore: systemState.hasLoggedInBefore,
         alwaysShowSetup:   systemState.alwaysShowSetup,
+        alwaysShowOobe:    systemState.alwaysShowOobe,
         skipBootAnimation: systemState.skipBootAnimation,
         autoDevMode:       systemState.autoDevMode,
         disableKernelLogs: systemState.disableKernelLogs,
+        linuxEmulationEnabled: systemState.linuxEmulationEnabled,
         version:           systemState.version,
         codename:          systemState.codename,
         currentUser:       systemState.currentUser,
@@ -972,12 +980,19 @@ function initializeBootSequence() {
 
         // Recognized returning user: skip the sign-in screen entirely and
         // go straight to the desktop under their saved username — unless
-        // System Flags has "always show setup screen" turned on.
-        if (!systemState.alwaysShowSetup && systemState.hasLoggedInBefore && systemState.savedUsername) {
+        // System Flags has "always show setup screen" or "always show OOBE"
+        // turned on.
+        if (!systemState.alwaysShowSetup && !systemState.alwaysShowOobe && systemState.hasLoggedInBefore && systemState.savedUsername) {
             bootLog(`Session: Recognized returning user '${systemState.savedUsername}', skipping sign-in screen.`);
             revealDesktop(systemState.savedUsername);
             return;
         }
+
+        // The full OOBE wizard (Welcome -> Account -> Components -> Download)
+        // runs on a genuine first boot, or every boot if "always show OOBE"
+        // is on. Otherwise (e.g. plain "always show setup screen" for a
+        // returning user) it's just the quick Account step.
+        const isFirstBoot = !systemState.hasLoggedInBefore || systemState.alwaysShowOobe;
 
         (async () => {
             try {
@@ -988,7 +1003,10 @@ function initializeBootSequence() {
                     systemState.hasLoggedInBefore = true;
                     saveFileSystem();
                     revealDesktop(username);
-                }, systemState.savedUsername || 'guest', systemState.savedAvatar);
+                }, systemState.savedUsername || 'guest', systemState.savedAvatar, {
+                    isFirstBoot,
+                    settingsApi: { getSnapshot: getRegistrySnapshot, setValue: setRegistryValue },
+                });
             } catch (err) {
                 logKernel(`Kernel Error: Failed to mount logon/logon.js (${err.message})`, "ERROR");
                 const desktopCanvas = document.getElementById('desktop-canvas');
@@ -2229,7 +2247,7 @@ function shellRemove(name) {
 // Callbacks handed to recovery/recovery.js, which knows nothing about
 // systemState directly — only os.js has access to it.
 // ==========================================================================
-const RECOVERY_FLAG_KEYS = ['autoArrange', 'taskbarAutoHide', 'desktopSortBy', 'skipBootAnimation', 'autoDevMode', 'alwaysShowSetup', 'disableKernelLogs', 'soundScheme', 'desktopScheme', 'roundedCorners'];
+const RECOVERY_FLAG_KEYS = ['autoArrange', 'taskbarAutoHide', 'desktopSortBy', 'skipBootAnimation', 'autoDevMode', 'alwaysShowSetup', 'alwaysShowOobe', 'disableKernelLogs', 'soundScheme', 'desktopScheme', 'roundedCorners', 'linuxEmulationEnabled'];
 const RECOVERY_DEFAULT_SETTINGS = {
     desktopSortBy: 'type',
     autoArrange: true,
@@ -2242,7 +2260,9 @@ const RECOVERY_DEFAULT_SETTINGS = {
     skipBootAnimation: false,
     autoDevMode: false,
     alwaysShowSetup: false,
+    alwaysShowOobe: false,
     disableKernelLogs: false,
+    linuxEmulationEnabled: false,
     hasLoggedInBefore: false,
     savedUsername: null,
     savedAvatar: null
