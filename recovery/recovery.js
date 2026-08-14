@@ -113,10 +113,12 @@ export function showRecoveryScreen(api) {
                 <div class="recovery-flag-row"><label><input type="checkbox" data-flag="autoDevMode" ${flags.autoDevMode ? 'checked' : ''}> Auto-enter Dev Mode on boot</label></div>
                 <div class="recovery-flag-row"><label><input type="checkbox" data-flag="skipBootAnimation" ${flags.skipBootAnimation ? 'checked' : ''}> Skip boot animation</label></div>
                 <div class="recovery-flag-row"><label><input type="checkbox" data-flag="alwaysShowSetup" ${flags.alwaysShowSetup ? 'checked' : ''}> Show setup screen on boot every time</label></div>
+                <div class="recovery-flag-row"><label><input type="checkbox" data-flag="alwaysShowOobe" ${flags.alwaysShowOobe ? 'checked' : ''}> Always show the full OOBE wizard on boot</label></div>
                 <div class="recovery-flag-row"><label><input type="checkbox" data-flag="disableKernelLogs" ${flags.disableKernelLogs ? 'checked' : ''}> Disable kernel logs on startup</label></div>
                 <div class="recovery-flag-row"><label><input type="checkbox" data-flag="autoArrange" ${flags.autoArrange ? 'checked' : ''}> Auto-arrange desktop icons</label></div>
                 <div class="recovery-flag-row"><label><input type="checkbox" data-flag="taskbarAutoHide" ${flags.taskbarAutoHide ? 'checked' : ''}> Auto-hide taskbar</label></div>
                 <div class="recovery-flag-row"><label><input type="checkbox" data-flag="roundedCorners" ${flags.roundedCorners ? 'checked' : ''}> Rounded window corners</label></div>
+                <div class="recovery-flag-row"><label><input type="checkbox" data-flag="linuxEmulationEnabled" ${flags.linuxEmulationEnabled ? 'checked' : ''}> Linux Emulation (v86) enabled</label></div>
                 <div class="recovery-flag-row">
                     <label>Desktop sort:
                         <select data-flag="desktopSortBy">
