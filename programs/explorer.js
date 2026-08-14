@@ -1,6 +1,7 @@
 import { getIcon } from '../icons.js';
 import { showOsPrompt, showOsConfirm } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class FileExplorerApp extends BaseApp {
     constructor(closeCallback, launchFileCallback, saveVfsCallback, getVfsContext) {
@@ -18,9 +19,11 @@ export class FileExplorerApp extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('explorer-mount-start');
         this.container = this.body;
         this.renderLayout();
         this.refreshView();
+        Telemetry.measure('explorer-mount', 'explorer-mount-start');
     }
 
     renderLayout() {
@@ -327,6 +330,7 @@ export class FileExplorerApp extends BaseApp {
     }
 
     refreshView() {
+        Telemetry.mark('explorer-refresh-start');
         if (this.container) {
             this.container.dataset.currentPath = this.currentPath;
         }
@@ -386,6 +390,7 @@ export class FileExplorerApp extends BaseApp {
         if (statusMid) statusMid.textContent = `Disk Free: ${freeMbStr} MB (Used: ${usedStr})`;
 
         this.updateToolbarButtonStates();
+        Telemetry.measure('explorer-refresh', 'explorer-refresh-start');
     }
 
     updateToolbarButtonStates() {

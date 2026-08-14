@@ -6,6 +6,7 @@
 // persists it, exactly like the Personalize applet does.
 import { getIcon } from '../icons.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 const HIVES = [
     {
@@ -87,9 +88,11 @@ export class RegistryEditorApp extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('regedit-mount-start');
         this.container = this.body;
         this.container.style.height = '100%';
         this.renderUI();
+        Telemetry.measure('regedit-mount', 'regedit-mount-start');
     }
 
     _findKey(keyId) {
@@ -122,6 +125,7 @@ export class RegistryEditorApp extends BaseApp {
 
     renderUI() {
         if (!this.container) return;
+        Telemetry.mark('regedit-render-start');
         const found = this._findKey(this.selectedKeyId) || this._findKey('hkcu-desktop');
         const { hive, key } = found;
 
@@ -152,6 +156,7 @@ export class RegistryEditorApp extends BaseApp {
         </div>`;
 
         this.bindEvents();
+        Telemetry.measure('regedit-render', 'regedit-render-start');
     }
 
     renderTree() {

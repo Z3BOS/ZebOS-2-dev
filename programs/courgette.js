@@ -1,6 +1,7 @@
 // This is a small app I made in like 10 minutes that is like a Neofetch for ZebOS
 // It shows some basic system info and a cute ASCII courgette
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 const ASCII_COURGETTE = `
        .::::.
@@ -34,6 +35,7 @@ export class CourgetteInfo extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('courgette-mount-start');
         this.body.style.height = "100%";
 
         const stats = [
@@ -71,6 +73,7 @@ export class CourgetteInfo extends BaseApp {
             if (uptimeRow) uptimeRow[1] = this.formatUptime(this.uptimeSeconds);
             this.renderStats();
         }, 1000);
+        Telemetry.measure('courgette-mount', 'courgette-mount-start');
     }
 
     renderStats() {

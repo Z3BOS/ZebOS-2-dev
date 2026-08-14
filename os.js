@@ -2139,6 +2139,23 @@ async function launchApplication(appId, customFileName = null, dirPath = null) {
             break;
         }
 
+        case 'start-link-telemetry': {
+            const winId = 'app-telemetry';
+            try {
+                const module = await import(`./telemetry/index.js?v=${Date.now()}`);
+                const telemetryBody = createWindow("Telemetry", "settings", winId);
+                if (telemetryBody) {
+                    setWindowBounds(telemetryBody, 560, 480);
+                    const telemetryInstance = new module.TelemetryApp(() => closeWindow(winId));
+                    registerWindowCleanup(winId, () => telemetryInstance.cleanup());
+                    telemetryInstance.open(telemetryBody);
+                }
+            } catch (err) {
+                logKernel(`Kernel Error: Failed to mount telemetry/index.js (${err.message})`, "ERROR");
+            }
+            break;
+        }
+
         case 'start-link-reinstall': {
             const winId = 'app-reinstaller';
             try {

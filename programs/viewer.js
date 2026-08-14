@@ -2,6 +2,7 @@
 import { getIcon } from '../icons.js';
 import { showOsConfirm, showSaveFileDialog, saveFileToVfsPath } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class ZebViewerApp extends BaseApp {
     constructor(imageName = "image.png", imageDataUrl = null, onCloseRequest = () => {}, getVfsNode = null) {
@@ -36,6 +37,7 @@ export class ZebViewerApp extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('viewer-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
@@ -45,6 +47,7 @@ export class ZebViewerApp extends BaseApp {
 
         this.listen(window, 'keydown', this.keyHandler);
         this.listen(window, 'resize', this.resizeHandler);
+        Telemetry.measure('viewer-mount', 'viewer-mount-start');
     }
 
     renderUI() {
@@ -212,6 +215,7 @@ export class ZebViewerApp extends BaseApp {
     }
 
     loadImage() {
+        Telemetry.mark('viewer-load-start');
         if (!this.imageDataUrl && this.getVfsNode) {
             const searchPaths = ["Users/Guest/Pictures", "Users/Guest/Desktop", "Users/Guest/Documents", "Users/Guest/Downloads", ""];
             for (const path of searchPaths) {
@@ -237,6 +241,7 @@ export class ZebViewerApp extends BaseApp {
                 this.statusDimensionsEl.textContent = `${this.img.width} × ${this.img.height} px`;
             }
             this.fitToWindow();
+            Telemetry.measure('viewer-load', 'viewer-load-start');
         };
 
         this.img.onerror = () => {

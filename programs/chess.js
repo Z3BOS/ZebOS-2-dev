@@ -4,6 +4,7 @@ import { getLegalMovesForSquare, getGameStatus, makeMove } from '../cherry/rules
 import { getBestMove } from '../cherry/engine.js';
 import { getIcon } from '../icons.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 const PIECE_GLYPH = {
     wK: '♔', wQ: '♕', wR: '♖', wB: '♗', wN: '♘', wP: '♙',
@@ -36,10 +37,12 @@ export class ChessApp extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('chess-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
         this.listen(window, 'keydown', this.boundKeyDown);
         this.renderUI();
+        Telemetry.measure('chess-mount', 'chess-mount-start');
     }
 
     // ==========================================================================
@@ -360,7 +363,9 @@ export class ChessApp extends BaseApp {
         this.aiTimeout = this.timeout(() => {
             this.aiTimeout = null;
             const preState = this.state;
+            Telemetry.mark('chess-ai-move-start');
             const move = getBestMove(this.state, { maxDepth: 6, timeLimitMs: 800 });
+            Telemetry.measure('chess-ai-move', 'chess-ai-move-start');
             this.aiThinking = false;
             if (move) {
                 const result = makeMove(this.state, move.from, move.to, move.promotion);

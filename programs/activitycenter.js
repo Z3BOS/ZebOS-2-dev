@@ -1,6 +1,7 @@
 import { getIcon } from '../icons.js';
 import { playSystemSound, showOsConfirm } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class ActivityCenterApp extends BaseApp {
     constructor(onClose) {
@@ -229,6 +230,7 @@ export class ActivityCenterApp extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('activitycenter-mount-start');
         this.root = this.body;
         this.root.style.background = '#c0c0c0';
         this.root.style.display = 'flex';
@@ -301,12 +303,14 @@ export class ActivityCenterApp extends BaseApp {
         this.bindEvents();
         this.startClock();
         this.refreshStatus();
+        Telemetry.measure('activitycenter-mount', 'activitycenter-mount-start');
     }
 
     renderProgramList() {
         const list = this.root.querySelector('#ac-program-list');
         if (!list) return;
 
+        Telemetry.mark('activitycenter-render-list-start');
         list.innerHTML = '';
         this.programs.forEach((p, index) => {
             const row = document.createElement('div');
@@ -356,6 +360,7 @@ export class ActivityCenterApp extends BaseApp {
 
             list.appendChild(row);
         });
+        Telemetry.measure('activitycenter-render-list', 'activitycenter-render-list-start');
     }
 
     selectProgramRow(rowElement, program) {

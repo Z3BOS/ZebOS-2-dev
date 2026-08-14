@@ -1,5 +1,6 @@
 // programs/terminal.js - ZebOS Interactive Shell & CLI Application Suite
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class ZebTerminal extends BaseApp {
     constructor(onCloseRequest, shell) {
@@ -24,6 +25,7 @@ export class ZebTerminal extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('terminal-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
@@ -48,6 +50,7 @@ export class ZebTerminal extends BaseApp {
         this.listen(this.inputEl, 'keydown', this.keyHandler);
         this.listen(this.bodyElement, 'click', this.bodyClickHandler);
         this.inputEl.focus();
+        Telemetry.measure('terminal-mount', 'terminal-mount-start');
     }
 
     updatePrompt() {
@@ -113,6 +116,7 @@ export class ZebTerminal extends BaseApp {
     }
 
     runCommand(raw) {
+        Telemetry.mark('terminal-command-start');
         const parts = raw.split(/\s+/);
         const cmd = parts[0].toLowerCase();
         const args = parts.slice(1);
@@ -371,6 +375,7 @@ export class ZebTerminal extends BaseApp {
             default:
                 this.println(`zebsh: command not found: ${cmd}. Type 'help' for command list.`, "#ff5555");
         }
+        Telemetry.measure('terminal-command', 'terminal-command-start');
     }
 
     generateFakeSerial() {

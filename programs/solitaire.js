@@ -1,5 +1,6 @@
 // This is a simple Klondike Solitaire game for ZebOS
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 const SUITS = ['S', 'H', 'D', 'C'];
 const SUIT_GLYPH = { S: '♠', H: '♥', D: '♦', C: '♣' };
@@ -39,10 +40,12 @@ export class SolitaireGame extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('solitaire-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
         this.listen(window, 'keydown', this.boundKeyDown);
         this.renderUI();
+        Telemetry.measure('solitaire-mount', 'solitaire-mount-start');
     }
 
     buildShuffledDeck() {
@@ -58,6 +61,7 @@ export class SolitaireGame extends BaseApp {
     }
 
     dealNewGame() {
+        Telemetry.mark('solitaire-deal-start');
         if (this.dragState) {
             this.dragState.ghostEls.forEach(el => el.remove());
             document.removeEventListener('mousemove', this.boundMouseMove);
@@ -77,6 +81,7 @@ export class SolitaireGame extends BaseApp {
         this.waste = [];
         this.foundations = { S: [], H: [], D: [], C: [] };
         this.won = false;
+        Telemetry.measure('solitaire-deal', 'solitaire-deal-start');
     }
 
     // Rendering stuff. This took way too long.

@@ -1,5 +1,6 @@
 // programs/calc.js - ZebOS Calculator (Standard & Scientific)
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class RetroCalculator extends BaseApp {
     constructor(onCloseRequest) {
@@ -32,12 +33,14 @@ export class RetroCalculator extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('calc-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
         this.renderUI();
 
         this.listen(window, 'keydown', this.keyHandler);
+        Telemetry.measure('calc-mount', 'calc-mount-start');
     }
 
     renderUI() {
@@ -262,6 +265,7 @@ export class RetroCalculator extends BaseApp {
 
     evaluateEquation() {
         if (!this.activeOperator || this.storedValue === null) return;
+        Telemetry.mark('calc-evaluate-start');
         const current = parseFloat(this.currentValue);
         let result = 0;
 
@@ -277,6 +281,7 @@ export class RetroCalculator extends BaseApp {
         this.expressionText = `${this.storedValue} ${opSymbol} ${current} =`;
         this.currentValue = typeof result === 'number' ? this.formatResult(result) : result;
         this.activeOperator = null;
+        Telemetry.measure('calc-evaluate', 'calc-evaluate-start');
         this.storedValue = null;
         this.resetOnNextInput = true;
     }

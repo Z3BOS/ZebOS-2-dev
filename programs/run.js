@@ -2,6 +2,7 @@
 // This actually was really easy wow
 import { getIcon } from '../icons.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 const HISTORY_KEY = 'ZEBOS_RUN_HISTORY';
 const HISTORY_MAX = 10;
@@ -49,6 +50,9 @@ const COMMAND_MAP = {
     'msconfig':        'start-link-sysflags',
     'reinstall':       'start-link-reinstall',
     'factoryreset':    'start-link-reinstall',
+    'telemetry':       'start-link-telemetry',
+    'perfmon':         'start-link-telemetry',
+    'perf':            'start-link-telemetry',
     'activitycenter':  'start-link-activitycenter',
     'activity':        'start-link-activitycenter',
     'ac':              'start-link-activitycenter',
@@ -68,6 +72,7 @@ export class RunDialog extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('run-mount-start');
         this.container = this.body;
         this.container.style.height = '100%';
         this.renderDialog();
@@ -76,6 +81,7 @@ export class RunDialog extends BaseApp {
             input.focus();
             input.select();
         }
+        Telemetry.measure('run-mount', 'run-mount-start');
     }
 
     _loadHistory() {
@@ -164,6 +170,7 @@ export class RunDialog extends BaseApp {
                 return;
             }
             this._saveHistory(raw.trim());
+            Telemetry.record('run-command', 1, { command: resolved.appId });
             this.onExecute(resolved.appId, resolved.arg);
             this.close();
         };

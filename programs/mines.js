@@ -1,6 +1,7 @@
 // programs/mines.js - ZebOS 2 Retro Minesweeper Application
 import { getIcon } from '../icons.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class MinesweeperGame extends BaseApp {
     constructor(onCloseRequest) {
@@ -28,6 +29,7 @@ export class MinesweeperGame extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('mines-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
@@ -61,6 +63,7 @@ export class MinesweeperGame extends BaseApp {
         this.listen(window, 'keydown', this.boundKeyDown);
 
         this.resetGame();
+        Telemetry.measure('mines-mount', 'mines-mount-start');
     }
 
     resetGame() {
@@ -129,6 +132,7 @@ export class MinesweeperGame extends BaseApp {
     }
 
     startFirstMove(firstR, firstC) {
+        Telemetry.mark('mines-generate-start');
         this.gameStarted = true;
         // Place 10 mines ensuring first clicked cell is safe
         while (this.mineLocations.size < this.totalMines) {
@@ -153,6 +157,7 @@ export class MinesweeperGame extends BaseApp {
                 this.grid[r][c].neighborMines = count;
             }
         }
+        Telemetry.measure('mines-generate', 'mines-generate-start');
 
         // Start timer
         this.timerInterval = this.interval(() => {

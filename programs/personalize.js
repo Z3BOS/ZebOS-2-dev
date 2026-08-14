@@ -1,6 +1,7 @@
 // programs/personalize.js - ZebOS 2 Beta Display Properties Applet v2.7.0
 // All settings actually apply to the live OS. No browser page reloads.
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;
 
@@ -47,9 +48,11 @@ export class PersonalizeApp extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('personalize-mount-start');
         this.container = this.body;
         this.container.style.height = '100%';
         this.renderUI();
+        Telemetry.measure('personalize-mount', 'personalize-mount-start');
     }
 
     _btnStyle(extra = '') {
@@ -540,11 +543,13 @@ export class PersonalizeApp extends BaseApp {
 
     doApply() {
         if (!this.isDirty) return;
+        Telemetry.mark('personalize-apply-start');
         if (this.onApplyCallback) {
             this.onApplyCallback({ ...this.workingState });
         }
         this.initialState = { ...this.workingState };
         this.markClean();
+        Telemetry.measure('personalize-apply', 'personalize-apply-start');
     }
 
     markDirty() {

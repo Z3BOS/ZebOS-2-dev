@@ -2,6 +2,7 @@
 import { getIcon } from '../icons.js';
 import { showOsPrompt } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 const W95_CHECKMARK_SVG = `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" style="display:block;margin:0;padding:0;"><path d="M1.5 4.5L3.5 6.5L7.5 1.5" stroke="#000000" stroke-width="1.8" stroke-linecap="square"/></svg>`;
 
@@ -24,6 +25,7 @@ export class TextEditor extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('editor-mount-start');
         this.bodyElement = this.body;
 
         // Force structural fluid scaling behavior directly on parent window body
@@ -36,6 +38,7 @@ export class TextEditor extends BaseApp {
         this.renderLayout();
         this.bindEvents();
         this.updateCursorStats();
+        Telemetry.measure('editor-mount', 'editor-mount-start');
     }
 
     renderLayout() {
@@ -566,11 +569,14 @@ export class TextEditor extends BaseApp {
     }
 
     saveFile() {
+        Telemetry.mark('editor-save-start');
         this.content = this.textarea.value;
         this.hideAllMenus();
 
         this.onExit(this.fileName, this.content);
         this.flashFooterFeedback(`Saved: ${this.fileName}`);
+        Telemetry.measure('editor-save', 'editor-save-start');
+        Telemetry.record('editor-save-bytes', this.content.length);
     }
 
     saveAsFile() {

@@ -3,6 +3,7 @@ import { getIcon } from '../icons.js';
 import { showOsPrompt, getRegistrySnapshot, setRegistryValue } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
 import { downloadLinuxEmulationAssets, bootLinuxEmulation, LINUX_EMULATION_TOTAL_BYTES } from '../linux/v86loader.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class ZebVMManager extends BaseApp {
     constructor(onCloseRequest) {
@@ -57,11 +58,13 @@ export class ZebVMManager extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('vm-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
         this.listen(window, 'keydown', this.boundKeyDown);
 
         this.renderUI();
+        Telemetry.measure('vm-mount', 'vm-mount-start');
     }
 
     renderUI() {
@@ -260,8 +263,10 @@ export class ZebVMManager extends BaseApp {
         if (!container) return;
 
         vm._v86Mounting = true;
+        Telemetry.mark('vm-linux-boot-start');
         try {
             vm._v86Instance = await bootLinuxEmulation(container);
+            Telemetry.measure('vm-linux-boot', 'vm-linux-boot-start');
         } catch (err) {
             vm.status = 'stopped';
             this.installError = `Boot failed: ${err.message}`;
@@ -372,6 +377,7 @@ export class ZebVMManager extends BaseApp {
     startVm(vm) {
         if (vm.status === 'running' || vm.booting) return;
         vm.booting = true;
+        Telemetry.mark(`vm-boot-start-${vm.id}`);
         this.renderUI();
 
         if (this.bootTimers[vm.id]) clearTimeout(this.bootTimers[vm.id]);
@@ -379,6 +385,7 @@ export class ZebVMManager extends BaseApp {
             vm.booting = false;
             vm.status = 'running';
             this.renderUI();
+            Telemetry.measure('vm-boot', `vm-boot-start-${vm.id}`);
         }, 1200);
     }
 

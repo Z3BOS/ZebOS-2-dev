@@ -1,5 +1,6 @@
 // programs/snake.js
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class SnakeGame extends BaseApp {
     constructor(onCloseRequest) {
@@ -20,6 +21,7 @@ export class SnakeGame extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('snake-mount-start');
         this.body.style.height = "100%";
 
         this.render(`
@@ -41,9 +43,11 @@ export class SnakeGame extends BaseApp {
         this.listen(window, 'keydown', this.keyHandler);
         this.resetGame();
         this.interval(() => this.tick(), 100);
+        Telemetry.measure('snake-mount', 'snake-mount-start');
     }
 
     resetGame() {
+        Telemetry.mark('snake-reset-start');
         this.snake = [
             { x: 160, y: 200 },
             { x: 140, y: 200 },
@@ -54,6 +58,7 @@ export class SnakeGame extends BaseApp {
         this.score = 0;
         this.scoreEl.textContent = this.score;
         this.spawnFood();
+        Telemetry.measure('snake-reset', 'snake-reset-start');
     }
 
     spawnFood() {

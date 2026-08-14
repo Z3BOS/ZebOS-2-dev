@@ -2,6 +2,7 @@
 import { getIcon } from '../icons.js';
 import { showOsConfirm, showSaveFileDialog, saveFileToVfsPath } from '../os.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class PaintApp extends BaseApp {
     constructor(onCloseRequest, saveToVFS) {
@@ -49,6 +50,7 @@ export class PaintApp extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('paint-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
@@ -329,6 +331,7 @@ export class PaintApp extends BaseApp {
         this.listen(window, 'mousemove', this.boundMouseMove);
         this.listen(window, 'mouseup', this.boundMouseUp);
         this.listen(window, 'keydown', this.boundKeyDown);
+        Telemetry.measure('paint-mount', 'paint-mount-start');
     }
 
     initMenubar() {
@@ -427,8 +430,10 @@ export class PaintApp extends BaseApp {
     }
 
     exportToPC() {
+        Telemetry.mark('paint-export-start');
         this.renderComposite();
         const dataUrl = this.mainCanvas.toDataURL("image/png");
+        Telemetry.measure('paint-export', 'paint-export-start');
         const a = document.createElement('a');
         a.href = dataUrl;
         a.download = this.activeFileName || "artwork.png";

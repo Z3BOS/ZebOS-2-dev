@@ -1,6 +1,7 @@
 // programs/media.js - ZebOS 2 Retro Media Player Application
 import { getIcon } from '../icons.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 export class MediaPlayer extends BaseApp {
     constructor(onCloseRequest, loadFromVFS) {
@@ -20,6 +21,7 @@ export class MediaPlayer extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('media-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
 
@@ -114,13 +116,18 @@ export class MediaPlayer extends BaseApp {
 
         // Load default video preset sample
         this.loadSource('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'BigBuckBunny.mp4 (Sample Video)');
+        Telemetry.measure('media-mount', 'media-mount-start');
     }
 
     loadSource(src, title) {
         if (!this.mediaEl) return;
+        Telemetry.mark('media-load-start');
         this.mediaEl.src = src;
         this.titleEl.textContent = title;
         this.isPlaying = false;
+        this.mediaEl.addEventListener('loadeddata', () => {
+            Telemetry.measure('media-load', 'media-load-start');
+        }, { once: true });
         this.mediaEl.load();
     }
 

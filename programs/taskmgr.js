@@ -7,6 +7,7 @@
 import { closeWindow } from '../os.js';
 import { getIcon } from '../icons.js';
 import { BaseApp } from '../UIKit/framework/index.js';
+import { Telemetry } from '../telemetry/index.js';
 
 const SERVICES = [
     { id: 'svc-compositor', name: 'Desktop Window Compositor', startup: 'Automatic', desc: 'Manages window rendering, dragging, resizing, and z-order' },
@@ -43,11 +44,13 @@ export class TaskManagerApp extends BaseApp {
     }
 
     mount() {
+        Telemetry.mark('taskmgr-mount-start');
         this.bodyElement = this.body;
         this.bodyElement.style.height = "100%";
         this.listen(window, 'keydown', this.boundKeyDown);
         this.tick();
         this.pollInterval = this.interval(() => this.tick(), TICK_MS);
+        Telemetry.measure('taskmgr-mount', 'taskmgr-mount-start');
     }
 
     handleKeyDown(e) {
@@ -59,6 +62,7 @@ export class TaskManagerApp extends BaseApp {
 
     // ---- real measurement & dynamic telemetry, sampled once per tick ----
     tick() {
+        Telemetry.mark('taskmgr-tick-start');
         const now = performance.now();
         const windows = this.scanWindows();
         const activeWindow = document.querySelector('.window-frame.active-window');
@@ -123,6 +127,7 @@ export class TaskManagerApp extends BaseApp {
         if (this.memHistory.length > HISTORY_LEN) this.memHistory.shift();
 
         this.renderUI();
+        Telemetry.measure('taskmgr-tick', 'taskmgr-tick-start');
     }
 
     scanWindows() {
